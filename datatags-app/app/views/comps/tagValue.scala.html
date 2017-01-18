@@ -1,9 +1,8 @@
 @( aValue: edu.harvard.iq.datatags.model.values.CompoundValue )
 
-@import edu.harvard.iq.datatags.model.types._
 @import edu.harvard.iq.datatags.model.values._
 
-@simpleValue( value:SimpleValue ) = {
+@simpleValue( value:AtomicValue ) = {
   <div class="value value-simple">
     <span class="typeName">@value.getType.getName</span>
    @valueAtom(value)
@@ -33,22 +32,22 @@
 @compoundValue( value:CompoundValue ) = {
   <div class="value value-compound">
     <div class="typeName">@value.getType.getName</div>
-    @for( tp <- value.getSetFieldTypes ){
+    @for( tp <- value.getNonEmptySubSlotTypes ){
       @renderValue( value.get(tp) )
     }
   </div> 
 }
 
-@anyValue( value:TagValue[ _ <: edu.harvard.iq.datatags.model.types.TagType] ) = {
+@anyValue( value:TagValue ) = {
  <div class="value value-compound">
     <span class="typeName">@value.getType.getName</span>
     <span class="valueAtom">@value.toString</span>
   </div>  
 }
 
-@renderValue( value:TagValue[_ <: edu.harvard.iq.datatags.model.types.TagType] ) = {
-  @if( value.isInstanceOf[SimpleValue] ){
-    @simpleValue(value.asInstanceOf[SimpleValue])
+@renderValue( value:TagValue ) = {
+  @if( value.isInstanceOf[AtomicValue] ){
+    @simpleValue(value.asInstanceOf[AtomicValue])
   } else {
     @if( value.isInstanceOf[ToDoValue] ) {
       @todoValue( value.asInstanceOf[ToDoValue] )

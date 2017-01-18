@@ -1,16 +1,16 @@
-name := """DataTags-app"""
+name := """DataTaggingServer"""
 
 version := "1.0-SNAPSHOT"
 
-organization := "edu.harvard.iq"
-
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
-scalaVersion := "2.11.1"
+organization := "edu.harvard.iq"
 
-LessKeys.compress in Assets := true
+scalaVersion := "2.11.7"
 
-TwirlKeys.templateImports += "views.Helpers"
+routesGenerator := InjectedRoutesGenerator
+
+resolvers += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
   cache,
@@ -18,8 +18,8 @@ libraryDependencies ++= Seq(
   "org.scalatestplus" % "play_2.11" % "1.2.0" % "test"
 )
 
+LessKeys.compress in Assets := true
+
 includeFilter in (Assets, LessKeys.less) := "*.less"
 
-// add "com.typesafe.sbt" % "sbt-gzip" % "1.0.0" 
-// add "com.typesafe.sbt" % "sbt-digest" % "1.0.0"
-
+TwirlKeys.templateImports += "views.Helpers"

@@ -59,10 +59,6 @@ def isWordLowerEnglish(input: String) = {
 	isLower
 }
 
-
-
-
-
 def bulletPoint (paragraph: String) = {
 	var complete = paragraph
 	if (paragraph.contains("*")) {

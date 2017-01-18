@@ -1,9 +1,9 @@
-@( value : edu.harvard.iq.datatags.model.values.SimpleValue )
-@if( value.getInfo==null ) {
+@( value : edu.harvard.iq.datatags.model.values.AtomicValue )
+@if( value.getNote==null ) {
   <span class="valueAtom">@value.getName</span>
 } else {
   <span class="valueAtom" data-toggle="popover" data-trigger="hover" 
-     title="@value.getName" data-content="@value.getInfo"
+     title="@value.getName" data-content="@value.getNote"
      data-placement="top">
     @value.getName
     <span class="glyphicon glyphicon-info-sign"></span>

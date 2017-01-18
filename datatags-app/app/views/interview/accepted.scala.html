@@ -1,10 +1,11 @@
 @( questionnaireId: String,
    dataTags: edu.harvard.iq.datatags.model.values.CompoundValue,
-   codeTag: Option[edu.harvard.iq.datatags.model.values.TagValue[_]],
+   codeTag: Option[edu.harvard.iq.datatags.model.values.TagValue],
    requestedInterview: Option[RequestedInterviewSession],
+   serializer:Serialization,
    answerHistory: Seq[AnswerRecord] )
 
-@import edu.harvard.iq.datatags.model.values.SimpleValue
+@import edu.harvard.iq.datatags.model.values.AtomicValue
 
 @scripts = {
     <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -26,7 +27,7 @@
                 <span class="lead">Your dataset is tagged as</span>
                 @codeTag match {
                   case Some(tag) => {
-                    @comps.simpleValueTagLabel( tag.asInstanceOf[SimpleValue], tag.getName.toLowerCase, true)
+                    @comps.atomicValueTagLabel( tag.asInstanceOf[AtomicValue], tag.asInstanceOf[AtomicValue].getName.toLowerCase, true)
                   }
                   case None => { <div class="alert alert-danger"><strong>No Tag Assigned</strong> For some reason, your data was not tagged. This is an interview error.</div>}
                 }
@@ -53,16 +54,16 @@
             <h3 class="panel-title">Answer History</h3>
           </div>
           <div class="panel-body">
-            @comps.answerHistory(answerHistory, questionnaireId, false)
+            @comps.answerHistory(answerHistory, questionnaireId, false, serializer)
           </div>
   </div></div></div>
   @requestedInterview match {
       case Some(interview) => {
           <div class="center-block" style="text-align: center">
             <p> Click the button below to return to your data repository with these tags. </p>
-            @helper.form( action = routes.RequestedInterview.postBackTo(interview.key)) {
-                    <button class="btn btn-primary" type="submit">Continue depositing your data</button>
-            }
+              <form action="@routes.RequestedInterview.postBackTo(interview.key)" method="POST">
+                <button class="btn btn-primary" type="submit">Continue depositing your data</button>
+              </form>
           </div>
       }
       case None => {

@@ -1,11 +1,11 @@
 package models
 
-import edu.harvard.iq.datatags.model.charts.nodes._
-import edu.harvard.iq.datatags.model.values._
-import edu.harvard.iq.datatags.model.types.CompoundType
+import edu.harvard.iq.datatags.model.graphs.nodes._
+import edu.harvard.iq.datatags.model.types.CompoundSlot
 import edu.harvard.iq.datatags.runtime._
-import edu.harvard.iq.datatags.model.charts._
-import models._
+import edu.harvard.iq.datatags.model.graphs._
+import edu.harvard.iq.datatags.model.graphs.DecisionGraph
+
 import scala.collection.JavaConversions._
 
 
@@ -14,8 +14,8 @@ import scala.collection.JavaConversions._
  */
 class Serialization private( val answerMap: Map[Answer, String],
                              val serializedMap: Map[String, Answer],
-                             val questionnaire: FlowChartSet, 
-                             val tagsType: CompoundType ) {
+                             val questionnaire: DecisionGraph,
+                             val tagsType: CompoundSlot ) {
 
   /**
    * Take the current AnswerRecords and return the serialized version
@@ -25,30 +25,30 @@ class Serialization private( val answerMap: Map[Answer, String],
 
   /**
    * Take the serialized answers and a UserSession, and return
-   * a UserSession with the history replaced by the run encoded {@param serializedAns}.
+   * a UserSession with the history replaced by the run encoded `serializedAns`.
    */
   def decode(serializedAns: String, userSession: UserSession) : UserSession = {
     // Setup runtime environment
     val rte = new RuntimeEngine
     val l = rte.setListener( new TaggingEngineListener )
     val buffer = collection.mutable.Buffer[AnswerRecord]()
-    rte.setChartSet( questionnaire )
+    rte.setDecisionGraph( questionnaire )
     rte.setCurrentTags( tagsType.createInstance )
 
     // Deserialize and feed the answers to rte
-    rte.start( questionnaire.getDefaultChartId )
+    rte.start()
     serializedAns.map(_.toString).map( serializedMap ).foreach(ans => { 
         buffer append AnswerRecord(rte.getCurrentNode.asInstanceOf[AskNode], ans)
         rte.consume( ans )
     })
-    userSession.replaceHistory(buffer.toSeq, l.traversedNodes, rte.createSnapshot)
+    userSession.setHistory(l.traversedNodes, buffer).copy(engineState=rte.createSnapshot)
    }
 
 }
 
 object Serialization {
   val chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz[\\ֿֿֿ]^_`{|}~:;=?@!#$%'()*+,-./&<>"
-  def apply( questionnaire:FlowChartSet, tagsType:CompoundType ):Serialization = {
+  def apply( questionnaire:DecisionGraph, tagsType:CompoundSlot ):Serialization = {
     // first - get the answer frequencies
     val answers = getAnswersSortedByFrequencies(questionnaire)
     if ( answers.size > chars.size ) {
@@ -61,13 +61,16 @@ object Serialization {
     new Serialization( ans2char, ans2char.map( e => (e._2, e._1)), questionnaire, tagsType )
   }
 
-  def getAnswersSortedByFrequencies( questionnaire: FlowChartSet ) : Seq[Answer] = {
-    val answerList = questionnaire.charts.flatMap( chart => chart.nodes )
-      .flatMap( n => n match {
-        case a:AskNode => a.getAnswers.toList
-        case _ => Nil
+  def getAnswersSortedByFrequencies( questionnaire: DecisionGraph ) : Seq[Answer] = {
+    val answerList = questionnaire.nodes.flatMap({
+          case a:AskNode => a.getAnswers.toList
+          case _ => Nil
         })
-    answerList.groupBy( p=>p ).map( p=>(p._1, p._2.size) ).toList.sortBy( -_._2 ).map( _._1 )
+    answerList.groupBy( p=>p )
+              .map( p=>(p._1, p._2.size) )
+              .toList
+              .sortBy( -_._2 )
+              .map( _._1 )
   }
 
 }

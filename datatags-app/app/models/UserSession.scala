@@ -1,8 +1,10 @@
 package models
 
 import java.util.Date
+
+import edu.harvard.iq.datatags.model.graphs.Answer
 import edu.harvard.iq.datatags.runtime.RuntimeEngineState
-import edu.harvard.iq.datatags.model.charts.nodes._
+import edu.harvard.iq.datatags.model.graphs.nodes._
 import edu.harvard.iq.datatags.model.values._
 
 case class AnswerRecord( question: AskNode, answer: Answer)
@@ -14,15 +16,15 @@ case class UserSession(
   key:String,
   engineState: RuntimeEngineState,
   traversed: Seq[Node],
-  questionnaireId: String,
+  questionnaire: QuestionnaireKit,
   answerHistory: Seq[AnswerRecord],
   sessionStart: Date,
   requestedInterview: Option[RequestedInterviewSession] ) {
 
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat
-    val tagType = QuestionnaireKits.kit.tags
-    parser.parse( tagType, engineState.getSerializedTagValue ).asInstanceOf[CompoundValue]
+    val tagType = questionnaire.tags
+    Option(parser.parseCompoundValue( tagType, engineState.getSerializedTagValue )).getOrElse(tagType.createInstance())
   }
 
   def updatedWith( ansRec: AnswerRecord, newNodes: Seq[Node], state: RuntimeEngineState ) = 
@@ -31,8 +33,8 @@ case class UserSession(
   def updatedWith( newNodes: Seq[Node], state: RuntimeEngineState ) = 
         copy( engineState=state, traversed=traversed++newNodes)  
 
-  def replaceHistory( answers: Seq[AnswerRecord], history:Seq[Node], state: RuntimeEngineState ) = 
-        copy( engineState=state, traversed=history, answerHistory=answers )
+  def setHistory( history:Seq[Node], answers: Seq[AnswerRecord] ) =
+        copy( traversed=history, answerHistory=answers )
 
   def updatedWithRequestedInterview( requestedUserInterview: RequestedInterviewSession) =
         copy (requestedInterview = Option(requestedUserInterview))
@@ -40,11 +42,11 @@ case class UserSession(
 }
 
 object UserSession {
-  def create( questionnaireId: String ) = 
+  def create( questionnaire: QuestionnaireKit ) =
         UserSession( java.util.UUID.randomUUID().toString, 
                      null,
                      Seq(),
-                     questionnaireId, 
+                     questionnaire,
                      Seq(), 
                      new Date,
                      None )

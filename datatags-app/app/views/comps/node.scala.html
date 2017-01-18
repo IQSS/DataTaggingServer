@@ -1,6 +1,6 @@
-@(node: edu.harvard.iq.datatags.model.charts.nodes.Node)
+@(node: edu.harvard.iq.datatags.model.graphs.nodes.Node)
 
-@import edu.harvard.iq.datatags.model.charts.nodes._
+@import edu.harvard.iq.datatags.model.graphs.nodes._
 
 @askNode( n:AskNode ) = {
   <td class="node node-ask">ask</td>
@@ -17,7 +17,7 @@
   <td>@n.getTags</td>
 }
 
-@todoNode( n:TodoNode ) = {
+@todoNode( n:ToDoNode ) = {
   <td class="node node-todo">todo</td>
   <td>@n.getTodoText</td>
 }
@@ -39,6 +39,6 @@
   case n:SetNode  => { @setNode(n)  }
   case n:EndNode  => { @endNode(n)  }
   case n:CallNode => { @callNode(n) }
-  case n:TodoNode => { @todoNode(n) }
+  case n:ToDoNode => { @todoNode(n) }
   case _ => { @generalNode(node)}
 }

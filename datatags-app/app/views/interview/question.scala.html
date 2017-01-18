@@ -1,7 +1,8 @@
 @( questionnaireId: String,
-   questionNode: edu.harvard.iq.datatags.model.charts.nodes.AskNode,
+   questionNode: edu.harvard.iq.datatags.model.graphs.nodes.AskNode,
    dataTags: edu.harvard.iq.datatags.model.values.CompoundValue,
-   history:Seq[edu.harvard.iq.datatags.model.charts.nodes.Node],
+   history:Seq[edu.harvard.iq.datatags.model.graphs.nodes.Node],
+   serializer:Serialization,
    answerHistory: Seq[AnswerRecord])
 
 @scripts = {
@@ -39,7 +40,7 @@
                                 @Helpers.makeUpper(ans.getAnswerText)</button>
                     }
                     <input type="hidden" name="answerText" id="answerText" value="" />
-                    <input type="hidden" name="serializedHistory" id="serializedHistory" value="@QuestionnaireKits.kit.serializer.encode(answerHistory)"/>
+                    <input type="hidden" name="serializedHistory" id="serializedHistory" value="@serializer.encode(answerHistory)"/>
                 }
             </div>
         </div>
@@ -52,8 +53,8 @@
                 <h3 class="panel-title">Answer Feed</h3>
             </div>
             <div class="panel-body">
-                @if( ! answerHistory.isEmpty ) {
-                    @comps.answerHistory(answerHistory, questionnaireId, true)
+                @if( answerHistory.nonEmpty ) {
+                    @comps.answerHistory(answerHistory, questionnaireId, reverse=true, serializer)
                 } else {
                     <div class="well well-sm text-center">
                         <span class="muted small">This space will contain your answers, and will allow you to revisit them when needed.</span>
@@ -69,7 +70,7 @@
             </div>
             <div class="panel-body">
                 <ul class="list-unstyled">
-                    @if( dataTags.getSetFieldTypes.isEmpty ) {
+                    @if( dataTags.getNonEmptySubSlotTypes.isEmpty ) {
                         <div class="well well-sm text-center">
                             <span class="muted small">This space will contain the tags for your dataset. It will be updated as we go along.</span>
                         </div>    

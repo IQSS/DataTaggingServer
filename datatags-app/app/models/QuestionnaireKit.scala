@@ -2,52 +2,49 @@ package models
 
 import play.api._
 import java.nio.file._
-import edu.harvard.iq.datatags.runtime._
-import edu.harvard.iq.datatags.model.charts._
-import edu.harvard.iq.datatags.parser.definitions.DataDefinitionParser
-import edu.harvard.iq.datatags.parser.exceptions.DataTagsParseException
-import edu.harvard.iq.datatags.parser.flowcharts._
-import edu.harvard.iq.datatags.model.charts._
-import edu.harvard.iq.datatags.model.values._
-import edu.harvard.iq.datatags.model.types._
-import views._
+import javax.inject.{Inject, Singleton}
 
-case class QuestionnaireKit( val id:String,
-                             val title: String,
-                             val tags: CompoundType,
-                             val questionnaire: FlowChartSet ) {
+import edu.harvard.iq.datatags.model.graphs._
+import edu.harvard.iq.datatags.model.types.CompoundSlot
+import edu.harvard.iq.datatags.parser.decisiongraph.DecisionGraphParser
+import edu.harvard.iq.datatags.parser.tagspace.TagSpaceParser
+
+case class QuestionnaireKit( id:String,
+                             title: String,
+                             tags: CompoundSlot,
+                             questionnaire: DecisionGraph ) {
   val serializer = Serialization( questionnaire, tags )
 }
 
-object QuestionnaireKits {
+@Singleton
+class QuestionnaireKits @Inject() (config:Configuration){
   val allKits = loadQuestionnaires()
   
   /** This will go away once we have multi questionnaire support */
-  val kit = allKits.toSeq(0)._2
+  val kit = allKits.toSeq.head._2
 
   private def loadQuestionnaires() = {
     Logger.info("Loading questionnaires")
-    Play.current.configuration.getString("datatags.folder") match {
+    config.getString("datatags.folder") match {
     case Some(str) => {
           val p = Paths.get(str)
           Logger.info( "Loading questionnaire data from " + p.toAbsolutePath.toString )
           
-          val definitions = p.resolve("definitions.tags")
+          val definitions = p.resolve("definitions.ts")
           Logger.info( "Reading definitions from %s".format(definitions.toAbsolutePath.toString))
-          val dp = new DataDefinitionParser()
-          val dataTags = dp.parseTagDefinitions( readAll(definitions), "definitions").asInstanceOf[CompoundType]
+          val dp = new TagSpaceParser()
+          val dataTags = dp.parse( readAll(definitions) ).buildType("DataTags").get
+          Logger.info(" DataTags type: " + dataTags.toString )
           Logger.info( " - DONE")
 
-          val fcsParser = new FlowChartSetComplier( dataTags )
+          val fcsParser = new DecisionGraphParser()
 
-          val questionnaire = p.resolve("questionnaire.flow")
+          val questionnaire = p.resolve("questionnaire.dg")
           Logger.info( "Reading questionnaire from %s".format(questionnaire.toAbsolutePath.toString))
           val source = readAll( questionnaire )
           Logger.info( " - READ DONE")
-          val interview = fcsParser.parse(source, "Data Deposit Screening" )
+          val interview = fcsParser.parse(source).compile(dataTags)
           Logger.info( " - PARSING DONE")
-
-          Logger.info("Default chart id: %s".format(interview.getDefaultChartId) )
 
           Map( "dds-c1" -> QuestionnaireKit("dds-c1", "Data Deposit Screening", dataTags, interview) )
         }

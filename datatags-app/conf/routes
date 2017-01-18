@@ -16,7 +16,7 @@ GET     /interviews/:questionnaireId/reject      controllers.Interview.reject(qu
 POST    /interviews/:questionnaireId/revisit/    controllers.Interview.revisit(questionnaireId)
 
 # Game and funs
-GET	    /test/:name/:count          controllers.Test.nameCount(name, count: Int)
+GET	    /test/:name/:count    controllers.Test.nameCount(name, count: Int)
 
 # API
 GET		/api/1/interviewLink					controllers.API.requestInterview(repositoryName: String ?= "Dataverse", callbackURL: String ?= null)

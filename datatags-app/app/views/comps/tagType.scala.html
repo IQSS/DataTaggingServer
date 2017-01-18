@@ -1,8 +1,8 @@
-@( tagType: edu.harvard.iq.datatags.model.types.TagType )
+@( tagType: edu.harvard.iq.datatags.model.types.SlotType )
 
 @import edu.harvard.iq.datatags.model.types._
 
-@simpleType( tp: SimpleType ) = {
+@simpleType( tp: AtomicSlot ) = {
   <div class="tagtype tagtype-simple">
     <div class="typeName">@tp.getName
       <small>One of:</small>
@@ -15,7 +15,7 @@
   </div>
 }
 
-@aggregateType( tp: AggregateType ) = {
+@aggregateType( tp: AggregateSlot) = {
   <div class="tagtype tagtype-aggregate">
     <div class="typeName">@tp.getName
       <small>Some of:</small>
@@ -28,12 +28,12 @@
   </div>
 }
 
-@compoundType( tp:CompoundType ) = {
+@compoundType( tp:CompoundSlot ) = {
  <div class="tagtype tagtype-compound">
     <div>
-      @if( tp.getInfo != null ) {
+      @if( tp.getNote != null ) {
         <span data-toggle="popover" data-trigger="hover" 
-             title="@tp.getName" data-content="@tp.getInfo"
+             title="@tp.getName" data-content="@tp.getNote"
              data-placement="top">
             <span class="typeName">@tp.getName
               <span class="glyphicon glyphicon-info-sign"></span>
@@ -51,7 +51,7 @@
   </div> 
 }
 
-@todoType( tp: ToDoType ) = {
+@todoType( tp: ToDoSlot ) = {
   <div class="tagtype tagtype-todo">
     <div class="typeName">@tp.getName
       <small>value placeholder</small>
@@ -63,12 +63,12 @@
 }
 
 
-@renderType( ft:TagType ) = {
+@renderType( ft:SlotType ) = {
   @ft match {
-    case t:SimpleType => { @simpleType(t) }
-    case t:AggregateType => { @aggregateType(t) }
-    case t:CompoundType => { @compoundType(t) }
-    case t:ToDoType => { @todoType(t) }
+    case t:AtomicSlot => { @simpleType(t) }
+    case t:AggregateSlot => { @aggregateType(t) }
+    case t:CompoundSlot => { @compoundType(t) }
+    case t:ToDoSlot => { @todoType(t) }
   }
 }
 

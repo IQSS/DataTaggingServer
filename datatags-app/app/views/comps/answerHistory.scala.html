@@ -1,4 +1,4 @@
-@(answerHistory: Seq[AnswerRecord], questionnaireId:String, reverse:Boolean)
+@(answerHistory: Seq[AnswerRecord], questionnaireId:String, reverse:Boolean, serializer:Serialization)
 @import views.Helpers
 @helper.form( action=routes.Interview.revisit(questionnaireId), 'id->"answerHistory") {
     <ol class="answer-history">
@@ -20,6 +20,6 @@
             }
         }
     </ol>
-    <input type="hidden" name="serializedHistory" id="serializedHistory" value="@QuestionnaireKits.kit.serializer.encode(answerHistory)"/>
+    <input type="hidden" name="serializedHistory" id="serializedHistory" value="@serializer.encode(answerHistory)"/>
     <input type="hidden" name="revisitIdx" id="revisitIdx" value="" />
 }
