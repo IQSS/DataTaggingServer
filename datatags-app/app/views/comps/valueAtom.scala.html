@@ -1,5 +1,5 @@
 @( value : edu.harvard.iq.datatags.model.values.AtomicValue )
-@if( value.getNote==null ) {
+@if( value.getNote==null || value.getNote.isEmpty ) {
   <span class="valueAtom">@value.getName</span>
 } else {
   <span class="valueAtom" data-toggle="popover" data-trigger="hover" 

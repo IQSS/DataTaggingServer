@@ -136,9 +136,8 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
   def accept( questionnaireId:String ) = UserSessionAction(cache) { request =>
     val session = request.userSession
     val tags = session.tags
-    val code = Option(tags.get( tags.getType.getTypeNamed("Code") ))
-    
-    Ok( views.html.interview.accepted(questionnaireId, tags, code, session.requestedInterview,
+    val codeOpt = Option(tags.getType.getTypeNamed("Code")).map(tags.get)
+    Ok( views.html.interview.accepted(questionnaireId, tags, codeOpt, session.requestedInterview,
                                       kits.kit.serializer, session.answerHistory )  )
   }
 

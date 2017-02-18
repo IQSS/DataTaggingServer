@@ -1,0 +1,18 @@
+@import edu.harvard.iq.datatags.model.values.TagValue
+@import edu.harvard.iq.datatags.model.types.CompoundSlot
+@(tagType: CompoundSlot, tagValue:TagValue)
+
+@templates.bsBase("Tag trees")(){
+    <div class="content">
+        <div class="row">
+            <div class="col-md-6">
+                <h3>type</h3>
+                @comps.tagType( tagType )
+            </div>
+            <div class="col-md-6">
+                <h3>value</h3>
+                @comps.tagValue(tagValue)
+            </div>
+        </div>
+    </div>
+}

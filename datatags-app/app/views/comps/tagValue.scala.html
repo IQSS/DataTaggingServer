@@ -1,11 +1,11 @@
-@( aValue: edu.harvard.iq.datatags.model.values.CompoundValue )
+@( aValue: edu.harvard.iq.datatags.model.values.TagValue )
 
 @import edu.harvard.iq.datatags.model.values._
 
-@simpleValue( value:AtomicValue ) = {
+@atomicValue( value:AtomicValue ) = {
   <div class="value value-simple">
-    <span class="typeName">@value.getType.getName</span>
-   @valueAtom(value)
+      @slotTypeTitle(value.getType)
+      @valueAtom(value)
   </div>
 }
 
@@ -32,10 +32,12 @@
 @compoundValue( value:CompoundValue ) = {
   <div class="value value-compound">
     <div class="typeName">@value.getType.getName</div>
-    @for( tp <- value.getNonEmptySubSlotTypes ){
-      @renderValue( value.get(tp) )
-    }
-  </div> 
+      <ul>
+        @for( tp <- value.getNonEmptySubSlotTypes ){
+          <li>@renderValue( value.get(tp) )</li>
+        }
+      </ul>
+  </div>
 }
 
 @anyValue( value:TagValue ) = {
@@ -46,21 +48,14 @@
 }
 
 @renderValue( value:TagValue ) = {
-  @if( value.isInstanceOf[AtomicValue] ){
-    @simpleValue(value.asInstanceOf[AtomicValue])
-  } else {
-    @if( value.isInstanceOf[ToDoValue] ) {
-      @todoValue( value.asInstanceOf[ToDoValue] )
-    } else {
-       @if( value.isInstanceOf[AggregateValue] ) {
-          @aggregateValue( value.asInstanceOf[AggregateValue] ) 
-       } else {
-          @if( value.isInstanceOf[CompoundValue] ) {
-            @compoundValue( value.asInstanceOf[CompoundValue] )
-          } else {
-             @anyValue( value )
+    @value match {
+        case v:AtomicValue => {@atomicValue(v)}
+        case v:AggregateValue => {@aggregateValue(v)}
+        case v:ToDoValue => {@todoValue(v)}
+        case c:CompoundValue => {@compoundValue(c)}
     }
-  }}}
 }
 
+<div class="tagvalue-container">
 @renderValue( aValue )
+</div>

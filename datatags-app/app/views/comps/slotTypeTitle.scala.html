@@ -1,0 +1,21 @@
+@import edu.harvard.iq.datatags.model.types._
+
+@( tp:edu.harvard.iq.datatags.model.types.SlotType, explanation:String=""  )
+<div class="typeName">
+    @if( tp.getNote!=null && tp.getNote.nonEmpty ) {
+        <span data-toggle="popover" data-trigger="hover"
+        title="@tp.getName" data-content="@tp.getNote"
+        data-placement="top">
+            <span class="typeName">@tp.getName
+                <span class="glyphicon glyphicon-info-sign"></span>
+            </span>
+        </span>
+    } else {
+        <span class="typeName">@tp.getName</span>
+    }
+@if( explanation.nonEmpty ){
+    <small>
+       @explanation
+    </small>
+}
+</div>

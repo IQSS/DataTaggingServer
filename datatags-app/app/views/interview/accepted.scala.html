@@ -16,7 +16,8 @@
   <div class="row">
     <div class="col-md-12">
       <div class="alert alert-warning" role="alert">
-        <strong>This is a demonstration of the DataTags framework, and the tags on this page are provided for informational purposes only.</strong> If you seek to share a dataset containing confidential information, you should consult the institutional review board of your organization.
+        <strong>This is a demonstration of the DataTags framework, and the tags on this page are provided for informational purposes only.</strong>
+          If you seek to share a dataset containing confidential information, you should consult the institutional review board of your organization.
       </div>
       <div class="panel panel-success">
           <div class="panel-heading">
@@ -24,18 +25,20 @@
           </div>
           <div class="panel-body">
               <div class="text-center">
-                <span class="lead">Your dataset is tagged as</span>
-                @codeTag match {
-                  case Some(tag) => {
-                    @comps.atomicValueTagLabel( tag.asInstanceOf[AtomicValue], tag.asInstanceOf[AtomicValue].getName.toLowerCase, true)
+                  @for( tag <- codeTag ) {
+                      <span class="lead">Your dataset is tagged as</span>
+                      @defining(tag.asInstanceOf[AtomicValue]) { value =>
+                          @if( value.getNote==null ) {
+                              <div class="tag tag-@value.getName.toLowerCase()">@value.getName</div>
+                          } else {
+                              <div class="tag tag-@value.getName.toLowerCase()">@value.getName.capitalize </div><div class="tag-info">@value.getNote</div>
+                          }
+                      }
                   }
-                  case None => { <div class="alert alert-danger"><strong>No Tag Assigned</strong> For some reason, your data was not tagged. This is an interview error.</div>}
-                }
               </div>
               <!-- <h3>Full Tags</h3> -->
-              <div class="tagvalue-container" style="margin-top:1em;">
-                @comps.tagValue(dataTags)
-              </div>
+              @comps.tagValue(dataTags)
+
 
               <div class="text-right">
                 <br />

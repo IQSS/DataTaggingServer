@@ -4,9 +4,7 @@
 
 @simpleType( tp: AtomicSlot ) = {
   <div class="tagtype tagtype-simple">
-    <div class="typeName">@tp.getName
-      <small>One of:</small>
-    </div>
+      @slotTypeTitle(tp, "One of:")
     <div class="typeValues">
       @for( sv <- tp.values ) {
         @valueAtom( sv )
@@ -17,9 +15,7 @@
 
 @aggregateType( tp: AggregateSlot) = {
   <div class="tagtype tagtype-aggregate">
-    <div class="typeName">@tp.getName
-      <small>Some of:</small>
-    </div>
+      @slotTypeTitle(tp, "Some of:")
     <div class="typeValues">
       @for( sv <- tp.getItemType.values ) {
         @valueAtom( sv )
@@ -30,19 +26,7 @@
 
 @compoundType( tp:CompoundSlot ) = {
  <div class="tagtype tagtype-compound">
-    <div>
-      @if( tp.getNote != null ) {
-        <span data-toggle="popover" data-trigger="hover" 
-             title="@tp.getName" data-content="@tp.getNote"
-             data-placement="top">
-            <span class="typeName">@tp.getName
-              <span class="glyphicon glyphicon-info-sign"></span>
-            </span>
-        </span>
-      } else {
-        <span class="typeName">@tp.getName</span>
-      }
-    </div>
+    @slotTypeTitle(tp)
     <div class="typeValues">
       @for( ft <- tp.getFieldTypes ) {
         @renderType( ft )
@@ -53,15 +37,12 @@
 
 @todoType( tp: ToDoSlot ) = {
   <div class="tagtype tagtype-todo">
-    <div class="typeName">@tp.getName
-      <small>value placeholder</small>
-    </div>
+    @slotTypeTitle(tp, "value placeholder")
     <div class="typeValues">
         <span class="valueAtom">TODO</span>
     </div>
   </div>
 }
-
 
 @renderType( ft:SlotType ) = {
   @ft match {
@@ -72,4 +53,6 @@
   }
 }
 
-@renderType( tagType )
+<div class="tagtype-container">
+    @renderType( tagType )
+</div>
