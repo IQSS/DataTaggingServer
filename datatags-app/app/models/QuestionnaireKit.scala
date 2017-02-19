@@ -55,7 +55,7 @@ class QuestionnaireKits @Inject() (config:Configuration){
           Logger.info("Loading readme")
           val readmeRaw = readAll(p.resolve("README.html"))
           val readMe = "(?s)<body>.*</body>".r.findFirstIn(readmeRaw).map( s=>s.substring("<body>".length, s.length-"</body>".length).trim )
-          Logger.info("Readme: " + readMe)
+          Logger.info("Loading done")
           Map( "dds-c1" -> QuestionnaireKit("dds-c1", "Data Deposit Screening", dataTags, interview, messages, readMe) )
         }
 
