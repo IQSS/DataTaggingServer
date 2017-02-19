@@ -23,11 +23,8 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
     val userSession = UserSession.create( kits.kit )
 
     cache.set(userSession.key, userSession)
-    Ok( views.html.interview.intro(
-          kits.kit.questionnaire,
-          kits.kit.tags,
-          Option(null) )
-      ).withSession( request2session + ("uuid" -> userSession.key) )
+    Ok( views.html.interview.intro(kits.kit, Option(null) )).
+      withSession( request2session + ("uuid" -> userSession.key) )
   }
 
   def startInterview( questionnaireId:String ) = UserSessionAction(cache) { implicit req =>
@@ -146,8 +143,8 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
     val state = request.userSession.engineState
     val node = kits.kit.questionnaire.getNode( state.getCurrentNodeId )
 
-    Ok( views.html.interview.rejected(questionnaireId, node.asInstanceOf[RejectNode].getReason,
-      session.requestedInterview, kits.kit.serializer, session.answerHistory ) )
+    Ok( views.html.interview.rejected(kits.kit, node.asInstanceOf[RejectNode].getReason,
+      session.requestedInterview, session.answerHistory ) )
   }
 
   // TODO: move to some akka actor, s.t. the UI can be reactive

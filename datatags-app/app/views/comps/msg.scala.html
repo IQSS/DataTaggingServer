@@ -1,0 +1,3 @@
+@import java.text.MessageFormat
+@(qk:QuestionnaireKit, key:String, values:String*)
+@qk.messages.get(key).map(s=>MessageFormat.format(s, values:_*)).getOrElse(":"+key+":")

@@ -12,7 +12,9 @@ import edu.harvard.iq.datatags.parser.tagspace.TagSpaceParser
 case class QuestionnaireKit( id:String,
                              title: String,
                              tags: CompoundSlot,
-                             questionnaire: DecisionGraph ) {
+                             questionnaire: DecisionGraph,
+                             messages:Map[String, String],
+                             readme:Option[String]) {
   val serializer = Serialization( questionnaire, tags )
 }
 
@@ -46,7 +48,15 @@ class QuestionnaireKits @Inject() (config:Configuration){
           val interview = fcsParser.parse(source).compile(dataTags)
           Logger.info( " - PARSING DONE")
 
-          Map( "dds-c1" -> QuestionnaireKit("dds-c1", "Data Deposit Screening", dataTags, interview) )
+          Logger.info("Loading messages")
+          val messagesFile = p.resolve("messages.properties")
+          val messages = readAllToSeq( messagesFile ).filter(_.nonEmpty).map(_.split("=",2)).map(arr=>(arr(0),arr(1))).toMap
+  
+          Logger.info("Loading readme")
+          val readmeRaw = readAll(p.resolve("README.html"))
+          val readMe = "(?s)<body>.*</body>".r.findFirstIn(readmeRaw).map( s=>s.substring("<body>".length, s.length-"</body>".length).trim )
+          Logger.info("Readme: " + readMe)
+          Map( "dds-c1" -> QuestionnaireKit("dds-c1", "Data Deposit Screening", dataTags, interview, messages, readMe) )
         }
 
         case None => {
@@ -56,7 +66,9 @@ class QuestionnaireKits @Inject() (config:Configuration){
     }
   }
 
-  private def readAll( p:Path ) : String = scala.io.Source.fromFile( p.toFile, "utf-8" ).getLines().mkString("\n")
+  private def readAllToItr( p:Path ) : Iterator[String] = scala.io.Source.fromFile( p.toFile, "utf-8" ).getLines()
+  private def readAll( p:Path ) : String = readAllToItr(p).mkString("\n")
+  private def readAllToSeq( p:Path ) : Seq[String] = readAllToItr(p).toSeq
 
 
   private def matchNode(aNode: nodes.Node, answerFrequencies: scala.collection.mutable.Map[Answer, Integer]): scala.collection.mutable.Map[Answer, Integer] = aNode match {

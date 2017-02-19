@@ -1,6 +1,4 @@
-@import edu.harvard.iq.datatags.model.types._
-
-@( tp:edu.harvard.iq.datatags.model.types.SlotType, explanation:String=""  )
+@(tp:edu.harvard.iq.datatags.model.types.SlotType, explanation:String="")
 <div class="typeName">
     @if( tp.getNote!=null && tp.getNote.nonEmpty ) {
         <span data-toggle="popover" data-trigger="hover"

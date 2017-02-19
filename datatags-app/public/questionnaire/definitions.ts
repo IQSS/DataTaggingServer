@@ -26,6 +26,6 @@ capping [Based on article 167 of the National Insurance law]: one of
   AverageDailyPay[Average monthy pay divided by 25 (see article 167)],
   TwoThirdsAverageDailyPay[Two thirds of average monthy pay divided by 25 (see article 167)].
 
-dependents [How many people depent on claiment as a main source for monetary support]: one of LessThanThree, ThreeOrMore.
+dependents [How many people depend on claiment as a main source for monetary support]: one of LessThanThree, ThreeOrMore.
 
 numOfDays: one of d50, d67, d100, d138, d175.

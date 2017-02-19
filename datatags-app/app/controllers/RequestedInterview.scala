@@ -12,8 +12,6 @@ import models._
 import _root_.util.Jsonizer
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-
-
 class RequestedInterview @Inject() (cache:CacheApi, ws:WSClient, kits:QuestionnaireKits) extends Controller {
 
   def start(uniqueLinkId: String) = Action { implicit request =>
@@ -25,12 +23,9 @@ class RequestedInterview @Inject() (cache:CacheApi, ws:WSClient, kits:Questionna
         val userSessionWithInterview = userSession.updatedWithRequestedInterview(requestedInterview)
 
         cache.set(userSessionWithInterview.key, userSessionWithInterview)
-
-        val fcs = kits.kit.questionnaire
-        val dtt = kits.kit.tags
         val message = Option("Welcome, Dataverse user! Please follow the directions below to begin tagging your data.")
 
-        Ok( views.html.interview.intro(fcs,dtt, message) )
+        Ok( views.html.interview.intro(kits.kit, message) )
           .withSession( request2session + ("uuid" -> userSessionWithInterview.key) )
       }
 
