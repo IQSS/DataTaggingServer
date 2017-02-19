@@ -1,8 +1,7 @@
-@( questionnaireId: String,
+@( qKit:QuestionnaireKit,
    dataTags: edu.harvard.iq.datatags.model.values.CompoundValue,
    codeTag: Option[edu.harvard.iq.datatags.model.values.TagValue],
    requestedInterview: Option[RequestedInterviewSession],
-   serializer:Serialization,
    answerHistory: Seq[AnswerRecord] )
 
 @import edu.harvard.iq.datatags.model.values.AtomicValue
@@ -15,13 +14,13 @@
 @templates.bsNavBar("Dataset Accepted", 'ask, scripts) {
   <div class="row">
     <div class="col-md-12">
-      <div class="alert alert-warning" role="alert">
-        <strong>This is a demonstration of the DataTags framework, and the tags on this page are provided for informational purposes only.</strong>
-          If you seek to share a dataset containing confidential information, you should consult the institutional review board of your organization.
-      </div>
+      @*<div class="alert alert-warning" role="alert">*@
+        @*<strong>This is a demonstration of the DataTags framework, and the tags on this page are provided for informational purposes only.</strong>*@
+          @*If you seek to share a dataset containing confidential information, you should consult the institutional review board of your organization.*@
+      @*</div>*@
       <div class="panel panel-success">
           <div class="panel-heading">
-              <h3 class="panel-title">Dataset Can be Accepted</h3>
+              <h3 class="panel-title">@comps.msg(qKit,"acceptance.title")</h3>
           </div>
           <div class="panel-body">
               <div class="text-center">
@@ -57,7 +56,7 @@
             <h3 class="panel-title">Answer History</h3>
           </div>
           <div class="panel-body">
-            @comps.answerHistory(answerHistory, questionnaireId, false, serializer)
+            @comps.answerHistory(answerHistory, qKit.id, false, qKit.serializer)
           </div>
   </div></div></div>
   @requestedInterview match {

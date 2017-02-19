@@ -3,35 +3,35 @@
 <***********************
 Is the user covered?
 ***********************>
-[>coverage/resident< ask:
+[>coverage.resident< ask:
   {text: Are you a resident of Israel?}
   {answers:
     {no: [reject: Only Israeli residents are eligible.] }
     {yes:
-      [>coverage/age< ask:
+      [>coverage.age< ask:
         {text: Are you over 18?}
         {terms: }
         {answers:
           {no: [call: eligibleMinorTest]}
-          {yes: [>coverage/employment< ask:
+          {yes: [>coverage.employment< ask:
               {text: Did your employer(s) in the last 12 months have to pay National Insurance?}
               {terms:
                 {have to pay: The employers should have paid the National Insurance fees (even if they didn't actually pay). } <-- improve
               }
               {answers:
                 {yes: [set: insuranceStatus=Covered; coverCause+=Employment]}
-                {no: [>coverage/soldier< ask:
+                {no: [>coverage.soldier< ask:
                   {text: Did you serve a mandatory military service?}
                   {answers:
                     {yes:[set: coverCause+=MilitaryService]}
-                    {no: [>coverage/nationalSvc< ask:
+                    {no: [>coverage.nationalSvc< ask:
                       {text: Did you serve/volunteer in National Service or the National-Civil service for more than 2 years?}
                       {terms:
                         {National Service: SHEIRUT LEUMI}
                       }
                       {answers:
                         {yes: [set: coverCause+=NationalService]}
-                        {no: [>coverage/nationalSvc/wed< ask:
+                        {no: [>coverage.nationalSvc.wed< ask:
                           {text: Are you a woman who served at least 6 months and got married within 30 days of your actual discharge?}
                           {answers:
                             {yes: [set: coverCause+=NationalService]}
@@ -40,7 +40,7 @@ Is the user covered?
                       }
                     ]}
                   }
-                ][>coverage/service/time-limit< ask:
+                ][>coverage.service.time-limit< ask:
                   {text: Were you discharged in within the last year?}
                   {answers:
                     {yes: [set: insuranceStatus=Covered]}
