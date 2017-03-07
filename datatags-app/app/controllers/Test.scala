@@ -32,11 +32,11 @@ class Test @Inject()(kits:QuestionnaireKits) extends Controller {
   	Ok(Json.obj("status" -> "OK", "redirectURL" -> userRedirectURL))
   }
 
-  def showTagTree = Action{ req =>
-
-    val tagType = kits.kit.tags
-
-    Ok(views.html.tagsTree(tagType, generateInstance(tagType)) )
+  def showTagTree(id:String) = Action{ req =>
+    kits.get(id) match {
+      case None => NotFound("Can't find interview with id " + id)
+      case Some(kit) => Ok(views.html.tagsTree(kit.tags, generateInstance(kit.tags)) )
+    }
   }
 
   def generateInstance(tt:SlotType):TagValue = {

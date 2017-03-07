@@ -4,9 +4,10 @@ import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 import play.api.mvc._
-import play.api.libs.json.Json
+import play.api.libs.json.{JsError, Json}
 import models._
 import play.api.cache.CacheApi
+import play.api.mvc.BodyParsers.parse.tolerantJson
 
 import scala.concurrent.duration.Duration
 
@@ -16,19 +17,27 @@ import scala.concurrent.duration.Duration
  * Controller for API.
  */
 
-class API @Inject()(cache:CacheApi) extends Controller {
+class API @Inject()(cache:CacheApi, kits:QuestionnaireKits) extends Controller {
 
 	
-	def requestInterview(repositoryName: String, callbackURL: String) = Action { implicit request =>
-		// prepare for the user, cache callback URL and repository name
-		val requestedInterviewSession = RequestedInterviewSession(callbackURL, repositoryName)
-		cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
-
-		// reverse routing to decide on interview link
-		val interviewLink = routes.RequestedInterview.start(requestedInterviewSession.key).absoluteURL()
-		
-		// send json response with interview link
-		Ok(Json.obj("status" -> "OK", "data" -> interviewLink))
+	def requestInterview(interviewId:String) = Action(tolerantJson(maxLength = 1024*1024*10)) { implicit request =>
+    
+    kits.get(interviewId) match {
+      case Some(_) => {
+        request.body.validate[RequestedInterviewData](JSONFormats.requestedInterviewDataReader).fold(
+          errors => {BadRequest(Json.obj("status" -> "error", "message" -> JsError.toJson(errors)))},
+          interviewData => {
+            val requestedInterviewSession = RequestedInterviewSession(interviewData.callbackURL, interviewData.title, interviewData.message, interviewId)
+            cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
+  
+            // send json response with interview link
+            Redirect(routes.RequestedInterview.start(requestedInterviewSession.key))
+          }
+        )
+      }
+      case None => NotFound("Cannot find interview with id " + interviewId )
+    }
+    
 	}
 
 }

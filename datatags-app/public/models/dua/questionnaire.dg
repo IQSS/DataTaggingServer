@@ -1,0 +1,51 @@
+[>main< ask:
+  {text: Is the related to human subjects?}
+  {answers:
+    {yes:
+      [set: hasHumanData=Yes]
+      [>human-data< ask:
+        {text: Does the data contain PII, PHI, Education Records, Credit Card Data, and/or CPI Data?}
+        {terms:
+          {PII: Personally Identifiable Information, allowing data holder to identify particular people in the data.}
+          {PHI: Personal Health Data.}
+        }
+        {answers:
+          {yes:
+            [set: duaNeeded=Yes]
+            [end]
+          }
+        }
+      ]
+      [>human-law< ask:
+        {text: Is the data defined as NCPRA Confidential, or is protected by law?}
+        {terms: }
+        {answers:
+          {yes:
+            [set: duaNeeded=Yes]
+            [end]
+          }
+        }
+      ]
+      [call: protection-test]
+    }
+    {no:
+      [set: hasHumanData=No]
+      [>protection-test< ask:
+        {text: Is the data:
+                * From a sponsered research project?
+                * Subject to restrictions?
+                * Considered proprietry?
+                * Has access requirements?
+        }
+        {answers:
+            {yes:
+              [set: duaNeeded=Yes]
+            }
+            {No:
+              [set: duaNeeded=No]
+            }
+        }
+      ]
+    }
+  }
+]

@@ -19,14 +19,18 @@ class RequestedInterview @Inject() (cache:CacheApi, ws:WSClient, kits:Questionna
     cache.get[RequestedInterviewSession](uniqueLinkId) match {
 
    	  case Some (requestedInterview) => {
-        val userSession = UserSession.create(kits.kit)
-        val userSessionWithInterview = userSession.updatedWithRequestedInterview(requestedInterview)
-
-        cache.set(userSessionWithInterview.key, userSessionWithInterview)
-        val message = Option("Welcome, Dataverse user! Please follow the directions below to begin tagging your data.")
-
-        Ok( views.html.interview.intro(kits.kit, message) )
-          .withSession( request2session + ("uuid" -> userSessionWithInterview.key) )
+        kits.get(requestedInterview.kitId) match {
+          case None => InternalServerError("Interview not found.")
+          case Some(kit) => {
+            val userSession = UserSession.create(kit)
+            val userSessionWithInterview = userSession.updatedWithRequestedInterview(requestedInterview)
+  
+            cache.set(userSessionWithInterview.key, userSessionWithInterview)
+  
+            Ok( views.html.interview.intro(kit, Some(requestedInterview.title), requestedInterview.message) )
+              .withSession( request2session + ("uuid" -> userSessionWithInterview.key) )
+          }
+        }
       }
 
    	  case None => BadRequest

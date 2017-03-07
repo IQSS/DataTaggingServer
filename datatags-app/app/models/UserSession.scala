@@ -13,17 +13,17 @@ case class AnswerRecord( question: AskNode, answer: Answer)
  * All the data needed to maintain continuous user experience.
  */
 case class UserSession(
-  key:String,
-  engineState: RuntimeEngineState,
-  traversed: Seq[Node],
-  questionnaire: QuestionnaireKit,
-  answerHistory: Seq[AnswerRecord],
-  sessionStart: Date,
-  requestedInterview: Option[RequestedInterviewSession] ) {
+                        key:String,
+                        engineState: RuntimeEngineState,
+                        traversed: Seq[Node],
+                        kit: QuestionnaireKit,
+                        answerHistory: Seq[AnswerRecord],
+                        sessionStart: Date,
+                        requestedInterview: Option[RequestedInterviewSession] ) {
 
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat
-    val tagType = questionnaire.tags
+    val tagType = kit.tags
     Option(parser.parseCompoundValue( tagType, engineState.getSerializedTagValue )).getOrElse(tagType.createInstance())
   }
 

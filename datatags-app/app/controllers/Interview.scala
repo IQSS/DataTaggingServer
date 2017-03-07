@@ -20,52 +20,68 @@ import edu.harvard.iq.datatags.model.graphs.Answer
 class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Controller {
 
   def interviewIntro(questionnaireId: String) = Action { implicit request =>
-    val userSession = UserSession.create( kits.kit )
-
-    cache.set(userSession.key, userSession)
-    Ok( views.html.interview.intro(kits.kit, Option(null) )).
-      withSession( request2session + ("uuid" -> userSession.key) )
+    kits.get(questionnaireId) match {
+      case Some(kit) => {
+        val userSession = UserSession.create( kit )
+  
+        cache.set(userSession.key, userSession)
+        Ok( views.html.interview.intro(kit, None, None )).
+          withSession( request2session + ("uuid" -> userSession.key) )
+      }
+      case None => NotFound("Questionnaire with id %s not found.".format(questionnaireId))
+    }
+    
   }
 
   def startInterview( questionnaireId:String ) = UserSessionAction(cache) { implicit req =>
-      val rte = new RuntimeEngine
-      rte.setDecisionGraph( kits.kit.questionnaire )
-      val l = rte.setListener( new TaggingEngineListener )
-      rte.start()
-      val updated = req.userSession.copy(engineState=rte.createSnapshot).setHistory( l.traversedNodes, Seq[AnswerRecord]() )
-      cache.set(req.userSession.key, updated)
-      Ok( views.html.interview.question(questionnaireId,
-                                         rte.getCurrentNode.asInstanceOf[AskNode],
-                                         updated.tags,
-                                         l.traversedNodes,
-                                         kits.kit.serializer,
-                                         Seq()) )
+    kits.get(questionnaireId) match {
+      case Some(kit) => {
+        val rte = new RuntimeEngine
+        rte.setDecisionGraph( kit.graph )
+        val l = rte.setListener( new TaggingEngineListener )
+        rte.start()
+        val updated = req.userSession.copy(engineState=rte.createSnapshot).setHistory( l.traversedNodes, Seq[AnswerRecord]() )
+        cache.set(req.userSession.key, updated)
+        Ok( views.html.interview.question(questionnaireId,
+          rte.getCurrentNode.asInstanceOf[AskNode],
+          updated.tags,
+          l.traversedNodes,
+          kit.serializer,
+          Seq()) )
+      }
+      case None => NotFound("Questionnaire with id %s not found.".format(questionnaireId))
+    }
   }
 
   def askNode( questionnaireId:String, reqNodeId: String) = UserSessionAction(cache) { req =>
-    // TODO validate questionnaireId fits the one in the engine state
-    val stateNodeId = req.userSession.engineState.getCurrentNodeId
+    kits.get(questionnaireId) match {
+      case Some(kit) => {
+        // TODO validate questionnaireId fits the one in the engine state
+        val stateNodeId = req.userSession.engineState.getCurrentNodeId
+  
+        val session = if ( stateNodeId != reqNodeId ) {
+          // re-run to reqNodeId
+          val answers = req.userSession.answerHistory.slice(0, req.userSession.answerHistory.indexWhere( _.question.getId == reqNodeId) )
+          val rerunResult = runUpToNode( kit, reqNodeId, answers )
+          val updatedSession = req.userSession.setHistory(rerunResult.traversed, answers).copy(engineState=rerunResult.state )
+          cache.set( req.userSession.key, updatedSession )
+          updatedSession
     
-    val session = if ( stateNodeId != reqNodeId ) {
-      // re-run to reqNodeId
-      val answers = req.userSession.answerHistory.slice(0, req.userSession.answerHistory.indexWhere( _.question.getId == reqNodeId) )
-      val rerunResult = runUpToNode( reqNodeId, answers )
-      val updatedSession = req.userSession.setHistory(rerunResult.traversed, answers).copy(engineState=rerunResult.state )
-      cache.set( req.userSession.key, updatedSession )
-      updatedSession
-    
-    } else {
-      req.userSession
+        } else {
+          req.userSession
+        }
+  
+        val askNode = kit.graph.getNode(reqNodeId).asInstanceOf[AskNode]
+  
+        Ok( views.html.interview.question( kit.id,
+          askNode,
+          session.tags,
+          session.traversed,
+          kit.serializer,
+          session.answerHistory) )
+      }
+      case None => NotFound("Questionnaire with id %s not found.".format(questionnaireId))
     }
-
-    val askNode = kits.kit.questionnaire.getNode(reqNodeId).asInstanceOf[AskNode]
-
-    Ok( views.html.interview.question( "questionnaireId",
-                                       askNode,
-                                       session.tags,
-                                       session.traversed,
-                                       kits.kit.serializer,
-                                       session.answerHistory) )
   }
 
   case class AnswerRequest( text:String, history:String )
@@ -86,13 +102,13 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
           request.userSession
         } else {
           // no, rebuild from serialized history
-          kits.kit.serializer.decode(answerReq.history, request.userSession)
+          request.userSession.kit.serializer.decode(answerReq.history, request.userSession)
         }
 
         // now, submit the new answer and feed it to the engine.
         val answer = Answer.Answer( answerReq.text )
-        val ansRec = AnswerRecord( currentAskNode(session.engineState), answer )
-        val runRes = advanceEngine( session.engineState, answer )
+        val ansRec = AnswerRecord( currentAskNode(session.kit, session.engineState), answer )
+        val runRes = advanceEngine( session.kit, session.engineState, answer )
 
         // save state and decide where to go from here
         cache.set( session.key, session.updatedWith( ansRec, runRes.traversed, runRes.state))
@@ -121,8 +137,8 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
     revReqForm.bindFromRequest.fold(
       failure => BadRequest("Form submission error: %s\n data:%s".format(failure.errors, failure.data)),
       revisitRequest => {
-        val updatedSession = kits.kit.serializer.decode(revisitRequest.history.take(revisitRequest.idx),
-                                                                     request.userSession)
+        val updatedSession = request.userSession.kit
+                                .serializer.decode(revisitRequest.history.take(revisitRequest.idx), request.userSession)
 
         cache.set( updatedSession.key, updatedSession )
         Redirect( routes.Interview.askNode( questionnaireId, updatedSession.engineState.getCurrentNodeId ) ) 
@@ -134,22 +150,29 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
     val session = request.userSession
     val tags = session.tags
     val codeOpt = Option(tags.getType.getTypeNamed("Code")).map(tags.get)
-    Ok( views.html.interview.accepted(kits.kit, tags, codeOpt, session.requestedInterview, session.answerHistory )  )
+    Ok( views.html.interview.accepted(session.kit, tags, codeOpt,
+                                        session.requestedInterview, session.answerHistory) )
   }
 
   def reject( questionnaireId:String ) = UserSessionAction(cache) { request =>
     val session = request.userSession
     val state = request.userSession.engineState
-    val node = kits.kit.questionnaire.getNode( state.getCurrentNodeId )
+    val node = session.kit.graph.getNode( state.getCurrentNodeId )
 
-    Ok( views.html.interview.rejected(kits.kit, node.asInstanceOf[RejectNode].getReason,
+    Ok( views.html.interview.rejected(session.kit, node.asInstanceOf[RejectNode].getReason,
       session.requestedInterview, session.answerHistory ) )
   }
+  
+  def downloadTags = UserSessionAction(cache) { request =>
+    val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
+    val filename =  request.userSession.kit.title + "-" + dateFormat.format(request.userSession.sessionStart)
+    Ok(request.userSession.tags.accept(Jsonizer))
+      .withHeaders( "Content-disposition" -> "attachment; filename=\"%s\"".format(filename) )
+  }
 
-  // TODO: move to some akka actor, s.t. the UI can be reactive
-  def advanceEngine( state: RuntimeEngineState, ans: Answer ) : EngineRunResult = {
+  def advanceEngine( kit:QuestionnaireKit, state: RuntimeEngineState, ans: Answer ) : EngineRunResult = {
     val rte = new RuntimeEngine
-    rte.setDecisionGraph( kits.kit.questionnaire )
+    rte.setDecisionGraph( kit.graph )
     val l = rte.setListener( new TaggingEngineListener )
 
     rte.applySnapshot( state )
@@ -160,8 +183,8 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
   }
 
   // TODO: move to some akka actor, s.t. the UI can be reactive
-  def runUpToNode( nodeId: String, answers:Seq[AnswerRecord] ) : EngineRunResult = {
-    val interview = kits.kit.questionnaire
+  def runUpToNode( kit:QuestionnaireKit, nodeId: String, answers:Seq[AnswerRecord] ) : EngineRunResult = {
+    val interview = kit.graph
     val rte = new RuntimeEngine
     rte.setDecisionGraph( interview )
     val l = rte.setListener( new TaggingEngineListener )
@@ -182,8 +205,8 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
    * Run the engine, from the start, through all the answer sequence passed.
    */
   // TODO: move to some akka actor, s.t. the UI can be reactive
-  def replayAnswers( answers:Seq[AnswerRecord] ) : EngineRunResult = {
-    val interview = kits.kit.questionnaire
+  def replayAnswers( kit:QuestionnaireKit, answers:Seq[AnswerRecord] ) : EngineRunResult = {
+    val interview = kit.graph
     val rte = new RuntimeEngine
     rte.setDecisionGraph( interview )
     val l = rte.setListener( new TaggingEngineListener )
@@ -196,15 +219,8 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
 
   }
 
-  def currentAskNode( engineState: RuntimeEngineState ) = {
-    kits.kit.questionnaire.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
-  }
-
-  def downloadTags = UserSessionAction(cache) { request =>
-    val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
-    val filename =  kits.kit.title + "-" + dateFormat.format(request.userSession.sessionStart)
-    Ok(request.userSession.tags.accept(Jsonizer))
-      .withHeaders( "Content-disposition" -> "attachment; filename=\"%s\"".format(filename) )
+  def currentAskNode( kit:QuestionnaireKit, engineState: RuntimeEngineState ) = {
+    kit.graph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
   }
 
 }

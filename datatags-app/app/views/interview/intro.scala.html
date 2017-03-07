@@ -1,12 +1,16 @@
 @(qkit: QuestionnaireKit,
-        greeting: Option[String])
+        title: Option[String],
+        message: Option[String])
 @scripts = {
   <script type="text/javascript" src="@routes.Assets.at("js/InterviewIntro.js")"></script>
 }
 @templates.bsNavBar("Interview Start Page", 'tag, scripts) {
   <div class="row">
     <div class="md-col-12">
-    @for( welcome <- greeting ){
+    @for( welcome <- title ){
+      <h3>@welcome</h3>
+    }
+    @for( welcome <- message ){
         <p>@welcome</p>
     }
     </div>
@@ -26,7 +30,7 @@
             </div>
             <div class="col-md-3">
               <a id="startTaggingButton"
-              href="@routes.Interview.startInterview(qkit.questionnaire.getId)"
+              href="@routes.Interview.startInterview(qkit.id)"
               class="btn btn-primary btn-lg">@comps.msg(qkit, "interview.startButtonTitle")</a>
             </div>
           </div>
@@ -51,7 +55,7 @@
           @comps.msg(qkit, "interview.startButtonReferral")
           </p>
           <a id="startTaggingButton"
-          href="@routes.Interview.startInterview(qkit.questionnaire.getId)"
+          href="@routes.Interview.startInterview(qkit.graph.getId)"
           class="btn btn-primary btn-lg">@comps.msg(qkit, "interview.startButtonTitle")</a>
         </div>
       </div>

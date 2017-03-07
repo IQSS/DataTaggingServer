@@ -1,0 +1,6 @@
+{
+"title":"Interview Title",
+"message":"Interview message, can be much longer",
+"callback":"http://localhost:9000/testPostback"
+}
+

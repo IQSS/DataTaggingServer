@@ -3,60 +3,38 @@ package models
 import play.api._
 import java.nio.file._
 import javax.inject.{Inject, Singleton}
+import scala.collection.JavaConverters._
 
 import edu.harvard.iq.datatags.model.graphs._
 import edu.harvard.iq.datatags.model.types.CompoundSlot
 import edu.harvard.iq.datatags.parser.decisiongraph.DecisionGraphParser
 import edu.harvard.iq.datatags.parser.tagspace.TagSpaceParser
 
-case class QuestionnaireKit( id:String,
-                             title: String,
-                             tags: CompoundSlot,
-                             questionnaire: DecisionGraph,
-                             messages:Map[String, String],
-                             readme:Option[String]) {
-  val serializer = Serialization( questionnaire, tags )
+case class QuestionnaireKit(id:String,
+                            title: String,
+                            tags: CompoundSlot,
+                            graph: DecisionGraph,
+                            messages:Map[String, String],
+                            readme:Option[String]) {
+  val serializer = Serialization( graph, tags )
 }
 
 @Singleton
 class QuestionnaireKits @Inject() (config:Configuration){
-  val allKits = loadQuestionnaires()
+  val allKits: Map[String,QuestionnaireKit] = loadModels()
   
-  /** This will go away once we have multi questionnaire support */
-  val kit = allKits.toSeq.head._2
-
-  private def loadQuestionnaires() = {
-    Logger.info("Loading questionnaires")
-    config.getString("datatags.folder") match {
+  def get(id:String):Option[QuestionnaireKit] = allKits.get(id)
+  
+  private def loadModels() = {
+    Logger.info("Loading models")
+    config.getString("taggingServer.models.folder") match {
     case Some(str) => {
           val p = Paths.get(str)
           Logger.info( "Loading questionnaire data from " + p.toAbsolutePath.toString )
-          
-          val definitions = p.resolve("definitions.ts")
-          Logger.info( "Reading definitions from %s".format(definitions.toAbsolutePath.toString))
-          val dp = new TagSpaceParser()
-          val dataTags = dp.parse( readAll(definitions) ).buildType("DataTags").get
-          Logger.info(" DataTags type: " + dataTags.toString )
-          Logger.info( " - DONE")
-
-          val fcsParser = new DecisionGraphParser()
-
-          val questionnaire = p.resolve("questionnaire.dg")
-          Logger.info( "Reading questionnaire from %s".format(questionnaire.toAbsolutePath.toString))
-          val source = readAll( questionnaire )
-          Logger.info( " - READ DONE")
-          val interview = fcsParser.parse(source).compile(dataTags)
-          Logger.info( " - PARSING DONE")
-
-          Logger.info("Loading messages")
-          val messagesFile = p.resolve("messages.properties")
-          val messages = readAllToSeq( messagesFile ).filter(_.nonEmpty).map(_.split("=",2)).map(arr=>(arr(0),arr(1))).toMap
-  
-          Logger.info("Loading readme")
-          val readmeRaw = readAll(p.resolve("README.html"))
-          val readMe = "(?s)<body>.*</body>".r.findFirstIn(readmeRaw).map( s=>s.substring("<body>".length, s.length-"</body>".length).trim )
-          Logger.info("Loading done")
-          Map( "dds-c1" -> QuestionnaireKit("dds-c1", "Data Deposit Screening", dataTags, interview, messages, readMe) )
+          Files.list(p).iterator().asScala
+            .filter( Files.isDirectory(_) )
+            .map( f => (f.getFileName.toString, loadSingleKit(f)) )
+            .toMap
         }
 
         case None => {
@@ -65,7 +43,35 @@ class QuestionnaireKits @Inject() (config:Configuration){
         }
     }
   }
-
+  
+  private def loadSingleKit( p:Path ):QuestionnaireKit = {
+    val definitions = p.resolve("definitions.ts")
+    Logger.info( "Reading definitions from %s".format(definitions.toAbsolutePath.toString))
+    val dp = new TagSpaceParser()
+    val dataTags = dp.parse( readAll(definitions) ).buildType("DataTags").get
+    Logger.info(" DataTags type: " + dataTags.toString )
+    Logger.info( " - DONE")
+  
+    val fcsParser = new DecisionGraphParser()
+  
+    val questionnaire = p.resolve("questionnaire.dg")
+    Logger.info( "Reading questionnaire from %s".format(questionnaire.toAbsolutePath.toString))
+    val source = readAll( questionnaire )
+    Logger.info( " - READ DONE")
+    val interview = fcsParser.parse(source).compile(dataTags)
+    Logger.info( " - PARSING DONE")
+  
+    Logger.info("Loading messages")
+    val messagesFile = p.resolve("messages.properties")
+    val messages = readAllToSeq( messagesFile ).filter(_.nonEmpty).map(_.split("=",2)).map(arr=>(arr(0),arr(1))).toMap
+  
+    Logger.info("Loading readme")
+    val readmeRaw = readAll(p.resolve("README.html"))
+    val readMe = "(?s)<body>.*</body>".r.findFirstIn(readmeRaw).map( s=>s.substring("<body>".length, s.length-"</body>".length).trim )
+    
+    QuestionnaireKit(p.getFileName.toString, messages.getOrElse("title", p.getFileName.toString), dataTags, interview, messages, readMe)
+  }
+  
   private def readAllToItr( p:Path ) : Iterator[String] = scala.io.Source.fromFile( p.toFile, "utf-8" ).getLines()
   private def readAll( p:Path ) : String = readAllToItr(p).mkString("\n")
   private def readAllToSeq( p:Path ) : Seq[String] = readAllToItr(p).toSeq

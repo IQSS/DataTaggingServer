@@ -13,12 +13,12 @@ class Application @Inject()(cached: Cached, kits:QuestionnaireKits) extends Cont
     Action { implicit req =>
     Ok(
       views.html.index(TagsTable.rows,
-                        routes.Interview.interviewIntro(kits.kit.id) ))
+        routes.Application.questionnaireCatalog() ))
     }
   }
 
   def questionnaireCatalog = Action {
-    Ok( views.html.questionnaireCatalog(kits.allKits.toSeq.map( p=>(p._2.title, p._1))) )
+    Ok( views.html.questionnaireCatalog(kits.allKits) )
   }
 
   def changeLog = Action {

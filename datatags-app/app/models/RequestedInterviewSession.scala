@@ -7,9 +7,15 @@ import java.util.Date
  */
 case class RequestedInterviewSession(
   callbackURL: String,
-  repositoryName: String ) {
+  title: String,
+  message: Option[String],
+  kitId: String) {
 
   val key:String = java.util.UUID.randomUUID().toString
   val sessionStart:Date = new Date
 
 }
+
+case class RequestedInterviewData(callbackURL: String,
+                                  title: String,
+                                  message: Option[String])
