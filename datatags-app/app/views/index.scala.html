@@ -14,33 +14,26 @@
           });
   </script>
 }
-@templates.bsBase("DataTags - Sharing data with confidence", scripts = scripts, extraHead = extraHead)(Html("")) {
-  <div class="row">
-    <div class="col-md-8 col-md-offset-2">
-      <div class="page-header">
-        <img src="/assets/images/DataTags-Logo-large.png" alt="DataTags logo" />
-        <p>
-          <strong>Policy Models</strong><sup>working title</sup>
-          is a prototype tool that helps researchers understand the laws and contractual agreements that govern how they can share sensitive data.
-          <br/>
-          It may also be used to model certain types of public policies.
-        </p>
-      </div>
-    </div>
-  </div>
+@templates.bsBase("PolicyModel Server", scripts = scripts, extraHead = extraHead)(Html("")) {
   <div class="row">
     <div class="col-md-12">
-      <div class="text-center">
-        <a href="@startTaggingUrl" class="btn btn-primary btn-lg">
-          Try an Interview
-        </a>
+      <div class="jumbotron">
+        <h1>PolicyModels<sup><small>working title</small></sup></h1>
+        <p>Policy Models (formerly: DataTags)
+          is a prototype tool for creating formal models of policies, such as proper handling for a given dataset or benefit entitlements for unemployed people. Originally intended as a way of helping researchers understand the laws and contractual agreements that govern how they can share sensitive data,
+          it may also be used to model certain types of public policies.</p>
+        <p class="text-right">
+          <a href="@startTaggingUrl" class="btn btn-primary btn-lg">
+            Try an Interview
+          </a>
+        </p>
       </div>
     </div>
   </div>
 
   <div class="row">
-    <div class="col-md-8 col-md-offset-2">
-      <h3>The Problem</h3>
+    <div class="col-md-12">
+      <h3>Sample Problem - Sharing Sensitive Research Data</h3>
       <p>
         Making data widely available to researchers is good policy. It enables replication and validation of scientific findings and maximizes return on research investment. For these reasons, sponsors and publishers expect or mandate the sharing of data where possible.
       </p><p>
@@ -49,9 +42,9 @@
       Researchers and institutions that manage and share data must interpret how the various legal requirements and other data privacy and security standards constrain their handling of a given dataset. <strong>
       DataTags helps researchers navigate these complex issues</strong>.
     </p>
-      <h3>How DataTags Works</h3>
+      <h3>How PolicyModels Works - Find the Proper DataTag for a Dataset</h3>
       <p>
-        Using the following three-step process, DataTags automates the assessment of the data handling rules that apply to an individual dataset. The output is a set of tags that describe how the dataset can be stored, transmitted, or used over time. <a id="toggleTagLevels">
+        Using the following three-step process, PolicyModels automates the assessment of the data handling rules that apply to an individual dataset. The output is a set of tags that describe how the dataset can be stored, transmitted, or used over time. <a id="toggleTagLevels">
         learn more</a>
       </p>
       <div id="tagLevels" class="initiallyHidden">
@@ -146,7 +139,7 @@
         </div>
       </div>
       <p>
-        DataTags is being designed to integrate with the open source data repository software <a href="http://thedata.org" target="_blank">
+        PolicyModels is being designed to integrate with the open source data repository software <a href="http://thedata.org" target="_blank">
         Dataverse</a>
         and its suite of access controls and statistical analysis tools. It will also operate as a standalone tool and as an application that can be integrated with other platforms.
       </p>
@@ -157,7 +150,7 @@
       </div>
       <h3>Research</h3>
       <p>
-        DataTags is an open source tool being developed by the <a href="http://privacytools.seas.harvard.edu">
+        PolicyModels is an open source tool being developed by the <a href="http://privacytools.seas.harvard.edu">
         Privacy Tools for Sharing Research Data project</a> at Harvard University.
       </p><p>
       The goal of this broad, multidisciplinary collaboration between the <a href="http://crcs.seas.harvard.edu ">

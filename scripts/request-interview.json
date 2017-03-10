@@ -1,6 +1,6 @@
 {
 "title":"Interview Title",
 "message":"Interview message, can be much longer",
-"callback":"http://localhost:9000/testPostback"
+"returnButtonTitle": "Continue deposit process",
+"callbackURL":"http://localhost:9000/testPostback"
 }
-

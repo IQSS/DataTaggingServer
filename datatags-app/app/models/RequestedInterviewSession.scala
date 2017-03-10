@@ -9,6 +9,7 @@ case class RequestedInterviewSession(
   callbackURL: String,
   title: String,
   message: Option[String],
+  returnButtonTitle:String,
   kitId: String) {
 
   val key:String = java.util.UUID.randomUUID().toString
@@ -18,4 +19,5 @@ case class RequestedInterviewSession(
 
 case class RequestedInterviewData(callbackURL: String,
                                   title: String,
-                                  message: Option[String])
+                                  message: Option[String],
+                                  returnButtonTitle:String)

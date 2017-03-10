@@ -27,7 +27,8 @@ class API @Inject()(cache:CacheApi, kits:QuestionnaireKits) extends Controller {
         request.body.validate[RequestedInterviewData](JSONFormats.requestedInterviewDataReader).fold(
           errors => {BadRequest(Json.obj("status" -> "error", "message" -> JsError.toJson(errors)))},
           interviewData => {
-            val requestedInterviewSession = RequestedInterviewSession(interviewData.callbackURL, interviewData.title, interviewData.message, interviewId)
+            val requestedInterviewSession = RequestedInterviewSession(interviewData.callbackURL, interviewData.title,
+              interviewData.message, interviewData.returnButtonTitle, interviewId)
             cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
   
             // send json response with interview link
