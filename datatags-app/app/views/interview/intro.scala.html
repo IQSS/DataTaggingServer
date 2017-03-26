@@ -29,8 +29,7 @@
               </p>
             </div>
             <div class="col-md-3">
-              <a id="startTaggingButton"
-              href="@routes.Interview.startInterview(qkit.id)"
+              <a href="@routes.Interview.startInterview(qkit.id)"
               class="btn btn-primary btn-lg">@comps.msg(qkit, "interview.startButtonTitle")</a>
             </div>
           </div>
@@ -54,8 +53,7 @@
           <p>
           @comps.msg(qkit, "interview.startButtonReferral")
           </p>
-          <a id="startTaggingButton"
-          href="@routes.Interview.startInterview(qkit.graph.getId)"
+          <a href="@routes.Interview.startInterview(qkit.id)"
           class="btn btn-primary btn-lg">@comps.msg(qkit, "interview.startButtonTitle")</a>
         </div>
       </div>

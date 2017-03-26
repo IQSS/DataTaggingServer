@@ -1,24 +1,24 @@
-@( kits:Map[String,QuestionnaireKit] )
+@(kits: Map[String, QuestionnaireKit])
 
-@templates.bsNavBar("DataTags Questionnaire Catalog", 'tag){
-    <div class="container" id="content">
-        <div class="row">
-            <div class="col-md-12">
-                <h1>Available Questionnaires</h1>
-                <p>
-                  Click a policy model from the list to start its interview.
-                </p>
-                <table class="table table-striped">
-                    @for( k <- kits.values.toSeq.sortBy(_.title) ) {
-                        <ul class="list-unstyled"><li>
-                          <h4><a href="@routes.Interview.interviewIntro(k.id)">@k.title</a></h4>
-                          @for( m <- k.messages.get("subtitle")){
-                            <p>@m</p>
-                          }
-                        </li></ul>
-                    }
-                </table>
-            </div>
-        </div>
+@templates.bsNavBar("DataTags Questionnaire Catalog", 'tag) {
+  <div class="container" id="content">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Available Questionnaires</h1>
+        <p>
+          Click a policy model from the list to start its interview.
+        </p>
+        <ul class="list-unstyled">
+        @for(k <- kits.values.toSeq.sortBy(_.title)) {
+          <li>
+            <h4><a href="@routes.Interview.interviewIntro(k.id)">@k.title</a></h4>
+            @for(m <- k.messages.get("subtitle")) {
+              <p>@m</p>
+            }
+          </li>
+        }
+        </ul>
+      </div>
     </div>
+  </div>
 }

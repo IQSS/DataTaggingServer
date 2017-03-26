@@ -6,6 +6,8 @@ DataLevel: one of L1[Not principles compliant:  No digital footprint;  e.g., dar
                   L4[Fully principles compliant:  Open in the sense of the Open definition:  Free to use and reuse.].
 Assertions: consists of HasHumanData, Media, IsSensitive.
 
-HasHumanData: one of no, yes[Dataset contains data about human subjects].
+HasHumanData: one of no[Dataset does not contain data about human subjects.],
+                     yes[Dataset contains data about human subjects.].
 Media: one of analog, digital.
-IsSensitive: one of yes, no.
+IsSensitive: one of yes [Dataset contains data that can cause harm to the data subjects if distributed freely.],
+                    no.
