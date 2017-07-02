@@ -1,4 +1,4 @@
-name := """DataTaggingServer"""
+name := """PolicyModelsWebApp"""
 
 version := "1.0-SNAPSHOT"
 
@@ -13,9 +13,11 @@ routesGenerator := InjectedRoutesGenerator
 resolvers += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  cache,
+  cacheApi,
   ws,
-  "org.scalatestplus" % "play_2.11" % "1.2.0" % "test"
+  guice,
+  "org.scalatestplus" % "play_2.11" % "1.2.0" % "test",
+  "com.typesafe.play" %% "play-json" % "2.6.0"
 )
 
 LessKeys.compress in Assets := true

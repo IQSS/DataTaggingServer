@@ -6,7 +6,7 @@ import javax.inject.Inject
 import play.api.mvc._
 import play.api.libs.json.{JsError, Json}
 import models._
-import play.api.cache.CacheApi
+import play.api.cache.{CacheApi, SyncCacheApi}
 import play.api.mvc.BodyParsers.parse.tolerantJson
 
 import scala.concurrent.duration.Duration
@@ -17,10 +17,10 @@ import scala.concurrent.duration.Duration
  * Controller for API.
  */
 
-class API @Inject()(cache:CacheApi, kits:QuestionnaireKits) extends Controller {
+class API @Inject()(cache:SyncCacheApi, kits:QuestionnaireKits, pbp:PlayBodyParsers) extends InjectedController {
 
 	
-	def requestInterview(interviewId:String) = Action(tolerantJson(maxLength = 1024*1024*10)) { implicit request =>
+	def requestInterview(interviewId:String) = Action(pbp.tolerantJson(maxLength = 1024*1024*10)) { implicit request =>
     
     kits.get(interviewId) match {
       case Some(_) => {

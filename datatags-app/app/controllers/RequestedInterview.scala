@@ -4,21 +4,22 @@ import javax.inject.Inject
 
 import play.api._
 import play.api.mvc._
-import play.api.cache.CacheApi
+import play.api.cache.{AsyncCacheApi, CacheApi}
 import play.api.libs.ws._
-
 import play.api.libs.json.Json
 import models._
 import _root_.util.Jsonizer
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 
-class RequestedInterview @Inject() (cache:CacheApi, ws:WSClient, kits:QuestionnaireKits) extends Controller {
+import scala.concurrent.ExecutionContext
+import scala.concurrent.ExecutionContext.Implicits.global
 
-  def start(uniqueLinkId: String) = Action { implicit request =>
 
-    cache.get[RequestedInterviewSession](uniqueLinkId) match {
+class RequestedInterview @Inject() (cache:AsyncCacheApi, ws:WSClient,
+                                    kits:QuestionnaireKits, ec:ExecutionContext, cc:ControllerComponents) extends InjectedController {
 
-   	  case Some (requestedInterview) => {
+  def start(uniqueLinkId: String) = Action.async { implicit request =>
+    cache.get[RequestedInterviewSession](uniqueLinkId).map( {
+   	  case Some(requestedInterview) => {
         kits.get(requestedInterview.kitId) match {
           case None => InternalServerError("Interview not found.")
           case Some(kit) => {
@@ -32,12 +33,11 @@ class RequestedInterview @Inject() (cache:CacheApi, ws:WSClient, kits:Questionna
           }
         }
       }
-
    	  case None => BadRequest
-   }
+   })
   }
 
-  def postBackTo(uniqueLinkId: String) = UserSessionAction(cache).async { implicit request =>
+  def postBackTo(uniqueLinkId: String) = UserSessionAction(cache, cc).async { implicit request =>
       val json = request.userSession.tags.accept(Jsonizer)
       val callbackURL = request.userSession.requestedInterview.get.callbackURL
       Logger.info(callbackURL)
@@ -46,7 +46,7 @@ class RequestedInterview @Inject() (cache:CacheApi, ws:WSClient, kits:Questionna
       }
   }
 
-  def unacceptableDataset(uniqueLinkId: String, reason: String) = UserSessionAction(cache).async { implicit request =>
+  def unacceptableDataset(uniqueLinkId: String, reason: String) = UserSessionAction(cache, cc).async { implicit request =>
       val callbackURL = request.userSession.requestedInterview.get.callbackURL
 
       ws.url(callbackURL).post(Json.toJson(reason)).map { response =>

@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc._
-import play.api.cache.CacheApi
+import play.api.cache.AsyncCacheApi
 import play.api.data._
 import play.api.data.Forms._
 import edu.harvard.iq.datatags.runtime._
@@ -10,6 +10,7 @@ import models._
 import _root_.util.Jsonizer
 import java.text.SimpleDateFormat
 import javax.inject.Inject
+import scala.concurrent.ExecutionContext.Implicits.global
 
 import edu.harvard.iq.datatags.model.graphs.Answer
 
@@ -17,7 +18,7 @@ import edu.harvard.iq.datatags.model.graphs.Answer
 /**
  * Controller for the interview part of the application.
  */
-class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Controller {
+class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:ControllerComponents) extends InjectedController {
 
   def interviewIntro(questionnaireId: String) = Action { implicit request =>
     kits.get(questionnaireId) match {
@@ -33,7 +34,7 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
     
   }
 
-  def startInterview( questionnaireId:String ) = UserSessionAction(cache) { implicit req =>
+  def startInterview( questionnaireId:String ) = UserSessionAction(cache, cc) { implicit req =>
     kits.get(questionnaireId) match {
       case Some(kit) => {
         val rte = new RuntimeEngine
@@ -53,7 +54,7 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
     }
   }
 
-  def askNode( questionnaireId:String, reqNodeId: String) = UserSessionAction(cache) { req =>
+  def askNode( questionnaireId:String, reqNodeId: String) = UserSessionAction(cache, cc) { req =>
     kits.get(questionnaireId) match {
       case Some(kit) => {
         // TODO validate questionnaireId fits the one in the engine state
@@ -91,7 +92,7 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
       "serializedHistory"->text
       )(AnswerRequest.apply)(AnswerRequest.unapply) )
 
-  def answer(questionnaireId: String, reqNodeId: String) = UserSessionAction(cache) { implicit request =>
+  def answer(questionnaireId: String, reqNodeId: String) = UserSessionAction(cache, cc) { implicit request =>
     arForm.bindFromRequest.fold(
       { failed => BadRequest("Form submission error: %s\n data:%s".format(failed.errors, failed.data)) },
       { answerReq => 
@@ -127,7 +128,7 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
    */
   case class RevisitRequest( history:String, idx:Int )
 
-  def revisit( questionnaireId: String ) = UserSessionAction(cache){ implicit request =>
+  def revisit( questionnaireId: String ) = UserSessionAction(cache, cc){ implicit request =>
 
     val revReqForm = Form( mapping(
                               "serializedHistory"->text, 
@@ -146,7 +147,7 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
     )
   }
 
-  def accept( questionnaireId:String ) = UserSessionAction(cache) { request =>
+  def accept( questionnaireId:String ) = UserSessionAction(cache, cc) { request =>
     val session = request.userSession
     val tags = session.tags
     val codeOpt = Option(tags.getType.getTypeNamed("Code")).map(tags.get)
@@ -154,7 +155,7 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
                                         session.requestedInterview, session.answerHistory) )
   }
 
-  def reject( questionnaireId:String ) = UserSessionAction(cache) { request =>
+  def reject( questionnaireId:String ) = UserSessionAction(cache, cc) { request =>
     val session = request.userSession
     val state = request.userSession.engineState
     val node = session.kit.graph.getNode( state.getCurrentNodeId )
@@ -163,7 +164,7 @@ class Interview @Inject() (cache:CacheApi, kits:QuestionnaireKits) extends Contr
       session.requestedInterview, session.answerHistory ) )
   }
   
-  def downloadTags = UserSessionAction(cache) { request =>
+  def downloadTags = UserSessionAction(cache, cc) { request =>
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
     val filename =  request.userSession.kit.title + "-" + dateFormat.format(request.userSession.sessionStart)
     Ok(request.userSession.tags.accept(Jsonizer))

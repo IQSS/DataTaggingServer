@@ -27,7 +27,7 @@ class QuestionnaireKits @Inject() (config:Configuration){
   
   private def loadModels() = {
     Logger.info("Loading models")
-    config.getString("taggingServer.models.folder") match {
+    config.get[Option[String]]("taggingServer.models.folder") match {
     case Some(str) => {
           val p = Paths.get(str)
           Logger.info( "Loading questionnaire data from " + p.toAbsolutePath.toString )
