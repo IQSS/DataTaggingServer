@@ -1,7 +1,7 @@
 package models
 
 import edu.harvard.iq.datatags.runtime.RuntimeEngine
-import edu.harvard.iq.datatags.model.graphs.nodes.Node
+import edu.harvard.iq.datatags.model.graphs.nodes.{Node, SectionNode}
 import edu.harvard.iq.datatags.runtime.exceptions.DataTagsRuntimeException
 import play.api.Logger
 
@@ -12,6 +12,7 @@ class TaggingEngineListener extends edu.harvard.iq.datatags.runtime.RuntimeEngin
 
   var exception:DataTagsRuntimeException = null
   private val _traversedNodes = collection.mutable.Buffer[Node]()
+  private val sections = collection.mutable.ArrayStack[SectionNode]()
 
   override def runStarted(p1: RuntimeEngine): Unit = {}
 
@@ -24,4 +25,10 @@ class TaggingEngineListener extends edu.harvard.iq.datatags.runtime.RuntimeEngin
   def traversedNodes:Seq[Node] = _traversedNodes
 
   override def statusChanged(runtimeEngine: RuntimeEngine): Unit = {}
+  
+  override def sectionStarted(runtimeEngine: RuntimeEngine, node: Node): Unit = sections.push( node.asInstanceOf[SectionNode] )
+  
+  override def sectionEnded(runtimeEngine: RuntimeEngine, node: Node): Unit = sections.pop()
+  
+  def sectionStack:Seq[SectionNode] = sections
 }

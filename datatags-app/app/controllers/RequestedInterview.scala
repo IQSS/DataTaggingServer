@@ -28,7 +28,7 @@ class RequestedInterview @Inject() (cache:AsyncCacheApi, ws:WSClient,
   
             cache.set(userSessionWithInterview.key, userSessionWithInterview)
   
-            Ok( views.html.interview.intro(kit, Some(requestedInterview.title), requestedInterview.message) )
+            Ok( views.html.interview.intro(kit, requestedInterview.message) )
               .withSession( request2session + ("uuid" -> userSessionWithInterview.key) )
           }
         }

@@ -1,5 +1,6 @@
 package models
 
+import edu.harvard.iq.datatags.model.PolicyModel
 import edu.harvard.iq.datatags.model.graphs.nodes._
 import edu.harvard.iq.datatags.model.types.CompoundSlot
 import edu.harvard.iq.datatags.runtime._
@@ -13,9 +14,7 @@ import scala.collection.JavaConversions._
  * Class to deal with de/serialization of UserSession answer history
  */
 class Serialization private( val answerMap: Map[Answer, String],
-                             val serializedMap: Map[String, Answer],
-                             val questionnaire: DecisionGraph,
-                             val tagsType: CompoundSlot ) {
+                             val serializedMap: Map[String, Answer]) {
 
   /**
    * Take the current AnswerRecords and return the serialized version
@@ -32,8 +31,8 @@ class Serialization private( val answerMap: Map[Answer, String],
     val rte = new RuntimeEngine
     val l = rte.setListener( new TaggingEngineListener )
     val buffer = collection.mutable.Buffer[AnswerRecord]()
-    rte.setDecisionGraph( questionnaire )
-    rte.setCurrentTags( tagsType.createInstance )
+    rte.setModel( userSession.kit.model   )
+    rte.setCurrentTags( userSession.kit.model.getSpaceRoot.createInstance )
 
     // Deserialize and feed the answers to rte
     rte.start()
@@ -58,7 +57,7 @@ object Serialization {
     // now make the map and create the serialization.
     val ans2char = answers.zipWithIndex.map( p=>(p._1, chars(p._2).toString) ).toMap
 
-    new Serialization( ans2char, ans2char.map( e => (e._2, e._1)), questionnaire, tagsType )
+    new Serialization( ans2char, ans2char.map( e => (e._2, e._1)) )
   }
 
   def getAnswersSortedByFrequencies( questionnaire: DecisionGraph ) : Seq[Answer] = {

@@ -1,0 +1,42 @@
+@startuml
+
+package policymodels.server {
+  class VersionedPolicyModel <DB> {
+    id:String
+    versions: Seq[PolicyModelVersion]
+  }
+
+  class PolicyModelVersion <DB> {
+    policyModel:PolicyModel
+    publishStatus: {None, ByLink, Public}
+    isOpenForComments: {None, LoggedIn, Public}
+  }
+
+  class VersionComment <DB> {
+    comment:String
+    commenter: String
+    targetType: {DecisionGraphMetadata, Question, TagSpace}
+    targetId: String
+  }
+
+  class PolicyModelVersionKit {
+    id:String
+    modelVersion
+    serializer
+    loadMessages: Seq[ValidationMessage]
+  }
+
+  VersionedPolicyModel "1" *--> "0..*" PolicyModelVersion
+  VersionComment "0..*" *--* "1" PolicyModelVersion
+  PolicyModelVersionKit *--> "1" PolicyModelVersion
+}
+
+package policymodels.datatags {
+  class PolicyModel
+  class ValidationMessage
+}
+
+PolicyModelVersion  *--> "1" PolicyModel
+PolicyModelVersionKit "1" *--> "0..*" ValidationMessage
+
+@enduml

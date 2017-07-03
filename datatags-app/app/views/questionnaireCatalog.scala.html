@@ -1,4 +1,4 @@
-@(kits: Map[String, QuestionnaireKit])
+@(kits: Map[String, PolicyModelVersionKit])
 
 @templates.bsNavBar("DataTags Questionnaire Catalog", 'tag) {
   <div class="container" id="content">
@@ -9,13 +9,15 @@
           Click a policy model from the list to start its interview.
         </p>
         <ul class="list-unstyled">
-        @for(k <- kits.values.toSeq.sortBy(_.title)) {
-          <li>
-            <h4><a href="@routes.Interview.interviewIntro(k.id)">@k.title</a></h4>
-            @for(m <- k.messages.get("subtitle")) {
-              <p>@m</p>
-            }
-          </li>
+        @for(k <- kits.values.toSeq.sortBy(_.model.getMetadata.getTitle)) {
+          @defining( k.model.getMetadata ){ md =>
+            <li>
+              <h4><a href="@routes.Interview.interviewIntro(k.id)">@md.getTitle</a></h4>
+              @if( md.getSubTitle!=null && md.getSubTitle.nonEmpty ) {
+                <p>@md.getSubTitle</p>
+              }
+            </li>
+          }
         }
         </ul>
       </div>

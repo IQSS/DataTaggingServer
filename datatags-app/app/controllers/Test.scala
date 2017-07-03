@@ -35,7 +35,7 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:QuestionnaireKits) exte
   def showTagTree(id:String) = Action{ req =>
     kits.get(id) match {
       case None => NotFound("Can't find interview with id " + id)
-      case Some(kit) => Ok(views.html.tagsTree(kit.tags, generateInstance(kit.tags)) )
+      case Some(kit) => Ok(views.html.tagsTree(kit.model.getSpaceRoot, generateInstance(kit.model.getSpaceRoot)) )
     }
   }
 

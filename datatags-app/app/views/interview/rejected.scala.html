@@ -1,49 +1,51 @@
-@( qKit: QuestionnaireKit,
-   reason: String,
-   requestedInterview: Option[RequestedInterviewSession],
-   answerHistory: Seq[AnswerRecord] )
+@(qKit: PolicyModelVersionKit,
+        reason: String,
+        requestedInterview: Option[RequestedInterviewSession],
+        answerHistory: Seq[AnswerRecord])
 
 @templates.bsNavBar("Dataset Rejected", 'tag) {
   <div class="row">
     <div class="col-md-12">
-        <div class="panel panel-danger">
-            <div class="panel-heading">
-                <h3 class="panel-title">@comps.msg(qKit, "rejection.title", reason)</h3>
-            </div>
-            <div class="panel-body">
-                @comps.msg(qKit, "rejection.reason", reason)
-            </div>
-          </div>
+      <div class="panel panel-danger">
+        <div class="panel-heading">
+          <h3 class="panel-title">Interview Terminated due to Rejection</h3>
+        </div>
+        <div class="panel-body">
+        @reason
         </div>
       </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="panel panel-default">
-                      <div class="panel-heading">
-                        <h3 class="panel-title">Answer History</h3>
-                      </div>
-                      <div class="panel-body">
-                        @comps.answerHistory(answerHistory, qKit.id, false, qKit.serializer)
-                      </div>
-              </div></div></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Answer History</h3>
+        </div>
+        <div class="panel-body">
+        @comps.answerHistory(answerHistory, qKit.id, false, qKit.serializer)
+        </div>
+      </div>
+    </div>
+  </div>
 
-              @requestedInterview match {
-                  case Some(interview) => {
-                      <div class="center-block" style="text-align: center">
-                        <p> Click the button below to return to your data repository with the reason your dataset can not be accepted. </p>
-                          <form action="@routes.RequestedInterview.unacceptableDataset(interview.key, reason)" method="POST">
-                            <button class="btn btn-primary" type="submit">Back to Data Repository</button>
-                          </form>
-                      </div>
-                  }
-                  case None => {
-                      <div class="note note-todo">
-                        Here endeth the demo. If the interview was requested by an external system (e.g. Dataverse or another data repository),
-                          that external system will receive the tags and you'll be redirected there.
-                      </div>
-                      <div class="col-md-2 col-md-offset-5">
-                        <a href="@routes.Application.index" class="btn btn-primary">Start again</a>    
-                      </div>
-                  }
-              }
+  @requestedInterview match {
+    case Some(interview) => {
+      <div class="center-block" style="text-align: center">
+        <p> Click the button below to return to your data repository with the reason your dataset can not be accepted. </p>
+        <form action="@routes.RequestedInterview.unacceptableDataset(interview.key, reason)" method="POST">
+          <button class="btn btn-primary" type="submit">Back to Data Repository</button>
+        </form>
+      </div>
+    }
+    case None => {
+      <div class="note note-todo">
+                  Here endeth the demo. If the interview was requested by an external system (e.g. Dataverse or another data repository),
+        that external system will receive the tags and you'll be redirected there.
+      </div>
+      <div class="col-md-2 col-md-offset-5">
+        <a href="@routes.Application.index" class="btn btn-primary">Start again</a>
+      </div>
+    }
+  }
 }

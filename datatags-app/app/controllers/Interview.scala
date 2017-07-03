@@ -26,7 +26,7 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:Contr
         val userSession = UserSession.create( kit )
   
         cache.set(userSession.key, userSession)
-        Ok( views.html.interview.intro(kit, None, None )).
+        Ok( views.html.interview.intro(kit, None) ).
           withSession( request2session + ("uuid" -> userSession.key) )
       }
       case None => NotFound("Questionnaire with id %s not found.".format(questionnaireId))
@@ -38,7 +38,7 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:Contr
     kits.get(questionnaireId) match {
       case Some(kit) => {
         val rte = new RuntimeEngine
-        rte.setDecisionGraph( kit.graph )
+        rte.setModel( kit.model )
         val l = rte.setListener( new TaggingEngineListener )
         rte.start()
         val updated = req.userSession.copy(engineState=rte.createSnapshot).setHistory( l.traversedNodes, Seq[AnswerRecord]() )
@@ -72,7 +72,7 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:Contr
           req.userSession
         }
   
-        val askNode = kit.graph.getNode(reqNodeId).asInstanceOf[AskNode]
+        val askNode = kit.model.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
   
         Ok( views.html.interview.question( kit.id,
           askNode,
@@ -107,7 +107,7 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:Contr
         }
 
         // now, submit the new answer and feed it to the engine.
-        val answer = Answer.Answer( answerReq.text )
+        val answer = Answer.get( answerReq.text )
         val ansRec = AnswerRecord( currentAskNode(session.kit, session.engineState), answer )
         val runRes = advanceEngine( session.kit, session.engineState, answer )
 
@@ -158,7 +158,7 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:Contr
   def reject( questionnaireId:String ) = UserSessionAction(cache, cc) { request =>
     val session = request.userSession
     val state = request.userSession.engineState
-    val node = session.kit.graph.getNode( state.getCurrentNodeId )
+    val node = session.kit.model.getDecisionGraph.getNode( state.getCurrentNodeId )
 
     Ok( views.html.interview.rejected(session.kit, node.asInstanceOf[RejectNode].getReason,
       session.requestedInterview, session.answerHistory ) )
@@ -166,14 +166,14 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:Contr
   
   def downloadTags = UserSessionAction(cache, cc) { request =>
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
-    val filename =  request.userSession.kit.title + "-" + dateFormat.format(request.userSession.sessionStart)
+    val filename =  request.userSession.kit.model.getMetadata.getTitle + "-" + dateFormat.format(request.userSession.sessionStart)
     Ok(request.userSession.tags.accept(Jsonizer))
       .withHeaders( "Content-disposition" -> "attachment; filename=\"%s\"".format(filename) )
   }
 
-  def advanceEngine( kit:QuestionnaireKit, state: RuntimeEngineState, ans: Answer ) : EngineRunResult = {
+  def advanceEngine(kit:PolicyModelVersionKit, state: RuntimeEngineState, ans: Answer ) : EngineRunResult = {
     val rte = new RuntimeEngine
-    rte.setDecisionGraph( kit.graph )
+    rte.setModel( kit.model )
     val l = rte.setListener( new TaggingEngineListener )
 
     rte.applySnapshot( state )
@@ -183,11 +183,10 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:Contr
 
   }
 
-  // TODO: move to some akka actor, s.t. the UI can be reactive
-  def runUpToNode( kit:QuestionnaireKit, nodeId: String, answers:Seq[AnswerRecord] ) : EngineRunResult = {
-    val interview = kit.graph
+  // TODO: return a Future[EngineRunResult]
+  def runUpToNode(kit:PolicyModelVersionKit, nodeId: String, answers:Seq[AnswerRecord] ) : EngineRunResult = {
     val rte = new RuntimeEngine
-    rte.setDecisionGraph( interview )
+    rte.setModel( kit.model )
     val l = rte.setListener( new TaggingEngineListener )
     val ansItr = answers.iterator
     
@@ -205,11 +204,10 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:Contr
   /**
    * Run the engine, from the start, through all the answer sequence passed.
    */
-  // TODO: move to some akka actor, s.t. the UI can be reactive
-  def replayAnswers( kit:QuestionnaireKit, answers:Seq[AnswerRecord] ) : EngineRunResult = {
-    val interview = kit.graph
+  // TODO: return a Future[EngineRunResult]
+  def replayAnswers(kit:PolicyModelVersionKit, answers:Seq[AnswerRecord] ) : EngineRunResult = {
     val rte = new RuntimeEngine
-    rte.setDecisionGraph( interview )
+    rte.setModel( kit.model )
     val l = rte.setListener( new TaggingEngineListener )
     
     rte.start()
@@ -220,8 +218,8 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:Contr
 
   }
 
-  def currentAskNode( kit:QuestionnaireKit, engineState: RuntimeEngineState ) = {
-    kit.graph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
+  def currentAskNode(kit:PolicyModelVersionKit, engineState: RuntimeEngineState ) = {
+    kit.model.getDecisionGraph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
   }
 
 }

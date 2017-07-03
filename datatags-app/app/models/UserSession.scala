@@ -16,14 +16,14 @@ case class UserSession(
                         key:String,
                         engineState: RuntimeEngineState,
                         traversed: Seq[Node],
-                        kit: QuestionnaireKit,
+                        kit: PolicyModelVersionKit,
                         answerHistory: Seq[AnswerRecord],
                         sessionStart: Date,
                         requestedInterview: Option[RequestedInterviewSession] ) {
 
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat
-    val tagType = kit.tags
+    val tagType = kit.model.getSpaceRoot
     Option(parser.parseCompoundValue( tagType, engineState.getSerializedTagValue )).getOrElse(tagType.createInstance())
   }
 
@@ -42,7 +42,7 @@ case class UserSession(
 }
 
 object UserSession {
-  def create( questionnaire: QuestionnaireKit ) =
+  def create( questionnaire: PolicyModelVersionKit ) =
         UserSession( java.util.UUID.randomUUID().toString, 
                      null,
                      Seq(),

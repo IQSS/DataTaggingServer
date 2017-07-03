@@ -13,7 +13,7 @@ routesGenerator := InjectedRoutesGenerator
 resolvers += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
 
 libraryDependencies ++= Seq(
-  cacheApi,
+  ehcache,
   ws,
   guice,
   "org.scalatestplus" % "play_2.11" % "1.2.0" % "test",

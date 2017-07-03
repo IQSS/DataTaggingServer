@@ -1,43 +1,40 @@
-@(qkit: QuestionnaireKit,
-        title: Option[String],
-        message: Option[String])
+@(qKit: PolicyModelVersionKit, interviewWelcomeMessage:Option[String])
 @scripts = {
   <script type="text/javascript" src="@routes.Assets.at("js/InterviewIntro.js")"></script>
 }
 @templates.bsNavBar("Interview Start Page", 'tag, scripts) {
   <div class="row">
     <div class="col-md-8 col-md-offset-2">
-    @for( welcome <- title ){
-      <h3>@welcome</h3>
-    }
-    @for( welcome <- message ){
-        <p>@welcome</p>
-    }
+      <h3>@qKit.model.getMetadata.getTitle</h3>
+      @if( qKit.model.getMetadata.getSubTitle!=null && qKit.model.getMetadata.getSubTitle.nonEmpty) {
+        <p>@qKit.model.getMetadata.getSubTitle</p>
+      }
     </div>
   </div>
+  @for( iwm <- interviewWelcomeMessage ) {
+    <div class="row">
+      <div class="col-md-8 col-md-offset-2">
+        <div class="welcomeMessage">
+          @iwm
+        </div>
+      </div>
+    </div>
+  }
   <div class="row">
     <div class="col-md-8 col-md-offset-2">
-      <h1>@comps.msg(qkit, "title")</h1>
-      <h2>@comps.msg(qkit, "subtitle")</h2>
-
       <div class="well well-lg">
         <div class="text-center">
           <div class="row">
-            <div class="col-md-9">
-              <p>
-                @comps.msg(qkit, "interview.startButtonReferral")
-              </p>
-            </div>
-            <div class="col-md-3">
-              <a href="@routes.Interview.startInterview(qkit.id)"
-              class="btn btn-primary btn-lg">@comps.msg(qkit, "interview.startButtonTitle")</a>
+            <div class="col-xs--12">
+              <a href="@routes.Interview.startInterview(qKit.id)"
+              class="btn btn-primary btn-lg">Start Interview</a>
             </div>
           </div>
         </div>
       </div>
-      @for( readMe <- qkit.readme ) {
+@*      @for( readMe <- qKit.readme ) {
         @Html(readMe)
-      }
+      }*@
       <hr>
       <h3>Tags</h3>
       <p>
@@ -46,15 +43,12 @@
         the terms of governing contractual agreements, and the appropriate data security and other handling requirements.
       </p>
 
-      @comps.tagType(qkit.tags)
+      @comps.tagType(qKit.model.getSpaceRoot)
       <hr>
       <div class="well well-lg">
         <div class="text-center">
-          <p>
-          @comps.msg(qkit, "interview.startButtonReferral")
-          </p>
-          <a href="@routes.Interview.startInterview(qkit.id)"
-          class="btn btn-primary btn-lg">@comps.msg(qkit, "interview.startButtonTitle")</a>
+          <a href="@routes.Interview.startInterview(qKit.id)"
+          class="btn btn-primary btn-lg">Start Interview</a>
         </div>
       </div>
     </div>
