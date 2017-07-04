@@ -17,7 +17,7 @@ import scala.concurrent.duration.Duration
  * Controller for API.
  */
 
-class API @Inject()(cache:SyncCacheApi, kits:QuestionnaireKits, pbp:PlayBodyParsers) extends InjectedController {
+class API @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, pbp:PlayBodyParsers) extends InjectedController {
 
 	
 	def requestInterview(interviewId:String) = Action(pbp.tolerantJson(maxLength = 1024*1024*10)) { implicit request =>

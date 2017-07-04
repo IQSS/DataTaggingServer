@@ -7,7 +7,7 @@ import play.api.cache.Cached
 import models._
 import play.api.routing
 
-class Application @Inject()(cached: Cached, kits:QuestionnaireKits) extends InjectedController {
+class Application @Inject()(cached: Cached, kits:PolicyModelKits) extends InjectedController {
 
   def index = cached("homePage"){
     Action { implicit req =>
@@ -19,10 +19,6 @@ class Application @Inject()(cached: Cached, kits:QuestionnaireKits) extends Inje
 
   def questionnaireCatalog = Action {
     Ok( views.html.questionnaireCatalog(kits.allKits) )
-  }
-
-  def changeLog = Action {
-    Ok( views.html.changeLog() )
   }
 
   def javascriptRoutes = cached("jsRoutes") {

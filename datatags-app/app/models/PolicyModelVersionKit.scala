@@ -14,8 +14,11 @@ import edu.harvard.iq.datatags.tools.ValidationMessage.Level
 import scala.collection.mutable
 
 class PolicyModelVersionKit(val id:String,
-                            val model:PolicyModel) {
-  val serializer = Serialization( model.getDecisionGraph, model.getSpaceRoot )
+                            val model:PolicyModel ) {
+  val serializer:Serialization = if ( model!=null && model.getDecisionGraph!=null && model.getSpaceRoot != null ) {
+    Serialization(model.getDecisionGraph, model.getSpaceRoot)
+  } else null
+  
   
   private val validationMessages = mutable.Buffer[ValidationMessage]()
   
@@ -25,10 +28,11 @@ class PolicyModelVersionKit(val id:String,
   
   def messages:Seq[ValidationMessage] = validationMessages
   
+  val canRun:Boolean = (serializer!=null)
 }
 
 @Singleton
-class QuestionnaireKits @Inject() ( config:Configuration ){
+class PolicyModelKits @Inject()(config:Configuration ){
   val allKits: Map[String,PolicyModelVersionKit] = loadModels()
   
   def get(id:String):Option[PolicyModelVersionKit] = allKits.get(id)
@@ -37,18 +41,18 @@ class QuestionnaireKits @Inject() ( config:Configuration ){
     Logger.info("Loading models")
     config.get[Option[String]]("taggingServer.models.folder") match {
     case Some(str) => {
-          val p = Paths.get(str)
-          Logger.info( "Policy models folder: '%s'".format(p.toAbsolutePath.toString) )
-          Files.list(p).iterator().asScala
-            .filter( Files.isDirectory(_) )
-            .map( f => (f.getFileName.toString, loadSingleKit(f)) )
-            .toMap
-        }
+        val p = Paths.get(str)
+        Logger.info( "Policy models folder: '%s'".format(p.toAbsolutePath.toString) )
+        Files.list(p).iterator().asScala
+          .filter( Files.isDirectory(_) )
+          .map( f => (f.getFileName.toString, loadSingleKit(f)) )
+          .toMap
+      }
 
-        case None => {
-          Logger.error("Bad configuration: Can't find \"taggingServer.model.folder\"")
-          Map[String, PolicyModelVersionKit]()
-        }
+      case None => {
+        Logger.error("Bad configuration: Can't find \"taggingServer.model.folder\"")
+        Map[String, PolicyModelVersionKit]()
+      }
     }
   }
   
@@ -70,11 +74,11 @@ class QuestionnaireKits @Inject() ( config:Configuration ){
   
         if ( loadRes.isSuccessful ) {
           Logger.info("Model '%s' loaded".format(loadRes.getModel.getMetadata.getTitle));
-          model = loadRes.getModel
         } else {
           Logger.warn("Failed to load model")
         }
-  
+        model = loadRes.getModel
+        Logger.info("Message count: " + loadRes.getMessages.size())
         loadRes.getMessages.asScala.foreach( msgs.+= )
         
       } catch {

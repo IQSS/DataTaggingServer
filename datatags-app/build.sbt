@@ -25,3 +25,5 @@ LessKeys.compress in Assets := true
 includeFilter in (Assets, LessKeys.less) := "*.less"
 
 TwirlKeys.templateImports += "views.Helpers"
+
+TwirlKeys.templateImports += "scala.collection.JavaConverters._"

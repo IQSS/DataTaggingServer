@@ -18,7 +18,7 @@ import edu.harvard.iq.datatags.model.graphs.Answer
 /**
  * Controller for the interview part of the application.
  */
-class Interview @Inject() (cache:AsyncCacheApi, kits:QuestionnaireKits, cc:ControllerComponents) extends InjectedController {
+class Interview @Inject() (cache:AsyncCacheApi, kits:PolicyModelKits, cc:ControllerComponents) extends InjectedController {
 
   def interviewIntro(questionnaireId: String) = Action { implicit request =>
     kits.get(questionnaireId) match {

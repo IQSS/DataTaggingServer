@@ -1,0 +1,17 @@
+digraph DecisionGraph {
+edge [fontname="Helvetica" fontsize="10"]
+node [fillcolor="lightgray" style="filled" fontname="Helvetica" fontsize="10"]
+rankdir=LR
+graph [overlap=true ranksep=3]
+DataTags[label="DataTags" shape="octagon" peripheries="2"]
+Assertions[label="Assertions" shape="egg" peripheries="2"]
+Assertions_Open[label="Open" shape="box"]
+Assertions_FAIR[label="FAIR" shape="box"]
+Assertions_Citable[label="Citable" shape="box"]
+Assertions_Trustworthy[label="Trustworthy" shape="box"]
+DataTags -> Assertions
+Assertions -> Assertions_Open
+Assertions -> Assertions_FAIR
+Assertions -> Assertions_Citable
+Assertions -> Assertions_Trustworthy
+}

@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import edu.harvard.iq.datatags.model.types._
 import edu.harvard.iq.datatags.model.values.TagValue
-import models.QuestionnaireKits
+import models.PolicyModelKits
 import play.api.mvc._
 import play.api.libs.json.Json
 import play.api._
@@ -13,7 +13,7 @@ import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-class Test @Inject()(implicit ec: ExecutionContext, kits:QuestionnaireKits) extends InjectedController {
+class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits) extends InjectedController {
 
   def nameCount( name:String, count:Int ) = Action.async {
 		val futureString = Future { (name+" ")*count }

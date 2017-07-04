@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class RequestedInterview @Inject() (cache:AsyncCacheApi, ws:WSClient,
-                                    kits:QuestionnaireKits, ec:ExecutionContext, cc:ControllerComponents) extends InjectedController {
+                                    kits:PolicyModelKits, ec:ExecutionContext, cc:ControllerComponents) extends InjectedController {
 
   def start(uniqueLinkId: String) = Action.async { implicit request =>
     cache.get[RequestedInterviewSession](uniqueLinkId).map( {

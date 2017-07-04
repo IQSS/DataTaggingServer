@@ -1,12 +1,22 @@
 @startuml
 
 package policymodels.server {
+
+  class PolicyModelStore {
+    models: Map[id, VersionedPolicyModel]
+    loadAll()
+    reload(id)
+    C/R/U/D(VersionedPolicyModel)
+    C/R/U/D(vpmId, PolicyModelVersion)
+  }
+
   class VersionedPolicyModel <DB> {
     id:String
     versions: Seq[PolicyModelVersion]
   }
 
   class PolicyModelVersion <DB> {
+    id
     policyModel:PolicyModel
     publishStatus: {None, ByLink, Public}
     isOpenForComments: {None, LoggedIn, Public}
@@ -29,6 +39,7 @@ package policymodels.server {
   VersionedPolicyModel "1" *--> "0..*" PolicyModelVersion
   VersionComment "0..*" *--* "1" PolicyModelVersion
   PolicyModelVersionKit *--> "1" PolicyModelVersion
+  PolicyModelStore *--> "0..*" VersionedPolicyModel
 }
 
 package policymodels.datatags {

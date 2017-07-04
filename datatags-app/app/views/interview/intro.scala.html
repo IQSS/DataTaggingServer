@@ -1,11 +1,15 @@
 @(qKit: PolicyModelVersionKit, interviewWelcomeMessage:Option[String])
+
 @scripts = {
   <script type="text/javascript" src="@routes.Assets.at("js/InterviewIntro.js")"></script>
 }
 @templates.bsNavBar("Interview Start Page", 'tag, scripts) {
   <div class="row">
     <div class="col-md-8 col-md-offset-2">
-      <h3>@qKit.model.getMetadata.getTitle</h3>
+      <a href="@routes.Application.questionnaireCatalog()"><i class="fa fa-list"></i> Models Catalog</a>
+      <h3>
+        @qKit.model.getMetadata.getTitle
+      </h3>
       @if( qKit.model.getMetadata.getSubTitle!=null && qKit.model.getMetadata.getSubTitle.nonEmpty) {
         <p>@qKit.model.getMetadata.getSubTitle</p>
       }
@@ -22,35 +26,102 @@
   }
   <div class="row">
     <div class="col-md-8 col-md-offset-2">
-      <div class="well well-lg">
-        <div class="text-center">
-          <div class="row">
-            <div class="col-xs--12">
-              <a href="@routes.Interview.startInterview(qKit.id)"
-              class="btn btn-primary btn-lg">Start Interview</a>
+      @if( qKit.canRun ) {
+        <div class="well well-lg">
+          <div class="text-center">
+            <div class="row">
+              <div class="col-xs--12">
+                <a href="@routes.Interview.startInterview(qKit.id)"
+                class="btn btn-primary btn-lg">Start Interview</a>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      }
 @*      @for( readMe <- qKit.readme ) {
         @Html(readMe)
       }*@
-      <hr>
+      <h3>Metadata</h3>
+      @defining( qKit.model.getMetadata ) { md =>
+        <table class="table">
+          <tbody>
+            @if( md.getAuthors.size > 0 ) {
+              <tr>
+                <th>Authors</th>
+                <td>
+                  <ul class="authorList">
+                    @for( a<-md.getAuthors ){<li>@comps.author(a)</li>}
+                  </ul>
+                </td>
+              </tr>
+            }
+            @for( doi <- Option(md.getDoi) ) {
+              <tr>
+                <th>DOI</th>
+                <td>@doi</td>
+              </tr>
+            }
+            @for( version <- Option(md.getVersion) ) {
+              <tr>
+                <th>Version</th>
+                <td>@version</td>
+              </tr>
+            }
+            @for( rd <- Option(md.getReleaseDate) ) {
+              <tr>
+                <th>Released</th>
+                <td>@rd</td>
+              </tr>
+            }
+            @if( md.getKeywords.size > 0 ) {
+              <tr>
+                <th>Keywords</th>
+                <td>@md.getKeywords.asScala.mkString(", ")</td>
+              </tr>
+            }
+            @if( md.getReferences.size > 0 ) {
+              <tr>
+                <th>References</th>
+                <td>
+                  <ul>
+                    @for( ref <- md.getReferences ) {
+                      <li>
+                        <h6>
+                          @for(url<-Option(ref.getUrl)){
+                            <a href="@url" target="_blank">@url</a>}
+                          @for(doi<-Option(ref.getDoi)){ (doi:@doi)}
+                        </h6>
+                        @ref.getText
+                      </li>
+                    }
+                  </ul>
+                </td>
+              </tr>
+            }
+
+          </tbody>
+        </table>
+      }
+
       <h3>Tags</h3>
       <p>
-        The chart below displays the range of tags that may be suggested at the conclusion of the demonstration.
+        The chart below displays the range of tags that may be suggested at the conclusion of the interview.
         These tags cover properties such as the regulatory classification of the information, the sensitivity of the information,
         the terms of governing contractual agreements, and the appropriate data security and other handling requirements.
+        Hover/touch the <i class="glyphicon glyphicon-info-sign"></i> icons, where available, to see a short explanation about specific values.
       </p>
 
       @comps.tagType(qKit.model.getSpaceRoot)
-      <hr>
-      <div class="well well-lg">
-        <div class="text-center">
-          <a href="@routes.Interview.startInterview(qKit.id)"
-          class="btn btn-primary btn-lg">Start Interview</a>
-        </div>
-      </div>
+
+      @if( qKit.messages.nonEmpty ){
+        <h3>Messages</h3>
+        <ul>
+          @for(m <- qKit.messages) {
+            <li class="message-@m.getLevel.toString">@m.getMessage</li>
+          }
+        </ul>
+      }
+
     </div>
   </div>
 }

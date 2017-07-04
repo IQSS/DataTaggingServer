@@ -4,7 +4,6 @@
 
 # Home page
 GET     /                           controllers.Application.index
-GET     /changeLog                  controllers.Application.changeLog
 GET     /interviews                 controllers.Application.questionnaireCatalog
 GET     /interviews/tagDownload                  controllers.Interview.downloadTags
 GET     /interviews/:questionnaireId/intro       controllers.Interview.interviewIntro(questionnaireId)

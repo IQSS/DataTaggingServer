@@ -1,0 +1,19 @@
+@import edu.harvard.iq.datatags.model.metadata._
+@(a:AuthorData)
+
+@person( p:PersonAuthorData ) = {
+  <em>@p.getName</em> @if(p.getAffiliation!=null && p.getAffiliation.nonEmpty){ @p.getAffiliation }
+  @if(p.getEmail!=null && p.getEmail.nonEmpty){ <a href="mailto:@p.getEmail">@p.getEmail</a> }
+  @if(p.getOrcid!=null && p.getOrcid.nonEmpty){ ORCiD: @p.getOrcid }
+}
+
+@group( g:GroupAuthorData ) = {
+  <em>@g.getName</em>@if( g.getContact!=null && g.getContact.nonEmpty){
+   (contact: @g.getContact)
+}
+}
+
+@a match {
+  case p:PersonAuthorData => {@person(p)}
+  case g:GroupAuthorData  => {@group(g)}
+}
