@@ -31,12 +31,31 @@
           <div class="text-center">
             <div class="row">
               <div class="col-xs--12">
-                <a href="@routes.Interview.startInterview(qKit.id)"
-                class="btn btn-primary btn-lg">Start Interview</a>
+                @if( qKit.model.getLocalizations.size>1 ) {
+                  @for( locName <- qKit.model.getLocalizations ) {
+                    <a href="@routes.Interview.startInterview(qKit.id, Some(locName))"
+                    class="btn btn-primary btn-lg">Start Interview (@locName)</a>
+                  }
+                } else {
+                  <a href="@routes.Interview.startInterview(qKit.id)"
+                  class="btn btn-primary btn-lg">Start Interview</a>
+                }
               </div>
             </div>
           </div>
         </div>
+      }else{
+        <div class="alert alert-danger">
+          <strong>This model has errors</strong> and thus we cannot use it to conduct an interview. See the System Messages section below.
+        </div>
+      }
+      @if( qKit.messages.nonEmpty ){
+        <h3>System Messages</h3>
+        <ul>
+        @for(m <- qKit.messages) {
+          <li class="message-@m.getLevel.toString">@m.getMessage</li>
+        }
+        </ul>
       }
 @*      @for( readMe <- qKit.readme ) {
         @Html(readMe)
@@ -112,15 +131,6 @@
       </p>
 
       @comps.tagType(qKit.model.getSpaceRoot)
-
-      @if( qKit.messages.nonEmpty ){
-        <h3>Messages</h3>
-        <ul>
-          @for(m <- qKit.messages) {
-            <li class="message-@m.getLevel.toString">@m.getMessage</li>
-          }
-        </ul>
-      }
 
     </div>
   </div>

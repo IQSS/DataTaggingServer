@@ -10,9 +10,10 @@ import models._
 import _root_.util.Jsonizer
 import java.text.SimpleDateFormat
 import javax.inject.Inject
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import edu.harvard.iq.datatags.model.graphs.Answer
+import play.api.Logger
 
 
 /**
@@ -34,10 +35,11 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:PolicyModelKits, cc:Control
     
   }
 
-  def startInterview( questionnaireId:String ) = UserSessionAction(cache, cc) { implicit req =>
+  def startInterview( questionnaireId:String, localizationName:Option[String]=None ) = UserSessionAction(cache, cc) { implicit req =>
     kits.get(questionnaireId) match {
       case Some(kit) => {
         val rte = new RuntimeEngine
+        Logger.info("Starting interview with localization " + localizationName)
         rte.setModel( kit.model )
         val l = rte.setListener( new TaggingEngineListener )
         rte.start()
