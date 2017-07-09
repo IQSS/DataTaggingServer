@@ -7,7 +7,7 @@
         <span data-toggle="popover" data-trigger="hover" data-html="true"
         title="@tp.getName" data-content="@locOpt.map( Helpers.renderMinimalMarkdown _ ).getOrElse( Html(tp.getNote))"
         data-placement="top">
-            <span class="typeName">tp.getName
+            <span class="typeName">@tp.getName
                 <span class="glyphicon glyphicon-info-sign"></span>
             </span>
         </span>

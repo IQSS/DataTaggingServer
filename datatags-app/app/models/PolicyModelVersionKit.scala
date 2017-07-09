@@ -3,6 +3,8 @@ package models
 import play.api._
 import java.nio.file._
 import java.util.concurrent.locks.ReentrantReadWriteLock
+import java.util.function.Predicate
+import java.util.stream.Collectors
 import javax.inject.{Inject, Singleton}
 
 import edu.harvard.iq.datatags.externaltexts.{Localization, LocalizationLoader}
@@ -17,7 +19,8 @@ import edu.harvard.iq.datatags.tools.ValidationMessage.Level
 import scala.collection.mutable
 
 class PolicyModelVersionKit(val id:String,
-                            val model:PolicyModel ) {
+                            val model:PolicyModel,
+                            visualizationsPath:Path ) {
   val serializer:Serialization = if ( model!=null && model.getDecisionGraph!=null && model.getSpaceRoot != null ) {
     Serialization(model.getDecisionGraph, model.getSpaceRoot)
   } else null
@@ -34,6 +37,14 @@ class PolicyModelVersionKit(val id:String,
   val version=1
   
   val canRun:Boolean = (serializer!=null)
+  
+  def decisionGraphVisuazliations:Set[Path] = {
+    if ( Files.exists(visualizationsPath) ) {
+      Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala
+        .filter( _.getFileName.toString.startsWith(PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME))
+          .toSet
+    } else Set()
+  }
 }
 
 object PolicyModelVersionKit {
@@ -43,8 +54,14 @@ object PolicyModelVersionKit {
 
 @Singleton
 class PolicyModelKits @Inject()(config:Configuration ){
+  private val baseVisualizationsPath = Paths.get(config.get[String]("taggingServer.visualize.folder"))
+  
   var allKits: Map[String,PolicyModelVersionKit] = loadModels()
   val locs:mutable.Map[String, mutable.Map[String,Localization]] = mutable.Map[String, mutable.Map[String,Localization]]()
+  
+  if ( baseVisualizationsPath==null ) {
+    Logger.error("Cannot get base visualization path from the config.")
+  }
   
   def get(id:String):Option[PolicyModelVersionKit] = allKits.get(id)
   
@@ -89,7 +106,7 @@ class PolicyModelKits @Inject()(config:Configuration ){
         val loadRes = PolicyModelLoader.verboseLoader().load(pmdp.read(policyModelMdPath))
   
         if ( loadRes.isSuccessful ) {
-          Logger.info("Model '%s' loaded".format(loadRes.getModel.getMetadata.getTitle));
+          Logger.info("Model '%s' loaded".format(loadRes.getModel.getMetadata.getTitle))
         } else {
           Logger.warn("Failed to load model")
         }
@@ -107,8 +124,11 @@ class PolicyModelKits @Inject()(config:Configuration ){
     }
   
     // create the return value
-    val retVal = new PolicyModelVersionKit(p.getFileName.toString, model)
+    val fn = p.getFileName.toString
+    val vizPath = baseVisualizationsPath.resolve(fn).resolve("1")
+    val retVal = new PolicyModelVersionKit(fn, model, vizPath)
     msgs.foreach( retVal.add )
+    
     retVal
   }
   

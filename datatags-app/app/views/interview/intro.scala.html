@@ -57,9 +57,15 @@
         }
         </ul>
       }
-@*      @for( readMe <- qKit.readme ) {
-        @Html(readMe)
-      }*@
+      @if(qKit.decisionGraphVisuazliations.nonEmpty){
+        <h3>Visualizations</h3>
+        <ul class="visualizationList">
+          <li>Decision Graph:</li>
+          @for( p <- qKit.decisionGraphVisuazliations ){
+            <li><a href="@routes.Application.visualizationFile(qKit.id + "/" + qKit.version + "/" + p.getFileName)">@p.getFileName.toString.split("\\.").last</a></li>
+          }
+        </ul>
+      }
       <h3>Metadata</h3>
       @defining( qKit.model.getMetadata ) { md =>
         <table class="table">

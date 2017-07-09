@@ -2,7 +2,7 @@
 <-- TODO: describe Base
 
 # Base/Dogs
-A friendly mamle with a tail
+A friendly mammal with a tail
 
 # Base/Dogs/Rex
 "King", in Latin
@@ -33,4 +33,3 @@ Eventually comes home.
 
 # Base/Rice/Full
 <-- TODO: describe Base/Rice/Full
-

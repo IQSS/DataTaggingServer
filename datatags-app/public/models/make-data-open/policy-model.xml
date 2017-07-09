@@ -25,7 +25,7 @@
   <references>
     <!-- Need to finalize the fields for references -->
     <reference doi="1234567890">
-      This is the text of reference 1. It cen be quite long and detailed.
+      This is the text of reference 1. It can be quite long and detailed.
     </reference>
     <reference url="http://somewhere.org/important/doc">
       Lorem ipsum dolor sit amet, consectetur adipisicing elit. Debitis officia, animi voluptatibus.
