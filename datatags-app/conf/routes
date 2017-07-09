@@ -36,3 +36,6 @@ GET  /javascriptRoutes       controllers.Application.javascriptRoutes
 GET	    /test/tagsDisplay/:id  controllers.Test.showTagTree(id, loc:Option[String]?=None)
 
 GET     /test/visualizeFiles              controllers.VisualizerController.getVisualizeFiles
+PUT     /test/models/:name                controllers.Test.addVersionedModel(name)
+GET     /test/models/                     controllers.Test.listVersionedModels
+GET     /test/models/:name                controllers.Test.showModel(name)

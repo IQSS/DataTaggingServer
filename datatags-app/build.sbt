@@ -18,7 +18,10 @@ libraryDependencies ++= Seq(
   guice,
   "org.scalatestplus" % "play_2.11" % "1.2.0" % "test",
   "com.typesafe.play" %% "play-json" % "2.6.0",
-  "com.vladsch.flexmark" % "flexmark-all" % "0.20.0"
+  "com.vladsch.flexmark" % "flexmark-all" % "0.20.0",
+  "org.postgresql" % "postgresql" % "42.0.0",
+  "com.typesafe.play" %% "play-slick" % "3.0.0",
+  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0"
 )
 
 LessKeys.compress in Assets := true
