@@ -1,13 +1,17 @@
-@(tp:edu.harvard.iq.datatags.model.types.SlotType, explanation:String="")
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@import java.util.function
+@(tp:edu.harvard.iq.datatags.model.types.SlotType, loc:Option[Localization], explanation:String="")
 <div class="typeName">
     @if( tp.getNote!=null && tp.getNote.nonEmpty ) {
-        <span data-toggle="popover" data-trigger="hover"
-        title="@tp.getName" data-content="@tp.getNote"
+      @defining(loc.flatMap(l=>Helpers.o2o(l.getSlotText(tp))) ){ locOpt =>
+        <span data-toggle="popover" data-trigger="hover" data-html="true"
+        title="@tp.getName" data-content="@locOpt.map( Helpers.renderMinimalMarkdown _ ).getOrElse( Html(tp.getNote))"
         data-placement="top">
-            <span class="typeName">@tp.getName
+            <span class="typeName">tp.getName
                 <span class="glyphicon glyphicon-info-sign"></span>
             </span>
         </span>
+      }
     } else {
         <span class="typeName">@tp.getName</span>
     }

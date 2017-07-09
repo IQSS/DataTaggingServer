@@ -1,11 +1,12 @@
-@( aValue: edu.harvard.iq.datatags.model.values.TagValue )
-
+@import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.values._
-
+@( aValue: edu.harvard.iq.datatags.model.values.TagValue,
+   loc:Option[Localization]
+)
 @atomicValue( value:AtomicValue ) = {
   <div class="value value-simple">
-      @slotTypeTitle(value.getType)
-      @valueAtom(value)
+      @slotTypeTitle(value.getType, loc)
+      @valueAtom(value, loc)
   </div>
 }
 
@@ -23,7 +24,7 @@
         <span class="valueAtom">empty</span>
     } else {
       @for(  sv <- value.getValues ){
-        @valueAtom(sv)
+        @valueAtom(sv, loc)
       }
     }
   </div>

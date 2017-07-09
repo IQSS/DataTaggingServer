@@ -4,10 +4,11 @@
 
 # Home page
 GET     /                           controllers.Application.index
-GET     /interviews                 controllers.Application.questionnaireCatalog
+GET     /interviews/                controllers.Application.questionnaireCatalog
 GET     /interviews/tagDownload                  controllers.Interview.downloadTags
 GET     /interviews/:questionnaireId/intro       controllers.Interview.interviewIntro(questionnaireId)
 GET     /interviews/:questionnaireId/start       controllers.Interview.startInterview(questionnaireId, localizationName:Option[String]?=None)
+GET     /interviews/:questionnaireId/postReadme  controllers.Interview.startInterviewPostReadme(questionnaireId)
 GET     /interviews/:questionnaireId/q/:nodeId   controllers.Interview.askNode(questionnaireId, nodeId)
 POST    /interviews/:questionnaireId/q/:nodeId   controllers.Interview.answer(questionnaireId, nodeId)
 GET     /interviews/:questionnaireId/accept      controllers.Interview.accept(questionnaireId)
@@ -22,11 +23,13 @@ POST	/postBackTo/:uniqueLinkId				controllers.RequestedInterview.postBackTo(uniq
 POST 	/unacceptableDataset/:uniqueLinkId/:reason		controllers.RequestedInterview.unacceptableDataset(uniqueLinkId: String, reason: String)
 POST 	/tempTestServer							controllers.Test.tempTestServer
 
+# API
+POST  /api/admin/reload-models controllers.Application.reloadModels
+
 # Map static resources from the /public folder to the /assets URL path
 GET  /assets/*file      controllers.Assets.at(path="/public", file)
 GET  /javascriptRoutes  controllers.Application.javascriptRoutes
 
 # Game and funs
-GET	    /test/:name/:count     controllers.Test.nameCount(name, count: Int)
-GET	    /test/tagsDisplay/:id  controllers.Test.showTagTree(id)
+GET	    /test/tagsDisplay/:id  controllers.Test.showTagTree(id, loc:Option[String]?=None)
 

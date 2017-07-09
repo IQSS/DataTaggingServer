@@ -32,10 +32,10 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits) extend
   	Ok(Json.obj("status" -> "OK", "redirectURL" -> userRedirectURL))
   }
 
-  def showTagTree(id:String) = Action{ req =>
+  def showTagTree(id:String, locName:Option[String]) = Action{ req =>
     kits.get(id) match {
       case None => NotFound("Can't find interview with id " + id)
-      case Some(kit) => Ok(views.html.tagsTree(kit.model.getSpaceRoot, generateInstance(kit.model.getSpaceRoot)) )
+      case Some(kit) => Ok(views.html.tagsTree(kit.model.getSpaceRoot, generateInstance(kit.model.getSpaceRoot), locName.flatMap(kits.localization(id,_))) )
     }
   }
 

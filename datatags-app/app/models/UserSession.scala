@@ -2,6 +2,7 @@ package models
 
 import java.util.Date
 
+import edu.harvard.iq.datatags.externaltexts.Localization
 import edu.harvard.iq.datatags.model.graphs.Answer
 import edu.harvard.iq.datatags.runtime.RuntimeEngineState
 import edu.harvard.iq.datatags.model.graphs.nodes._
@@ -12,11 +13,11 @@ case class AnswerRecord( question: AskNode, answer: Answer)
 /**
  * All the data needed to maintain continuous user experience.
  */
-case class UserSession(
-                        key:String,
+case class UserSession( key:String,
                         engineState: RuntimeEngineState,
                         traversed: Seq[Node],
                         kit: PolicyModelVersionKit,
+                        localization: Option[Localization],
                         answerHistory: Seq[AnswerRecord],
                         sessionStart: Date,
                         requestedInterview: Option[RequestedInterviewSession] ) {
@@ -24,7 +25,7 @@ case class UserSession(
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat
     val tagType = kit.model.getSpaceRoot
-    Option(parser.parseCompoundValue( tagType, engineState.getSerializedTagValue )).getOrElse(tagType.createInstance())
+    Option(parser.parseCompoundValue(tagType, engineState.getSerializedTagValue )).getOrElse(tagType.createInstance())
   }
 
   def updatedWith( ansRec: AnswerRecord, newNodes: Seq[Node], state: RuntimeEngineState ) = 
@@ -47,6 +48,7 @@ object UserSession {
                      null,
                      Seq(),
                      questionnaire,
+                     None,
                      Seq(), 
                      new Date,
                      None )

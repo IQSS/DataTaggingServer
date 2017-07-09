@@ -12,6 +12,22 @@ h1, h2, h3 {
   text-align: center;
 }
 
+// Adjustments for HTML coming from rendered markdown
+.mdRender {
+  table {
+    td, th {
+      padding: 4px;
+    }
+    th {
+      background-color: #555;
+      color: white
+    }
+    tr:nth-child(even) {
+      background-color: rgba(0,0,0,.1);
+    }
+  }
+}
+
 @iconContainerEdge: 100px;
 .insetBox {
   text-align: center;

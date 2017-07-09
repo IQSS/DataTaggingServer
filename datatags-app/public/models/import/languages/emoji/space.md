@@ -2,13 +2,13 @@
 <-- TODO: describe Base
 
 # Base/Dogs
-A friendly mamle with a tail
+A friendly mammal with a tail
 
 # Base/Dogs/Rex
-"King", in Latin
+Latin for 👑.
 
 # Base/Dogs/Pluto
-This dog user to be a star, then a planet, now a big rock.
+This dog user to be a ⭐ , then a planet, now a big rock.
 
 # Base/Dogs/Lassie
 Eventually comes home.
@@ -33,4 +33,3 @@ Eventually comes home.
 
 # Base/Rice/Full
 <-- TODO: describe Base/Rice/Full
-

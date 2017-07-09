@@ -2,8 +2,10 @@ package models
 
 import play.api._
 import java.nio.file._
+import java.util.concurrent.locks.ReentrantReadWriteLock
 import javax.inject.{Inject, Singleton}
 
+import edu.harvard.iq.datatags.externaltexts.{Localization, LocalizationLoader}
 import edu.harvard.iq.datatags.io.{PolicyModelDataParser, PolicyModelLoadingException}
 import edu.harvard.iq.datatags.model.PolicyModel
 
@@ -11,6 +13,7 @@ import scala.collection.JavaConverters._
 import edu.harvard.iq.datatags.parser.PolicyModelLoader
 import edu.harvard.iq.datatags.tools.ValidationMessage
 import edu.harvard.iq.datatags.tools.ValidationMessage.Level
+
 import scala.collection.mutable
 
 class PolicyModelVersionKit(val id:String,
@@ -33,9 +36,15 @@ class PolicyModelVersionKit(val id:String,
 
 @Singleton
 class PolicyModelKits @Inject()(config:Configuration ){
-  val allKits: Map[String,PolicyModelVersionKit] = loadModels()
+  var allKits: Map[String,PolicyModelVersionKit] = loadModels()
+  val locs:mutable.Map[String, mutable.Map[String,Localization]] = mutable.Map[String, mutable.Map[String,Localization]]()
   
   def get(id:String):Option[PolicyModelVersionKit] = allKits.get(id)
+  
+  def dropAll():Unit = {
+    allKits = loadModels()
+    locs.clear()
+  }
   
   private def loadModels() = {
     Logger.info("Loading models")
@@ -94,6 +103,53 @@ class PolicyModelKits @Inject()(config:Configuration ){
     val retVal = new PolicyModelVersionKit(p.getFileName.toString, model)
     msgs.foreach( retVal.add )
     retVal
+  }
+  
+  val localizationMapLock = new ReentrantReadWriteLock()
+  def localization( kitId:String, localizationName:String ): Option[Localization] = {
+    val rl = localizationMapLock.readLock()
+    rl.lock()
+    val res = locs.get(kitId).flatMap( _.get(localizationName) )
+    rl.unlock()
+    if ( res.isDefined ) {
+      res
+      
+    } else {
+      if ( allKits.contains(kitId) ) {
+        val wl = localizationMapLock.writeLock()
+        try {
+          wl.lock()
+          if ( ! locs.contains(kitId) ) {
+            locs(kitId) = mutable.Map()
+          }
+          val locMap = locs(kitId)
+      
+          val locLoad = new LocalizationLoader()
+          val loc = locLoad.load(allKits(kitId).model, localizationName)
+          if ( ! locLoad.getMessages.isEmpty ) {
+            Logger.warn("Messages on localization «" + localizationName + "» for model «" + kitId + "»")
+            for ( m <- locLoad.getMessages.asScala ) {
+              Logger.warn(m.getLevel.toString + ": " + m.getMessage)
+            }
+          }
+          
+          if ( locLoad.isHasErrors ) {
+            Logger.warn("Errors loading localization «" + localizationName + "» for model «" + kitId + "»" )
+            None
+          } else {
+            locMap(localizationName) = loc
+            Logger.info("Loaded localization «" + localizationName + "» for model «" + kitId + "»")
+            
+            Some(loc)
+          }
+        } finally {
+          wl.unlock()
+        }
+    
+      } else {
+        None
+      }
+    }
   }
   
 }

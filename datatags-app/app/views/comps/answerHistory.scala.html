@@ -1,4 +1,5 @@
-@(answerHistory: Seq[AnswerRecord], questionnaireId:String, reverse:Boolean, serializer:Serialization)
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@(answerHistory: Seq[AnswerRecord], questionnaireId:String, reverse:Boolean, serializer:Serialization, loc:Option[Localization])
 @import views.Helpers
 @helper.form( action=routes.Interview.revisit(questionnaireId), 'id->"answerHistory") {
     <ol class="answer-history">
@@ -6,9 +7,11 @@
             @defining( if (reverse) answerRecTuples.reverse else answerRecTuples ) { answerRecOrdered =>
                 @for( ar <- answerRecOrdered ){
                     <li class="answer-record">
-                        <div class="ar-question">@Helpers.bulletPoint(ar._1.question.getText)</div>
+                        <div class="ar-question">
+                          @Helpers.renderMini(ar._1.question, loc)
+                        </div>
                         <div class="ar-controls">
-                            <span class="badge">@Helpers.makeUpper(ar._1.answer.getAnswerText)</span>
+                            <span class="badge">@loc.map( l=>l.localizeAnswer(ar._1.answer.getAnswerText)).getOrElse(Helpers.makeUpper(ar._1.answer.getAnswerText))</span>
                             <button class="btn btn-xs btn-primary"
                                 data-toggle="tooltip" data-placement="top"
                                 title="Change your answer to this question"

@@ -11,7 +11,6 @@ import _root_.util.Jsonizer
 import java.text.SimpleDateFormat
 import javax.inject.Inject
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import edu.harvard.iq.datatags.model.graphs.Answer
 import play.api.Logger
 
@@ -35,27 +34,67 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:PolicyModelKits, cc:Control
     
   }
 
-  def startInterview( questionnaireId:String, localizationName:Option[String]=None ) = UserSessionAction(cache, cc) { implicit req =>
-    kits.get(questionnaireId) match {
+  def startInterview(kitId:String, localizationName:Option[String]=None ) = UserSessionAction(cache, cc) { implicit req =>
+    kits.get(kitId) match {
       case Some(kit) => {
-        val rte = new RuntimeEngine
-        Logger.info("Starting interview with localization " + localizationName)
-        rte.setModel( kit.model )
-        val l = rte.setListener( new TaggingEngineListener )
-        rte.start()
-        val updated = req.userSession.copy(engineState=rte.createSnapshot).setHistory( l.traversedNodes, Seq[AnswerRecord]() )
-        cache.set(req.userSession.key, updated)
-        Ok( views.html.interview.question(questionnaireId,
-          rte.getCurrentNode.asInstanceOf[AskNode],
-          updated.tags,
-          l.traversedNodes,
-          kit.serializer,
-          Seq()) )
+        val l10n = localizationName match {
+          case None       => if ( kit.model.getLocalizations.size==1 ) kits.localization(kitId, kit.model.getLocalizations.iterator().next()) else None
+          case Some(name) => kits.localization(kitId,name)
+        }
+        val readmeOpt = l10n.flatMap( loc => {
+          val brfm = loc.getBestReadmeFormat
+          if (brfm.isPresent) {
+            Some(loc.getReadme(brfm.get))
+          } else {
+            None
+          }
+        })
+      
+        if ( l10n isDefined ) {
+          val updated = req.userSession.copy(localization = l10n)
+          cache.set(req.userSession.key, updated)
+        }
+        
+        // if there's a readme present, we show it first. Else, we start the interview.
+        readmeOpt.map( readMe => Ok(views.html.interview.showReadme(kit, readMe, l10n.get)) )
+          .getOrElse({
+            val rte = new RuntimeEngine
+            rte.setModel(kit.model)
+            val l = rte.setListener(new TaggingEngineListener)
+            rte.start()
+            val updated = req.userSession.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
+            cache.set(req.userSession.key, updated)
+
+            Ok(views.html.interview.question(kitId,
+              rte.getCurrentNode.asInstanceOf[AskNode],
+              updated.tags,
+              l.traversedNodes,
+              kit.serializer,
+              Seq(),
+              req.userSession.localization))
+          })
       }
-      case None => NotFound("Questionnaire with id %s not found.".format(questionnaireId))
+      case None => NotFound("Questionnaire with id %s not found.".format(kitId))
     }
   }
 
+  def startInterviewPostReadme(kitId:String) = UserSessionAction( cache, cc ) { implicit req =>
+    val rte = new RuntimeEngine
+    rte.setModel(req.userSession.kit.model)
+    val l = rte.setListener(new TaggingEngineListener)
+    rte.start()
+    val updated = req.userSession.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
+    cache.set(req.userSession.key, updated)
+  
+    Ok(views.html.interview.question(kitId,
+      rte.getCurrentNode.asInstanceOf[AskNode],
+      updated.tags,
+      l.traversedNodes,
+      req.userSession.kit.serializer,
+      Seq(),
+      req.userSession.localization))
+  }
+  
   def askNode( questionnaireId:String, reqNodeId: String) = UserSessionAction(cache, cc) { req =>
     kits.get(questionnaireId) match {
       case Some(kit) => {
@@ -81,7 +120,8 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:PolicyModelKits, cc:Control
           session.tags,
           session.traversed,
           kit.serializer,
-          session.answerHistory) )
+          session.answerHistory,
+          session.localization) )
       }
       case None => NotFound("Questionnaire with id %s not found.".format(questionnaireId))
     }
@@ -154,7 +194,7 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:PolicyModelKits, cc:Control
     val tags = session.tags
     val codeOpt = Option(tags.getType.getTypeNamed("Code")).map(tags.get)
     Ok( views.html.interview.accepted(session.kit, tags, codeOpt,
-                                        session.requestedInterview, session.answerHistory) )
+                                        session.requestedInterview, session.answerHistory, session.localization) )
   }
 
   def reject( questionnaireId:String ) = UserSessionAction(cache, cc) { request =>
@@ -162,8 +202,8 @@ class Interview @Inject() (cache:AsyncCacheApi, kits:PolicyModelKits, cc:Control
     val state = request.userSession.engineState
     val node = session.kit.model.getDecisionGraph.getNode( state.getCurrentNodeId )
 
-    Ok( views.html.interview.rejected(session.kit, node.asInstanceOf[RejectNode].getReason,
-      session.requestedInterview, session.answerHistory ) )
+    Ok( views.html.interview.rejected(session.kit, node.asInstanceOf[RejectNode],
+      session.requestedInterview, session.answerHistory, session.localization ) )
   }
   
   def downloadTags = UserSessionAction(cache, cc) { request =>

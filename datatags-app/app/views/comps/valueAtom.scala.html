@@ -1,9 +1,10 @@
-@( value : edu.harvard.iq.datatags.model.values.AtomicValue )
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@( value : edu.harvard.iq.datatags.model.values.AtomicValue, loc:Option[Localization] )
 @if( value.getNote==null || value.getNote.isEmpty ) {
   <span class="valueAtom">@value.getName</span>
 } else {
   <span class="valueAtom" data-toggle="popover" data-trigger="hover" 
-     title="@value.getName" data-content="@value.getNote"
+     title="@value.getName" data-html="true" data-content="@loc.flatMap(l=>Helpers.o2o(l.getSlotValueText(value))).map( Helpers.renderMinimalMarkdown _ ).getOrElse(Html(value.getNote))"
      data-placement="top">
     @value.getName
     <span class="glyphicon glyphicon-info-sign"></span>

@@ -1,13 +1,14 @@
-@( tagType: edu.harvard.iq.datatags.model.types.SlotType )
-
+@import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.types._
+@( tagType: edu.harvard.iq.datatags.model.types.SlotType, loc:Option[Localization])
+
 
 @simpleType( tp: AtomicSlot ) = {
   <div class="tagtype tagtype-simple">
-      @slotTypeTitle(tp, "One of:")
+      @slotTypeTitle(tp, loc, "One of:")
     <div class="typeValues">
       @for( sv <- tp.values ) {
-        @valueAtom( sv )
+        @valueAtom( sv, loc )
       }
     </div>
   </div>
@@ -15,10 +16,10 @@
 
 @aggregateType( tp: AggregateSlot) = {
   <div class="tagtype tagtype-aggregate">
-      @slotTypeTitle(tp, "Some of:")
+      @slotTypeTitle(tp, loc, "Some of:")
     <div class="typeValues">
       @for( sv <- tp.getItemType.values ) {
-        @valueAtom( sv )
+        @valueAtom( sv, loc )
       }
     </div>
   </div>
@@ -26,7 +27,7 @@
 
 @compoundType( tp:CompoundSlot ) = {
  <div class="tagtype tagtype-compound">
-    @slotTypeTitle(tp)
+    @slotTypeTitle(tp, loc)
     <div class="typeValues">
       @for( ft <- tp.getFieldTypes ) {
         @renderType( ft )
@@ -37,7 +38,7 @@
 
 @todoType( tp: ToDoSlot ) = {
   <div class="tagtype tagtype-todo">
-    @slotTypeTitle(tp, "value placeholder")
+    @slotTypeTitle(tp, loc, "value placeholder")
     <div class="typeValues">
         <span class="valueAtom">TODO</span>
     </div>

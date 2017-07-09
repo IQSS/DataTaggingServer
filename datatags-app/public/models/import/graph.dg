@@ -15,4 +15,13 @@
   [todo: Add frog 2]
 ]
 [set: Rice=Full]
+[>pre-rej< ask:
+  {text: Skip Veterinarian exam?}
+  {terms:
+    {Veterinarian exam: Something you should really do}
+  }
+  {answers:
+    {yes: [>ouch< reject:Can't skip a veterinarian exam!]}
+  }
+]
 [end]
