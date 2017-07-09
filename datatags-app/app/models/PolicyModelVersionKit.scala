@@ -31,7 +31,14 @@ class PolicyModelVersionKit(val id:String,
   
   def messages:Seq[ValidationMessage] = validationMessages
   
+  val version=1
+  
   val canRun:Boolean = (serializer!=null)
+}
+
+object PolicyModelVersionKit {
+  val DECISION_GRAPH_VISUALIZATION_FILE_NAME = "decision-graph"
+  val POLICY_SPACE_VISUALIZATION_FILE_NAME = "policy-space"
 }
 
 @Singleton

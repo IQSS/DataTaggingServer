@@ -1,7 +1,7 @@
 package controllers
 import javax.inject._
 
-import actors.Visualizer._
+import actors.VisualizationActor._
 import akka.actor.ActorRef
 import models.{PolicyModelKits, PolicyModelVersionKit}
 import play.api.mvc.InjectedController
@@ -17,8 +17,8 @@ class VisualizerController @Inject() (@Named("visualize-actor") actor: ActorRef,
   val sampleKit:PolicyModelVersionKit = kits.allKits.iterator.next()._2
   def getVisualizeFiles = Action{
     // send kit to actor
-    actor ! CreateVisualizeFiles(sampleKit.model)
-    Ok("")
+    actor ! CreateVisualizationFiles(sampleKit)
+    Ok("Create request sent")
   }
 
 }
