@@ -33,3 +33,4 @@ GET  /javascriptRoutes  controllers.Application.javascriptRoutes
 # Game and funs
 GET	    /test/tagsDisplay/:id  controllers.Test.showTagTree(id, loc:Option[String]?=None)
 
+GET     /test/visualizeFiles              controllers.VisualizerController.getVisualizeFiles
