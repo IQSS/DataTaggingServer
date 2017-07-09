@@ -1,6 +1,6 @@
 <policy-model>
-  <title>Sample Model with Imports</title>
-  <subtitle>Example of how to break a large decision graph to a few files</subtitle>
+  <title>Sample Model with Imports w/Errors</title>
+  <subtitle>This interview tests the server resilience to non-compiling models.</subtitle>
   <version doi="xyz">0.4</version>
   <date>2017-06-27</date>
   <keywords>policy model, section, nodes, imports</keywords>

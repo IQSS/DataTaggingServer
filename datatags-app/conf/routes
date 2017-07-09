@@ -7,7 +7,7 @@ GET     /                           controllers.Application.index
 GET     /interviews                 controllers.Application.questionnaireCatalog
 GET     /interviews/tagDownload                  controllers.Interview.downloadTags
 GET     /interviews/:questionnaireId/intro       controllers.Interview.interviewIntro(questionnaireId)
-GET     /interviews/:questionnaireId/start       controllers.Interview.startInterview(questionnaireId)
+GET     /interviews/:questionnaireId/start       controllers.Interview.startInterview(questionnaireId, localizationName:Option[String]?=None)
 GET     /interviews/:questionnaireId/q/:nodeId   controllers.Interview.askNode(questionnaireId, nodeId)
 POST    /interviews/:questionnaireId/q/:nodeId   controllers.Interview.answer(questionnaireId, nodeId)
 GET     /interviews/:questionnaireId/accept      controllers.Interview.accept(questionnaireId)

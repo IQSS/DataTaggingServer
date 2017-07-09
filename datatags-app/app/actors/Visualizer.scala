@@ -59,7 +59,6 @@ class Visualizer @Inject()( configuration:Configuration) extends Actor {
     }
     else {
       dump.await
-//      if (Desktop.isDesktopSupported) Desktop.getDesktop.open(defaultOutput.toFile)
       Logger.info("File created at: " +  defaultOutput.toRealPath())
     }
 
