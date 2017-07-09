@@ -30,3 +30,4 @@ GET  /javascriptRoutes  controllers.Application.javascriptRoutes
 GET	    /test/:name/:count     controllers.Test.nameCount(name, count: Int)
 GET	    /test/tagsDisplay/:id  controllers.Test.showTagTree(id)
 
+GET     /test/visualizeFiles              controllers.VisualizerController.getVisualizeFiles
