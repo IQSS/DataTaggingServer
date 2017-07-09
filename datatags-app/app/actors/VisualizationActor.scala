@@ -1,13 +1,13 @@
 package actors
 import java.io.OutputStreamWriter
-import java.nio.file.{Files, Paths, Path}
+import java.nio.file.{Files, Path, Paths}
 import javax.inject._
 
 import actors.VisualizationActor.CreateVisualizationFiles
 import akka.actor.{Actor, Props}
 import edu.harvard.iq.datatags.cli.ProcessOutputDumper
 import edu.harvard.iq.datatags.model.PolicyModel
-import edu.harvard.iq.datatags.visualizers.graphviz.{AbstractGraphvizDecisionGraphVisualizer, GraphvizDecisionGraphClusteredVisualizer, GraphvizDecisionGraphF11Visualizer}
+import edu.harvard.iq.datatags.visualizers.graphviz.{AbstractGraphvizDecisionGraphVisualizer, GraphvizDecisionGraphClusteredVisualizer, GraphvizDecisionGraphF11Visualizer, GraphvizTagSpacePathsVizualizer}
 import models.PolicyModelVersionKit
 import play.api.{Configuration, Logger}
 
@@ -29,9 +29,10 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
   def receive = {
     case CreateVisualizationFiles(kitVersion:PolicyModelVersionKit) =>
       val folder = ensureVisualizationFolderExists(kitVersion)
-      Seq("pdf", "svg", "png").foreach(
-        createDecisionGraphVisualizationFile(kitVersion.model, folder, _)
-      )
+      Seq("pdf", "svg", "png").foreach( ext => {
+        createDecisionGraphVisualizationFile(kitVersion.model, folder, ext)
+        createPolicySpaceVisualizationFile(kitVersion.model, folder, ext)
+      })
   }
   
   def ensureVisualizationFolderExists(kitVersion: PolicyModelVersionKit): Path = {
@@ -64,7 +65,35 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
     dump.start()
     val statusCode = gv.waitFor
     if (statusCode != 0) {
-      Logger.info("While visualizing model «" + model.getMetadata.getTitle + "», Graphviz terminated with an error (exit code: " + statusCode + ")")
+      Logger.info("While visualizing decision graph of model «" + model.getMetadata.getTitle + "», Graphviz terminated with an error (exit code: " + statusCode + ")")
+    }
+    else {
+      dump.await()
+      Logger.info("File created at: " +  outputPath)
+    }
+  }
+  
+  def createPolicySpaceVisualizationFile(model:PolicyModel, folder:Path, fileExtension:String): Unit ={
+    
+    val outputPath = folder.resolve( PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME + "." + fileExtension)
+    
+    val pb = new ProcessBuilder(pathToDot.toString, "-T" + fileExtension)
+    val viz = new GraphvizTagSpacePathsVizualizer(model.getSpaceRoot)
+    
+    
+    val gv: Process = pb.start
+    val outputToGraphviz: OutputStreamWriter = new OutputStreamWriter(gv.getOutputStream)
+    try  {
+      viz.visualize(outputToGraphviz)
+    } finally {
+      if (outputToGraphviz != null) outputToGraphviz.close()
+    }
+    
+    val dump: ProcessOutputDumper = new ProcessOutputDumper(gv.getInputStream, outputPath)
+    dump.start()
+    val statusCode = gv.waitFor
+    if (statusCode != 0) {
+      Logger.info("While visualizing policy space of model «" + model.getMetadata.getTitle + "», Graphviz terminated with an error (exit code: " + statusCode + ")")
     }
     else {
       dump.await()

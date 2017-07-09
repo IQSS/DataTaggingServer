@@ -38,18 +38,25 @@ class PolicyModelVersionKit(val id:String,
   
   val canRun:Boolean = (serializer!=null)
   
-  def decisionGraphVisuazliations:Set[Path] = {
+  def availableVisualizations:Visualizations = {
     if ( Files.exists(visualizationsPath) ) {
-      Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala
-        .filter( _.getFileName.toString.startsWith(PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME))
-          .toSet
-    } else Set()
+      val groups = Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala
+        .groupBy( _.getFileName.toString.toLowerCase.split("\\.",2)(0) )
+      Visualizations(
+        groups.get(PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set()),
+        groups.get(PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set())
+      )
+    } else Visualizations(Set(),Set())
   }
 }
 
 object PolicyModelVersionKit {
   val DECISION_GRAPH_VISUALIZATION_FILE_NAME = "decision-graph"
   val POLICY_SPACE_VISUALIZATION_FILE_NAME = "policy-space"
+}
+
+case class Visualizations( decisionGraph:Set[Path], policySpace:Set[Path] ) {
+  def hasData = decisionGraph.nonEmpty||policySpace.nonEmpty
 }
 
 @Singleton
