@@ -4,6 +4,7 @@ import java.sql.Timestamp
 import javax.inject.Inject
 
 import models.VersionedPolicyModel
+import play.api.Logger
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
@@ -25,6 +26,11 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
     }.map( _ => nc )
   }
   
+  def update( vpm:VersionedPolicyModel ):Future[Int] = db.run {
+    VersionedPolicyModels.insertOrUpdate(vpm)
+  }
+  
+  
   def getVersionedModel( id:String ):Future[Option[VersionedPolicyModel]] = {
     db.run {
       VersionedPolicyModels.filter( _.id === id ).result.headOption
@@ -33,8 +39,17 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
   
   def listAllVersionedModels:Future[Seq[VersionedPolicyModel]] = {
     db.run {
-      VersionedPolicyModels.sortBy( _.created ).result
+      VersionedPolicyModels.sortBy( _.id ).result
     }
+  }
+  
+  def deleteVersionedPolicyModel( id:String ):Future[Boolean] = {
+    db.run {
+      VersionedPolicyModels.filter( _.id === id ).delete
+    } map ( i => {
+      Logger.info("Delete res: " + i)
+      i>0
+    } )
   }
   
 }

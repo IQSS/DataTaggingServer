@@ -1,6 +1,5 @@
 package controllers
 
-import java.net.InetAddress
 import java.nio.file.{Files, Paths}
 import javax.inject.Inject
 
@@ -56,7 +55,9 @@ class Application @Inject()(cached: Cached, kits:PolicyModelKits, conf:Configura
           routes.javascript.Interview.askNode,
           routes.javascript.Interview.answer,
           routes.javascript.Interview.interviewIntro,
-          routes.javascript.Interview.startInterview
+          routes.javascript.Interview.startInterview,
+          routes.javascript.PolicyKitManagementCtrl.apiDoDeleteVpm,
+          routes.javascript.PolicyKitManagementCtrl.showVpmList
         )
       ).as("text/javascript")
     }

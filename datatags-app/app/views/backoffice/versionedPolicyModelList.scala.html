@@ -1,0 +1,42 @@
+@( models:Seq[VersionedPolicyModel], message:Option[String] )
+
+@templates.bsNavBar("Versioned Policy Model Editor", 'backOffice ) {
+  <div class="row">
+    <div class="col-md-12">
+      <h3>
+        <div class="pull-right">
+          <a href="@routes.PolicyKitManagementCtrl.showNewVpmPage()" class="btn btn-large btn-default"><i class="fa fa-plus-circle"></i> Add</a>
+        </div>
+        Versioned Policy Models</h3>
+    </div>
+  </div>
+  @for( m <- message ){
+    <div class="row">
+      <div class="col-md-12">
+        <div class="alert alert-info alert-dismissable" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          @m
+        </div>
+      </div>
+    </div>
+  }
+  <div class="row">
+    <div class="col-md-12">
+      @if( models.isEmpty ){
+        <div class="noData">
+          No models available. You can <a href="@routes.PolicyKitManagementCtrl.showNewVpmPage">add one</a>.
+        </div>
+      } else {
+        <ul>
+          @for( vpm <- models ) {
+            <li>
+              <a href="@routes.PolicyKitManagementCtrl.showEditVpmPage(vpm.id)">@vpm.title (<code>@vpm.id</code>)</a>
+            </li>
+          }
+        </ul>
+      }
+
+    </div>
+  </div>
+
+}

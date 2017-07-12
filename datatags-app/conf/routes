@@ -25,6 +25,14 @@ POST	/postBackTo/:uniqueLinkId				controllers.RequestedInterview.postBackTo(uniq
 POST 	/unacceptableDataset/:uniqueLinkId/:reason		controllers.RequestedInterview.unacceptableDataset(uniqueLinkId: String, reason: String)
 POST 	/tempTestServer							controllers.Test.tempTestServer
 
+# Back-office
+GET     /admin/vpms-m/new     controllers.PolicyKitManagementCtrl.showNewVpmPage
+POST    /admin/vpms-m/        controllers.PolicyKitManagementCtrl.doSaveNewVpm
+GET     /admin/vpms-m/:id     controllers.PolicyKitManagementCtrl.showEditVpmPage(id)
+POST    /admin/vpms-m/:id     controllers.PolicyKitManagementCtrl.doSaveVpm(id)
+DELETE  /admin/vpms-m/:id     controllers.PolicyKitManagementCtrl.apiDoDeleteVpm(id)
+GET     /admin/vpms/          controllers.PolicyKitManagementCtrl.showVpmList
+
 # API
 POST  /api/admin/reload-models controllers.Application.reloadModels
 

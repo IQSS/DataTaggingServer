@@ -18,6 +18,7 @@ import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 import edu.harvard.iq.datatags.model.values.TagValue
+import play.api.data.Field
 
 object Helpers {
   
@@ -164,4 +165,9 @@ object Helpers {
   }
   
   def o2o[T]( in:Optional[T]):Option[T] = if ( in.isPresent ) Some(in.get) else None
+  
+  def fieldStatus(f:Field):String = if(f.hasErrors) "has-error" else ""
+  
+  def jsEscape(s:String) = s.replaceAll("\"", "\\\"")
+  
 }
