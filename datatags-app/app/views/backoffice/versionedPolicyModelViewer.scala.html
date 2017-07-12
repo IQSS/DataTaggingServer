@@ -1,0 +1,31 @@
+@(vpm:VersionedPolicyModel, enableEdits:Boolean)
+
+@templates.bsNavBar("Versioned Policy Model Editor", 'backOffice ) {
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3>@if(enableEdits){
+        <div class="pull-right">
+          <a class="btn btn-default" href="@routes.PolicyKitManagementCtrl.showEditVpmPage(vpm.id)">
+            <i class="fa fa-edit"></i> Edit</a></div>}
+        @vpm.title
+      </h3>
+      <h6><code>@vpm.id</code></h6>
+    </div>
+  </div>
+  @if( vpm.note.trim.nonEmpty ) {
+    <div class="row">
+      <div class="col-md-12">
+        @vpm.note
+      </div>
+    </div>
+  }
+  <div class="row">
+    <div class="col-md-12">
+      <h5>Versions</h5>
+      <div class="noData">
+        This model currently has no versions. @if(enableEdits){Why not <a href="">add one</a>?}
+      </div>
+    </div>
+  </div>
+}

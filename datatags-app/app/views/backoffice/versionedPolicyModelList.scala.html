@@ -30,7 +30,7 @@
         <ul>
           @for( vpm <- models ) {
             <li>
-              <a href="@routes.PolicyKitManagementCtrl.showEditVpmPage(vpm.id)">@vpm.title (<code>@vpm.id</code>)</a>
+              <a href="@routes.PolicyKitManagementCtrl.showVpmPage(vpm.id)">@vpm.title (<code>@vpm.id</code>)</a>
             </li>
           }
         </ul>

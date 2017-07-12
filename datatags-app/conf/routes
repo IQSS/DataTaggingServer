@@ -31,7 +31,10 @@ POST    /admin/vpms-m/        controllers.PolicyKitManagementCtrl.doSaveNewVpm
 GET     /admin/vpms-m/:id     controllers.PolicyKitManagementCtrl.showEditVpmPage(id)
 POST    /admin/vpms-m/:id     controllers.PolicyKitManagementCtrl.doSaveVpm(id)
 DELETE  /admin/vpms-m/:id     controllers.PolicyKitManagementCtrl.apiDoDeleteVpm(id)
-GET     /admin/vpms/          controllers.PolicyKitManagementCtrl.showVpmList
+
+# Content (and management)
+GET     /vpms/          controllers.PolicyKitManagementCtrl.showVpmList
+GET     /vpms/:id       controllers.PolicyKitManagementCtrl.showVpmPage(id)
 
 # API
 POST  /api/admin/reload-models controllers.Application.reloadModels

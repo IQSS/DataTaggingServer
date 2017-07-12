@@ -43,6 +43,13 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     )(VpmFormData.apply)(VpmFormData.unapply)
   )
   
+  def showVpmPage(id:String)= Action.async { req =>
+    models.getVersionedModel(id).map({
+      case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
+      case Some(vpm) => Ok( views.html.backoffice.versionedPolicyModelViewer(vpm, true) )
+    })
+  }
+  
   def showNewVpmPage = Action{ req =>
     Ok( views.html.backoffice.versionedPolicyModelEditor(vpmForm, true) )
   }
