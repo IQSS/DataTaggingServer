@@ -1,6 +1,7 @@
 package persistence
 
 import java.sql.Timestamp
+import java.util.Date
 import javax.inject.Inject
 
 import models.{PolicyModelVersion, VersionedPolicyModel}
@@ -58,9 +59,39 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
     }
   }
   
-  def addNewVersion
-  def updateVersion
-  def deleteVersion
-  def getLatestVersion
+  def maxVersionNumberFor( modelId:String ):Future[Option[Int]] = {
+    db.run {
+      PolicyModelVersions.filter( _.modelId===modelId ).map( _.version ).max.result
+    }
+  }
+  
+  def addNewVersion(pmv:PolicyModelVersion):Future[PolicyModelVersion] = {
+    for {
+      maxVersionNum <- maxVersionNumberFor(pmv.parentId)
+      nextVersionNum = maxVersionNum.getOrElse(0)+1
+      nPmv = pmv.copy(version = nextVersionNum).ofNow
+      _ <- db.run( PolicyModelVersions  += nPmv )
+    } yield nPmv
+  }
+  
+  def updateVersion( pmv:PolicyModelVersion ):Future[PolicyModelVersion] = {
+      db.run{
+        (PolicyModelVersions returning PolicyModelVersions).insertOrUpdate(pmv.ofNow).map(_.get)
+      }
+  }
+  
+  def getLatestVersion( modelId:String ):Future[Option[PolicyModelVersion]] = {
+    for {
+      maxVersionNum <- db.run( PolicyModelVersions.filter( _.modelId === modelId ).map( _.version ).max.result )
+      maxVersion    <- db.run( PolicyModelVersions.filter( r => (r.version === maxVersionNum) && (r.version===maxVersionNum) ).result )
+    } yield maxVersion.headOption
+  }
+  
+  
+  def deleteVersion( pmv:PolicyModelVersion ): Future[Int] = deleteVersion(pmv.parentId, pmv.version)
+  
+  def deleteVersion( modelId:String, versionNumber:Int ):Future[Int] = {
+    db.run( PolicyModelVersions.filter(pmvr=>(pmvr.version===versionNumber) && (pmvr.modelId===modelId)).delete )
+  }
   
 }
