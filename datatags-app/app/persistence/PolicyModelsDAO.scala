@@ -3,7 +3,7 @@ package persistence
 import java.sql.Timestamp
 import javax.inject.Inject
 
-import models.VersionedPolicyModel
+import models.{PolicyModelVersion, VersionedPolicyModel}
 import play.api.Logger
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -18,6 +18,7 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
   import profile.api._
   
   private val VersionedPolicyModels = TableQuery[VersionedPolicyModelTable]
+  private val PolicyModelVersions = TableQuery[PolicyModelVersionTable]
   
   def add( vpm:VersionedPolicyModel ):Future[VersionedPolicyModel] = {
     val nc = vpm.copy(created = new Timestamp(System.currentTimeMillis()))
@@ -29,7 +30,6 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
   def update( vpm:VersionedPolicyModel ):Future[Int] = db.run {
     VersionedPolicyModels.insertOrUpdate(vpm)
   }
-  
   
   def getVersionedModel( id:String ):Future[Option[VersionedPolicyModel]] = {
     db.run {
@@ -51,5 +51,16 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
       i>0
     } )
   }
+  
+  def listVersionsFor( modelId:String ):Future[Seq[PolicyModelVersion]] = {
+    db.run{
+      PolicyModelVersions.filter( _.modelId === modelId ).sortBy( _.version.desc ).result
+    }
+  }
+  
+  def addNewVersion
+  def updateVersion
+  def deleteVersion
+  def getLatestVersion
   
 }

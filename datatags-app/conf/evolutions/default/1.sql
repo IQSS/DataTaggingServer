@@ -1,7 +1,7 @@
 # -- Generate the versioned policy model table
 
 # -- !Ups
-create table versioned_policy_model(
+create table versioned_policy_models (
   id varchar(64) PRIMARY KEY,
   title varchar(1024),
   note text,
@@ -9,5 +9,5 @@ create table versioned_policy_model(
 )
 
 # -- !Downs
-drop table versioned_policy_model;
+drop table versioned_policy_models;
 
