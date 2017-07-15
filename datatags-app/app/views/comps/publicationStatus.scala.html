@@ -1,0 +1,6 @@
+@(ps:PublicationStatus.Value)
+@ps match {
+  case PublicationStatus.Private   => {<span class="label label-default">private</span>}
+  case PublicationStatus.LinkOnly  => {<span class="label label-info">by link only</span>}
+  case PublicationStatus.Published => {<span class="label label-primary">public</span>}
+}

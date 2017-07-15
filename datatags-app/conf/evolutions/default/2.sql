@@ -4,7 +4,7 @@
 create table policy_model_versions (
   version_num INT,
   model_id varchar(64),
-  publication_statue varchar(9),
+  publication_status varchar(9),
   commenting_status varchar(17),
   last_update TIMESTAMP,
   note TEXT,

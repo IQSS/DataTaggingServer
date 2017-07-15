@@ -1,0 +1,67 @@
+@(form:Form[PmvFormData], modelId:String, versionNumber:Option[Int])
+
+@scripts = {
+  <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
+  <script type="text/javascript" src="@routes.Assets.at("js/versionedPolicyModelEditor.js")"></script>
+}
+
+
+@templates.bsNavBar("Versioned Policy Model Editor", 'backOffice, scripts ) {
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Policy Model Version Editor</h3>
+      <div class="help-block">
+        Use this page to @if(versionNumber.isDefined){edit}else{create} a single version of policy model.
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <form class="form-horizontal" action="@versionNumber.map(n=>routes.PolicyKitManagementCtrl.doSaveVersion(modelId, n)).getOrElse(routes.PolicyKitManagementCtrl.doSaveNewVersion(modelId))" method="POST">
+        <div class="form-group">
+          <label for="publicationStatusSelect" class="col-sm-2 control-label">Publication Status</label>
+          <div class="col-sm-10">
+            <select class="form-control" name="publicationStatus" id="publicationStatusSelect">
+              @for( v <- PublicationStatus.values ){
+                <option value="@v.toString" @if(form("publicationStatus").value.get==v.toString){selected}>@v.toString</option>
+              }
+            </select>
+            <span class="helper-block">
+              The model's publication status decides which users can view it: Logged in users, those who have a special link, or everyone.
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="commentingStatusSelect" class="col-sm-2 control-label">Commenting Status</label>
+          <div class="col-sm-10">
+            <select class="form-control" name="commentingStatus" id="commentingStatusSelect">
+            @for( v <- CommentingStatus.values ){
+              <option value="@v.toString" @if(form("commentingStatus").value.get==v.toString){selected}>@v.toString</option>
+            }
+            </select>
+            <span class="helper-block">
+              The model's commenting status decides which users can comment on it: Logged in users, those who have a special link, or no users.
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="noteInput" class="col-sm-2 control-label">Note</label>
+          <div class="col-sm-10">
+            <textarea id="noteInput" name="note" class="form-control" rows="5">@form("note").value.getOrElse("")</textarea>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col-md-12 text-right">
+            <hr>
+            <a href="@routes.PolicyKitManagementCtrl.showVpmPage(modelId)" class="btn btn-default">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+}

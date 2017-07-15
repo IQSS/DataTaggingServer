@@ -1,4 +1,4 @@
-@(vpm:VersionedPolicyModel, enableEdits:Boolean)
+@(vpm:VersionedPolicyModel, versions:Seq[PolicyModelVersion], enableEdits:Boolean, message:Option[String] )
 
 @templates.bsNavBar("Versioned Policy Model Editor", 'backOffice ) {
 
@@ -7,12 +7,24 @@
       <h3>@if(enableEdits){
         <div class="pull-right">
           <a class="btn btn-default" href="@routes.PolicyKitManagementCtrl.showEditVpmPage(vpm.id)">
-            <i class="fa fa-edit"></i> Edit</a></div>}
+            <i class="fa fa-edit"></i> Edit</a>
+        </div>
+      }
         @vpm.title
       </h3>
       <h6><code>@vpm.id</code></h6>
     </div>
   </div>
+  @for( m <- message ){
+    <div class="row">
+      <div class="col-md-12">
+        <div class="alert alert-info alert-dismissable" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          @m
+        </div>
+      </div>
+    </div>
+  }
   @if( vpm.note.trim.nonEmpty ) {
     <div class="row">
       <div class="col-md-12">
@@ -22,10 +34,52 @@
   }
   <div class="row">
     <div class="col-md-12">
-      <h5>Versions</h5>
-      <div class="noData">
-        This model currently has no versions. @if(enableEdits){Why not <a href="">add one</a>?}
-      </div>
+      <h4>
+        <div class="pull-right">
+          <a class="btn btn-default" href="@routes.PolicyKitManagementCtrl.showNewVersionPage(vpm.id)">
+            <i class="fa fa-plus-circle"></i> Add New Version</a>
+        </div>
+        Versions
+        <div class="clearfix"></div>
+      </h4>
+      @if( versions.isEmpty ) {
+        <div class="noData">
+          This model currently has no versions. @if(enableEdits){Why not <a href="@routes.PolicyKitManagementCtrl.showNewVersionPage(vpm.id)">add one</a>?}
+        </div>
+      } else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Publication Status</th>
+              <th>Commenting Status</th>
+              <th>Last Update</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for( v <- versions ) {
+              <tr>
+                <td>@v.version</td>
+                <td>@comps.publicationStatus(v.publicationStatus)</td>
+                <td>@comps.commentingStatus(v.commentingStatus)</td>
+                <td>@v.lastUpdate</td>
+                <td>
+                  <a class="btn btn-default btn-sm" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(v.parentId, v.version)"><i class="fa fa-edit"></i> Edit</a>
+                  <a class="btn btn-primary btn-sm" href=""><i class="fa fa-play"></i> Run</a>
+                </td>
+              </tr>
+              @if(v.note.trim.nonEmpty){
+                <tr>
+                  <td>&nbsp;</td>
+                  <td colspan="3" class="noteTd">@v.note</td>
+                  <td>&nbsp;</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      }
     </div>
   </div>
 }

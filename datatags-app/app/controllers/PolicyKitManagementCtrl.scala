@@ -4,7 +4,7 @@ import java.sql.Timestamp
 import java.util.Date
 import javax.inject.Inject
 
-import models.{PolicyModelKits, VersionedPolicyModel}
+import models._
 import persistence.PolicyModelsDAO
 import play.api.Logger
 import play.api.cache.AsyncCacheApi
@@ -23,6 +23,14 @@ case class VpmFormData( id:String, title:String, note:String) {
   
 }
 
+case class PmvFormData( publicationStatus:String,
+                        commentingStatus:String,
+                        note:String
+                      )
+
+object  PmvFormData {
+  def from(pmv:PolicyModelVersion) = PmvFormData( pmv.publicationStatus.toString, pmv.commentingStatus.toString, pmv.note)
+}
 
 /**
   * Management of the policy models versions is done here.
@@ -32,22 +40,36 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
   
   implicit private val ec = cc.executionContext
   
-  private val validTitle = "^[-._a-zA-Z0-9]+$".r
+  private val validModelId = "^[-._a-zA-Z0-9]+$".r
   val vpmForm = Form(
     mapping(
       "id" -> text(minLength = 1, maxLength = 64)
                   .verifying( "Illegal characters found. Use letters, numbers, and -_. only.",
-                    s=>s.isEmpty || validTitle.findFirstIn(s).isDefined),
+                    s=>s.isEmpty || validModelId.findFirstIn(s).isDefined),
       "title" -> nonEmptyText,
       "note" -> text
     )(VpmFormData.apply)(VpmFormData.unapply)
   )
   
+  val modelForm = Form(
+    mapping(
+      "publicationStatus" -> text,
+      "commentingStatus"  -> text,
+      "note" -> text
+    )(PmvFormData.apply)(PmvFormData.unapply)
+  )
+  
   def showVpmPage(id:String)= Action.async { req =>
-    models.getVersionedModel(id).map({
-      case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
-      case Some(vpm) => Ok( views.html.backoffice.versionedPolicyModelViewer(vpm, true) )
-    })
+    for {
+      model <- models.getVersionedModel(id)
+      versions <- models.listVersionsFor(id)
+    } yield {
+      model match {
+        case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
+        case Some(vpm) => Ok( views.html.backoffice.versionedPolicyModelViewer(vpm, versions, true, req.flash.get("message")) )
+      }
+    }
+    
   }
   
   def showNewVpmPage = Action{ req =>
@@ -71,7 +93,7 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
         case None => {
           models.add(vpmFd.toVersionedPolicyModel).map( _ => Redirect(routes.PolicyKitManagementCtrl.showVpmList).flashing("message"->"Model '%s' created.".format(vpmFd.id)))
         }
-        case Some(vpm) => {
+        case Some(_) => {
           Future( Ok(views.html.backoffice.versionedPolicyModelEditor(vpmForm.fill(vpmFd).withError("id","Id must be unique"), true)) )
         }
       })
@@ -82,7 +104,7 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     vpmForm.bindFromRequest.fold(
       formWithErrors => {
         Logger.info( formWithErrors.errors.mkString("\n") )
-        Future( Ok(views.html.backoffice.versionedPolicyModelEditor(formWithErrors, false)) )
+        Future( BadRequest(views.html.backoffice.versionedPolicyModelEditor(formWithErrors, false)) )
       },
       vpmFd => models.getVersionedModel(vpmFd.id).flatMap({
         case None => {
@@ -110,4 +132,64 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
             else NotFound(Json.obj("result"->false))
     )
   }
+  
+  def doSaveNewVersion(modelId:String) = Action.async{ implicit req =>
+    modelForm.bindFromRequest.fold(
+      formWithErrors => Future(BadRequest(views.html.backoffice.policyModelVersionEditor(formWithErrors, modelId, None))),
+      pfd => {
+        val modelVersion = PolicyModelVersion(-1, modelId, new Timestamp(System.currentTimeMillis()),
+          PublicationStatus.withName(pfd.publicationStatus), CommentingStatus.withName(pfd.commentingStatus),
+          pfd.note
+        )
+        models.addNewVersion(modelVersion).map( mv =>
+          Redirect(routes.PolicyKitManagementCtrl.showVpmPage(modelId)).flashing( "message"->"Created new version '%d'.".format(mv.version) )
+        )
+      }
+    )
+  }
+  
+  def showNewVersionPage(modelId:String) = Action.async{ implicit req =>
+    models.getVersionedModel(modelId).map({
+      case None => NotFound("Can't find model with id '%s'".format(modelId))
+      case Some(_) => Ok( views.html.backoffice.policyModelVersionEditor(
+        modelForm.fill(PmvFormData(PublicationStatus.Private.toString, CommentingStatus.Everyone.toString, "")),
+        modelId,
+        None))
+    })
+    
+  }
+  
+  def showVersionPage(modelId:String, vNum:Int) = Action{ implicit req =>
+    Ok("impl")
+  }
+  
+  def showEditVersionPage(modelId:String, vNum:Int) = Action.async{ implicit req =>
+    models.getModelVersion(modelId, vNum).map({
+      case None => NotFound("Cannot find model version %s/%d".format(modelId, vNum))
+      case Some(v) => Ok(views.html.backoffice.policyModelVersionEditor(
+        modelForm.fill( PmvFormData.from(v) ),
+        modelId,
+        Some(vNum)
+      ))
+    })
+  }
+  
+  def doSaveVersion(modelId:String, vNum:Int) = Action.async{ implicit req =>
+    Logger.info("Saving version %s/%d".format(modelId, vNum))
+    modelForm.bindFromRequest.fold(
+      formWithErrors => Future(BadRequest(views.html.backoffice.policyModelVersionEditor(formWithErrors, modelId, Some(vNum)))),
+      pfd => {
+        val modelVersion = PolicyModelVersion(vNum, modelId, new Timestamp(System.currentTimeMillis()),
+          PublicationStatus.withName(pfd.publicationStatus), CommentingStatus.withName(pfd.commentingStatus),
+          pfd.note
+        )
+        models.updateVersion(modelVersion).map( mv =>
+          Redirect(routes.PolicyKitManagementCtrl.showVpmPage(mv.parentId)).flashing( "message"->"Version '%d' updated.".format(vNum) )
+        )
+      }
+    )
+  }
+  
+  
+  
 }

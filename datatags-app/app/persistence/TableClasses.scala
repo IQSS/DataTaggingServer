@@ -48,7 +48,7 @@ class PolicyModelVersionTable(tag:Tag) extends Table[PolicyModelVersion](tag, "p
   
   def * = (version, modelId, lastUpdate, publicationStatus, commentingStatus, note) <> (
     (t:(Int,String,Timestamp,String,String,String)) => PolicyModelVersion(t._1,t._2,t._3,PublicationStatus.withName(t._4), CommentingStatus.withName(t._5), t._6),
-    (pmv:PolicyModelVersion) => Some((pmv.version, pmv.parentId, pmv.lastUpdate, pmv.publicationStatue.toString, pmv.commentingStatus.toString, pmv.note))
+    (pmv:PolicyModelVersion) => Some((pmv.version, pmv.parentId, pmv.lastUpdate, pmv.publicationStatus.toString, pmv.commentingStatus.toString, pmv.note))
   )
   
 }

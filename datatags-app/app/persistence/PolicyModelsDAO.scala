@@ -65,6 +65,11 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
     }
   }
   
+  def getModelVersion(modelId:String, versionNum:Int):Future[Option[PolicyModelVersion]] = {
+    db.run( PolicyModelVersions.filter(r=> (r.version === versionNum) && (r.modelId===modelId)).result )
+         .map( res => res.headOption )
+  }
+  
   def addNewVersion(pmv:PolicyModelVersion):Future[PolicyModelVersion] = {
     for {
       maxVersionNum <- maxVersionNumberFor(pmv.parentId)
@@ -75,9 +80,11 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
   }
   
   def updateVersion( pmv:PolicyModelVersion ):Future[PolicyModelVersion] = {
-      db.run{
-        (PolicyModelVersions returning PolicyModelVersions).insertOrUpdate(pmv.ofNow).map(_.get)
-      }
+    val nv = pmv.ofNow
+    db.run{
+      PolicyModelVersions.insertOrUpdate(nv)
+    }.map( _ => nv )
+
   }
   
   def getLatestVersion( modelId:String ):Future[Option[PolicyModelVersion]] = {

@@ -29,7 +29,7 @@ object CommentingStatus extends Enumeration {
   * A version of a policy model. Holds a 1-to-1 connection with an actual PolicyModel used by CliRunner et.al.
   */
 case class PolicyModelVersion( version:Int, parentId:String, lastUpdate:Timestamp,
-                               publicationStatue:PublicationStatus.Value, commentingStatus:CommentingStatus.Value,
+                               publicationStatus:PublicationStatus.Value, commentingStatus:CommentingStatus.Value,
                                note:String
                              ) {
   /** Return a copy with the lastUpdate field set to `now` */

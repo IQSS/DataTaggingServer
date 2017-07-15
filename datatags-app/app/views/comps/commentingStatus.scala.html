@@ -1,0 +1,6 @@
+@(cs:CommentingStatus.Value)
+@cs match {
+  case CommentingStatus.Closed             => {<span class="label label-default">closed</span>}
+  case CommentingStatus.LoggedInUsersOnly  => {<span class="label label-info">users only</span>}
+  case CommentingStatus.Everyone           => {<span class="label label-primary">everyone</span>}
+}
