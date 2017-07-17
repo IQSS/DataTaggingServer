@@ -12,6 +12,8 @@ routesGenerator := InjectedRoutesGenerator
 
 resolvers += "Typesafe repository releases" at "http://repo.typesafe.com/typesafe/releases/"
 
+resolvers += Resolver.sonatypeRepo("releases")
+
 libraryDependencies ++= Seq(
   ehcache,
   ws,
@@ -21,7 +23,9 @@ libraryDependencies ++= Seq(
   "com.vladsch.flexmark" % "flexmark-all" % "0.20.0",
   "org.postgresql" % "postgresql" % "42.0.0",
   "com.typesafe.play" %% "play-slick" % "3.0.0",
-  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0"
+  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
+  "org.mindrot" % "jbcrypt" % "0.3m"
+
 )
 
 LessKeys.compress in Assets := true

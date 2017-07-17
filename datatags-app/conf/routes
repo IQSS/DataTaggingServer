@@ -43,6 +43,14 @@ GET     /admin/vpms/:id       controllers.PolicyKitManagementCtrl.showVpmPage(id
 GET     /vpms/          controllers.PolicyKitManagementCtrl.showVpmList
 GET     /vpms/:id       controllers.Application.showVersionedPolicyModel(id)
 
+# Users
+GET     /admin/users/            controllers.UsersCtrl.showUserList
+GET     /admin/users/new         controllers.UsersCtrl.showNewUserPage
+POST    /admin/users/            controllers.UsersCtrl.doSaveNewUser
+GET     /admin/users/:id/edit    controllers.UsersCtrl.showEditUserPage(id)
+POST    /admin/users/:id/edit    controllers.UsersCtrl.doSaveUser(id)
+POST    /admin/api/users/        controllers.UsersCtrl.apiAddUser
+
 # Map static resources from the /public folder to the /assets URL path
 GET  /assets/*file           controllers.Assets.at(path="/public", file)
 GET  /javascriptRoutes       controllers.Application.javascriptRoutes

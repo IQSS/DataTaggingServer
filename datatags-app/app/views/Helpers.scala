@@ -18,7 +18,7 @@ import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 import edu.harvard.iq.datatags.model.values.TagValue
-import play.api.data.Field
+import play.api.data.{Field, FormError}
 
 object Helpers {
   
@@ -169,5 +169,12 @@ object Helpers {
   def fieldStatus(f:Field):String = if(f.hasErrors) "has-error" else ""
   
   def jsEscape(s:String) = s.replaceAll("\"", "\\\"")
+  
+  val msg2eng = Map(
+    "error.email" -> "Invalid email address",
+    "error.minLength" -> "Field cannot be empty"
+  )
+  
+  def messageToEng( fe:FormError ):String = msg2eng.getOrElse(fe.message,fe.message)
   
 }

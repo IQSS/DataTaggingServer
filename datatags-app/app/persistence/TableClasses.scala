@@ -1,9 +1,8 @@
 package persistence
 
-import models.{CommentingStatus, PolicyModelVersion, PublicationStatus, VersionedPolicyModel}
+import models._
 import slick.lifted.Tag
 import slick.jdbc.PostgresProfile.api._
-
 import java.sql.Timestamp
 /*
  * Table classes for Slick live in this file.
@@ -53,3 +52,15 @@ class PolicyModelVersionTable(tag:Tag) extends Table[PolicyModelVersion](tag, "p
   
 }
 
+class UserTable(tag:Tag) extends Table[User](tag,"users") {
+  
+  def username = column[String]("username", O.PrimaryKey)
+  def name     = column[String]("name")
+  def email    = column[String]("email")
+  def orcid    = column[String]("orcid")
+  def url      = column[String]("url")
+  def encPass  = column[String]("encrypted_password")
+  
+  def * = (username, name, email, orcid, url, encPass) <> (User.tupled, User.unapply)
+  
+}

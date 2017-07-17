@@ -2,7 +2,7 @@ package controllers
 
 import java.nio.file.Paths
 import java.sql.Timestamp
-import java.util.{Date, UUID}
+import java.util.UUID
 import javax.inject.{Inject, Named}
 
 import actors.ModelUploadProcessingActor.PrepareModel
