@@ -1,6 +1,14 @@
-@(vpm:VersionedPolicyModel, versions:Seq[PolicyModelVersion], enableEdits:Boolean, message:Option[String] )
+@(vpm:VersionedPolicyModel, versions:Seq[(PolicyModelVersion, Option[PolicyModelVersionKit])], enableEdits:Boolean, message:Option[String] )
 
-@templates.bsNavBar("Versioned Policy Model Editor", 'backOffice ) {
+@scripts ={
+  @if(versions.map(_._2).exists(_.isEmpty)){
+    <script language="Javascript">
+      window.setTimeout( function(){ window.location.reload(); }, 3000 );
+    </script>
+  }
+}
+
+@templates.bsNavBar("Versioned Policy Model Editor", 'backOffice, scripts ) {
 
   <div class="row">
     <div class="col-md-12">
@@ -60,21 +68,35 @@
           <tbody>
             @for( v <- versions ) {
               <tr>
-                <td>@v.version</td>
-                <td>@comps.publicationStatus(v.publicationStatus)</td>
-                <td>@comps.commentingStatus(v.commentingStatus)</td>
-                <td>@v.lastUpdate</td>
+                <td>@v._1.version</td>
+                <td>@comps.publicationStatus(v._1.publicationStatus)</td>
+                <td>@comps.commentingStatus(v._1.commentingStatus)</td>
+                <td>@v._1.lastUpdate</td>
                 <td>
-                  <a class="btn btn-default btn-sm" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(v.parentId, v.version)"><i class="fa fa-edit"></i> Edit</a>
-                  <a class="btn btn-primary btn-sm" href=""><i class="fa fa-play"></i> Run</a>
+                  <a class="btn btn-default btn-sm" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(v._1.parentId, v._1.version)"><i class="fa fa-edit"></i> Edit</a>
+                  @v._2 match {
+                    case None      => {<button type="button" class="btn btn-default" disabled>Processing...</button>}
+                    case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary btn-sm" href="@routes.Interview.interviewIntro(v._1.parentId, v._1.version)"><i class="fa fa-play"></i>Run</a>}}
+                  }
                 </td>
               </tr>
-              @if(v.note.trim.nonEmpty){
+              @if(v._1.note.trim.nonEmpty){
                 <tr>
                   <td>&nbsp;</td>
-                  <td colspan="3" class="noteTd">@v.note</td>
+                  <td colspan="3" class="noteTd">@v._1.note</td>
                   <td>&nbsp;</td>
                 </tr>
+              }
+              @for( kit <- v._2 ){
+                @if(kit.messages.nonEmpty){
+                  <tr>
+                    <td>&nbsp;</td>
+                    <td colspan="3" class="noteTd">
+                      @comps.kitMessageList(kit.messages)
+                    </td>
+                    <td>&nbsp;</td>
+                  </tr>
+                }
               }
             }
           </tbody>

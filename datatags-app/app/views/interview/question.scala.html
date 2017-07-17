@@ -1,5 +1,5 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@( questionnaireId: String,
+@( kitKey: KitKey,
    questionNode: edu.harvard.iq.datatags.model.graphs.nodes.AskNode,
    dataTags: edu.harvard.iq.datatags.model.values.CompoundValue,
    history:Seq[edu.harvard.iq.datatags.model.graphs.nodes.Node],
@@ -45,7 +45,7 @@
 
             </div>
             <div class="panel-footer">
-                @helper.form( action=routes.Interview.answer(questionnaireId, questionNode.getId), 'id->"answerForm" ) {
+                @helper.form( action=routes.Interview.answer(kitKey.modelId, kitKey.version, questionNode.getId), 'id->"answerForm" ) {
                     @for( ans <- questionNode.getAnswers ) {
                         <button class="btn btn-default"
                                 onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();" >
@@ -66,7 +66,7 @@
             </div>
             <div class="panel-body">
                 @if( answerHistory.nonEmpty ) {
-                    @comps.answerHistory(answerHistory, questionnaireId, reverse=true, serializer, loc)
+                    @comps.answerHistory(answerHistory, kitKey, reverse=true, serializer, loc)
                 } else {
                     <div class="well well-sm text-center">
                         <span class="muted small">This space will contain your answers, and will allow you to revisit them when needed.</span>

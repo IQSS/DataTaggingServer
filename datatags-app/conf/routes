@@ -3,22 +3,22 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index
-GET     /interviews/                controllers.Application.questionnaireCatalog
+GET     /                                        controllers.Application.index
+GET     /interviews/                             controllers.Application.questionnaireCatalog
 GET     /interviews/tagDownload                  controllers.Interview.downloadTags
-GET     /interviews/:questionnaireId/intro       controllers.Interview.interviewIntro(questionnaireId)
-GET     /interviews/:questionnaireId/start       controllers.Interview.startInterview(questionnaireId, localizationName:Option[String]?=None)
-GET     /interviews/:questionnaireId/postReadme  controllers.Interview.startInterviewPostReadme(questionnaireId)
-GET     /interviews/:questionnaireId/q/:nodeId   controllers.Interview.askNode(questionnaireId, nodeId)
-POST    /interviews/:questionnaireId/q/:nodeId   controllers.Interview.answer(questionnaireId, nodeId)
-GET     /interviews/:questionnaireId/accept      controllers.Interview.accept(questionnaireId)
-GET     /interviews/:questionnaireId/reject      controllers.Interview.reject(questionnaireId)
-POST    /interviews/:questionnaireId/revisit/    controllers.Interview.revisit(questionnaireId)
+GET     /interviews/:modelId/:versionNum/intro       controllers.Interview.interviewIntro(modelId, versionNum:Int)
+GET     /interviews/:modelId/:versionNum/start       controllers.Interview.startInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
+GET     /interviews/:modelId/:versionNum/postReadme  controllers.Interview.startInterviewPostReadme(modelId, versionNum:Int)
+GET     /interviews/:modelId/:versionNum/q/:nodeId   controllers.Interview.askNode(modelId, versionNum:Int, nodeId)
+POST    /interviews/:modelId/:versionNum/q/:nodeId   controllers.Interview.answer(modelId, versionNum:Int, nodeId)
+GET     /interviews/:modelId/:versionNum/accept      controllers.Interview.accept(modelId, versionNum:Int)
+GET     /interviews/:modelId/:versionNum/reject      controllers.Interview.reject(modelId, versionNum:Int)
+POST    /interviews/:modelId/:versionNum/revisit/    controllers.Interview.revisit(modelId, versionNum:Int)
 
 GET  /visualizations/*path   controllers.Application.visualizationFile(path)
 
 # Requested Interviews
-POST	/api/1/interviewRequest/:interviewId   controllers.API.requestInterview(interviewId)
+POST	/api/1/interviewRequest/:modelId/:versionNum   controllers.API.requestInterview(modelId, versionNum:Int)
 GET		/requestedInterview/:uniqueLinkId      controllers.RequestedInterview.start(uniqueLinkId: String)
 
 POST	/postBackTo/:uniqueLinkId				controllers.RequestedInterview.postBackTo(uniqueLinkId: String)
@@ -37,22 +37,19 @@ GET     /admin/vpms/:modelId/versions/new/edit   controllers.PolicyKitManagement
 GET     /admin/vpms/:modelId/versions/:vNum      controllers.PolicyKitManagementCtrl.showVersionPage(modelId, vNum:Int)
 GET     /admin/vpms/:modelId/versions/:vNum/edit controllers.PolicyKitManagementCtrl.showEditVersionPage(modelId, vNum:Int)
 POST    /admin/vpms/:modelId/versions/:vNum      controllers.PolicyKitManagementCtrl.doSaveVersion(modelId, vNum:Int)
+GET     /admin/vpms/:id       controllers.PolicyKitManagementCtrl.showVpmPage(id)
 
 # Content (and management)
 GET     /vpms/          controllers.PolicyKitManagementCtrl.showVpmList
-GET     /vpms/:id       controllers.PolicyKitManagementCtrl.showVpmPage(id)
-
-# API
-POST  /api/admin/reload-models controllers.Application.reloadModels
+GET     /vpms/:id       controllers.Application.showVersionedPolicyModel(id)
 
 # Map static resources from the /public folder to the /assets URL path
 GET  /assets/*file           controllers.Assets.at(path="/public", file)
 GET  /javascriptRoutes       controllers.Application.javascriptRoutes
 
 # Game and funs
-GET	    /test/tagsDisplay/:id  controllers.Test.showTagTree(id, loc:Option[String]?=None)
+GET	    /test/tagsDisplay/:modelId/:versionNum  controllers.Test.showTagTree(modelId, versionNum:Int, loc:Option[String]?=None)
 
-GET     /test/visualizeFiles              controllers.VisualizerController.getVisualizeFiles
 PUT     /test/models/:name                controllers.Test.addVersionedModel(name)
 GET     /test/models/                     controllers.Test.listVersionedModels
 GET     /test/models/:name                controllers.Test.showModel(name)

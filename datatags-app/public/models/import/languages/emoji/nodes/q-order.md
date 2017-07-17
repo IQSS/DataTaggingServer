@@ -1,1 +1,0 @@
-Do the 🐶 s first?

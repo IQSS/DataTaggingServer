@@ -1,0 +1,80 @@
+@(vpm:VersionedPolicyModel, versions:Seq[PolicyModelVersionKit] )
+
+
+@templates.bsNavBar(vpm.title, 'frontEnd ) {
+
+  <div class="row">
+    <div class="col-md-8">
+      <h3>
+        @vpm.title
+      </h3>
+      <h6><code>@vpm.id</code></h6>
+    </div>
+    @if( versions.nonEmpty ) {
+      <div class="col-md-4">
+        <div class="text-right">
+          <a href="@routes.Interview.interviewIntro(versions.head.dbData.parentId, versions.head.dbData.version)"
+          class="btn btn-lg btn-primary">
+            <i class="fa fa-play"></i> Run Latest Version
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+
+  @if( vpm.note.trim.nonEmpty ) {
+    <div class="row">
+      <div class="col-md-12">
+        @vpm.note
+      </div>
+    </div>
+  }
+
+  <div class="row">
+    <div class="col-md-12">
+      @if( versions.isEmpty ) {
+        <div class="noData">
+          This model currently has no runnable versions.
+        </div>
+      } else {
+        <h4>
+          All Versions
+        </h4>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Publication Status</th>
+              <th>Commenting Status</th>
+              <th>Last Update</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for( v <- versions ) {
+              <tr>
+                <td>@v.dbData.version</td>
+                <td>@comps.publicationStatus(v.dbData.publicationStatus)</td>
+                <td>@comps.commentingStatus(v.dbData.commentingStatus)</td>
+                <td>@v.dbData.lastUpdate</td>
+                <td>
+                  @if(v.canRun){
+                    <a class="btn btn-primary btn-sm" href="@routes.Interview.interviewIntro(v.dbData.parentId, v.dbData.version)"><i class="fa fa-play"></i> Run</a>
+                  }
+                </td>
+              </tr>
+              @if(v.dbData.note.trim.nonEmpty){
+                <tr>
+                  <td>&nbsp;</td>
+                  <td colspan="3" class="noteTd">@v.dbData.note</td>
+                  <td>&nbsp;</td>
+                </tr>
+              }
+
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+}

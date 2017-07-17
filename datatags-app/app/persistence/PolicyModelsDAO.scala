@@ -1,11 +1,12 @@
 package persistence
 
+import java.nio.file.{Files, Paths}
 import java.sql.Timestamp
 import java.util.Date
 import javax.inject.Inject
 
 import models.{PolicyModelVersion, VersionedPolicyModel}
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
@@ -15,17 +16,21 @@ import scala.concurrent.ExecutionContext.Implicits.global
 /**
   * Used to access policy model records in the database.
   */
-class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
+class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvider, conf:Configuration) extends HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
   
   private val VersionedPolicyModels = TableQuery[VersionedPolicyModelTable]
   private val PolicyModelVersions = TableQuery[PolicyModelVersionTable]
+  private val modelStorage = Paths.get(conf.get[String]("taggingServer.models.folder"))
   
   def add( vpm:VersionedPolicyModel ):Future[VersionedPolicyModel] = {
     val nc = vpm.copy(created = new Timestamp(System.currentTimeMillis()))
     db.run {
       VersionedPolicyModels += nc
-    }.map( _ => nc )
+    }.map( _ =>{
+      Files.createDirectory(modelStorage.resolve(nc.id))
+      nc
+    })
   }
   
   def update( vpm:VersionedPolicyModel ):Future[Int] = db.run {
@@ -48,9 +53,11 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
     db.run {
       VersionedPolicyModels.filter( _.id === id ).delete
     } map ( i => {
-      Logger.info("Delete res: " + i)
+      if ( i > 0 ) {
+        Files.deleteIfExists(modelStorage.resolve(id))
+      }
       i>0
-    } )
+    })
   }
   
   def listVersionsFor( modelId:String ):Future[Seq[PolicyModelVersion]] = {
@@ -76,7 +83,10 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
       nextVersionNum = maxVersionNum.getOrElse(0)+1
       nPmv = pmv.copy(version = nextVersionNum).ofNow
       _ <- db.run( PolicyModelVersions  += nPmv )
-    } yield nPmv
+    } yield {
+      Files.createDirectory( modelStorage.resolve(pmv.parentId).resolve(nPmv.version.toString))
+      nPmv
+    }
   }
   
   def updateVersion( pmv:PolicyModelVersion ):Future[PolicyModelVersion] = {

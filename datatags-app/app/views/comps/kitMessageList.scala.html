@@ -1,0 +1,14 @@
+@import edu.harvard.iq.datatags.tools.ValidationMessage
+@(messages:Seq[ValidationMessage])
+@cap(s:String)={@s(0).toUpper@s.substring(1).toLowerCase}
+@icon(l:ValidationMessage.Level)={@Map(ValidationMessage.Level.ERROR->"fa-times-circle",
+    ValidationMessage.Level.WARNING->"fa-exclamation-triangle",
+    ValidationMessage.Level.INFO->"fa-info-circle"
+  )(l)}
+@if(messages.nonEmpty){
+  <ol class="modelMessageList">
+    @for( m <- messages ) {
+      <li class="message@cap(m.getLevel.toString)"><i class="fa @icon(m.getLevel)" aria-hidden="true"></i> @m.getMessage</li>
+    }
+  </ol>
+}

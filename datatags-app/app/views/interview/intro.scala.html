@@ -33,11 +33,11 @@
               <div class="col-xs--12">
                 @if( qKit.model.getLocalizations.size>1 ) {
                   @for( locName <- qKit.model.getLocalizations ) {
-                    <a href="@routes.Interview.startInterview(qKit.id, Some(locName))"
+                    <a href="@routes.Interview.startInterview(qKit.id.modelId, qKit.id.version, Some(locName))"
                     class="btn btn-primary btn-lg">Start Interview (@locName)</a>
                   }
                 } else {
-                  <a href="@routes.Interview.startInterview(qKit.id)"
+                  <a href="@routes.Interview.startInterview(qKit.id.modelId, qKit.id.version)"
                   class="btn btn-primary btn-lg">Start Interview</a>
                 }
               </div>
@@ -52,9 +52,7 @@
       @if( qKit.messages.nonEmpty ){
         <h3>System Messages</h3>
         <ul>
-        @for(m <- qKit.messages) {
-          <li class="message-@m.getLevel.toString">@m.getMessage</li>
-        }
+        @comps.kitMessageList(qKit.messages)
         </ul>
       }
       @defining( qKit.availableVisualizations ) { avz =>
@@ -64,13 +62,13 @@
             @if( avz.decisionGraph.nonEmpty ) {
               <li><strong>Decision Graph:</strong></li>
               @for(p <- avz.decisionGraph) {
-                <li><a href="@routes.Application.visualizationFile(qKit.id + "/" + qKit.version + "/" + p.getFileName)">@p.getFileName.toString.split("\\.").last</a></li>
+                <li><a href="@routes.Application.visualizationFile(qKit.id.modelId + "/" + qKit.id.version + "/" + p.getFileName)">@p.getFileName.toString.split("\\.").last</a></li>
               }
             }
             @if( avz.policySpace.nonEmpty ) {
               <li><strong>Policy Space:</strong></li>
               @for(p <- avz.policySpace) {
-                <li><a href="@routes.Application.visualizationFile(qKit.id + "/" + qKit.version + "/" + p.getFileName)">@p.getFileName.toString.split("\\.").last</a></li>
+                <li><a href="@routes.Application.visualizationFile(qKit.id.modelId + "/" + qKit.id.version + "/" + p.getFileName)">@p.getFileName.toString.split("\\.").last</a></li>
               }
             }
           </ul>

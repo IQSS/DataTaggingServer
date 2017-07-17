@@ -12,15 +12,18 @@ import models.PolicyModelVersionKit
 import play.api.{Configuration, Logger}
 
 
-/**
-  * Created by mor_vilozni on 04/07/2017.
-  */
 
 object VisualizationActor {
   def props = Props[VisualizationActor]
   case class CreateVisualizationFiles(kitVersion:PolicyModelVersionKit)
 
 }
+
+/**
+  * This actor creates visualization files for PolicyModels folders.
+  *
+  * Created by mor_vilozni on 04/07/2017.
+  */
 class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
   private val style = configuration.get[String]("taggingServer.visualize.style")
   private val pathToDot = configuration.get[String]("taggingServer.visualize.pathToDot")
@@ -36,7 +39,7 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
   }
   
   def ensureVisualizationFolderExists(kitVersion: PolicyModelVersionKit): Path = {
-    val basePath=pathToFiles.resolve(kitVersion.id).resolve(kitVersion.version.toString)
+    val basePath=kitVersion.id.resolve(pathToFiles)
     Files.createDirectories(basePath)
     basePath
   }

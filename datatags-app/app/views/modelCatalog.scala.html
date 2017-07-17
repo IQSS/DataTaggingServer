@@ -1,0 +1,24 @@
+@(vpms: Seq[VersionedPolicyModel])
+
+@templates.bsNavBar("PolicyModels: Server Catalog", 'frontEnd) {
+  <div class="container" id="content">
+    <div class="row">
+      <div class="col-md-12">
+        <h1>Available Questionnaires</h1>
+        <p>
+          Click a policy model from the list to start its interview.
+        </p>
+        <ul class="list-unstyled">
+        @for(vpm <- vpms) {
+          <li>
+            <h4><a href="@routes.Application.showVersionedPolicyModel(vpm.id)">@vpm.title</a></h4>
+            @if( vpm.note!=null && vpm.note.trim.nonEmpty ) {
+              <p>@vpm.note</p>
+            }
+          </li>
+        }
+        </ul>
+      </div>
+    </div>
+  </div>
+}

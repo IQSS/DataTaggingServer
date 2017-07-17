@@ -18,7 +18,7 @@
   </div>
   <div class="row">
     <div class="col-md-12">
-      <form class="form-horizontal" action="@versionNumber.map(n=>routes.PolicyKitManagementCtrl.doSaveVersion(modelId, n)).getOrElse(routes.PolicyKitManagementCtrl.doSaveNewVersion(modelId))" method="POST">
+      <form class="form-horizontal" enctype="multipart/form-data" action="@versionNumber.map(n=>routes.PolicyKitManagementCtrl.doSaveVersion(modelId, n)).getOrElse(routes.PolicyKitManagementCtrl.doSaveNewVersion(modelId))" method="POST">
         <div class="form-group">
           <label for="publicationStatusSelect" class="col-sm-2 control-label">Publication Status</label>
           <div class="col-sm-10">
@@ -48,6 +48,16 @@
         </div>
 
         <div class="form-group">
+          <label for="zippedModel" class="col-sm-2 control-label">File</label>
+          <div class="col-sm-10">
+            <input type="file" name="zippedModel" id="zippedModel">
+            <span class="helper-block">
+              This file should be a .zip archive containing a policy model directory. <em>This field is mandatory.</em>
+            </span>
+          </div>
+        </div>
+
+        <div class="form-group">
           <label for="noteInput" class="col-sm-2 control-label">Note</label>
           <div class="col-sm-10">
             <textarea id="noteInput" name="note" class="form-control" rows="5">@form("note").value.getOrElse("")</textarea>
@@ -61,6 +71,8 @@
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </div>
+
+
       </form>
     </div>
   </div>

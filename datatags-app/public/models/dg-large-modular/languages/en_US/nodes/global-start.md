@@ -1,1 +1,0 @@
-Do the data concern living persons?

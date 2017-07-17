@@ -1,7 +1,7 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@(answerHistory: Seq[AnswerRecord], questionnaireId:String, reverse:Boolean, serializer:Serialization, loc:Option[Localization])
+@(answerHistory: Seq[AnswerRecord], kitKey:KitKey, reverse:Boolean, serializer:Serialization, loc:Option[Localization])
 @import views.Helpers
-@helper.form( action=routes.Interview.revisit(questionnaireId), 'id->"answerHistory") {
+@helper.form( action=routes.Interview.revisit(kitKey.modelId, kitKey.version), 'id->"answerHistory") {
     <ol class="answer-history">
         @defining( answerHistory.zipWithIndex ) { answerRecTuples =>
             @defining( if (reverse) answerRecTuples.reverse else answerRecTuples ) { answerRecOrdered =>

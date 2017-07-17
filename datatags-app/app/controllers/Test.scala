@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import edu.harvard.iq.datatags.model.types._
 import edu.harvard.iq.datatags.model.values.TagValue
-import models.{PolicyModelKits, VersionedPolicyModel}
+import models.{KitKey, PolicyModelKits, VersionedPolicyModel}
 import persistence.PolicyModelsDAO
 import play.api.mvc._
 import play.api.libs.json.Json
@@ -16,11 +16,6 @@ import scala.util.Random
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models:PolicyModelsDAO) extends InjectedController {
-
-  def nameCount( name:String, count:Int ) = Action.async {
-		val futureString = Future { (name+" ")*count }
-		futureString.map( s => Ok(views.html.nameCount( "Hello " + s, count)) )
-  }
 
   /**
 	 * test server for postBackTo in RequestedInterview
@@ -34,7 +29,8 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models
   	Ok(Json.obj("status" -> "OK", "redirectURL" -> userRedirectURL))
   }
 
-  def showTagTree(id:String, locName:Option[String]) = Action{ req =>
+  def showTagTree(modelId:String, versionNum:Int, locName:Option[String]) = Action{ req =>
+    val id = KitKey(modelId, versionNum)
     kits.get(id) match {
       case None => NotFound("Can't find interview with id " + id)
       case Some(kit) => Ok(views.html.tagsTree(kit.model.getSpaceRoot, generateInstance(kit.model.getSpaceRoot), locName.flatMap(kits.localization(id,_))) )

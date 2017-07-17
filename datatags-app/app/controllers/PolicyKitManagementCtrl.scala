@@ -1,12 +1,15 @@
 package controllers
 
+import java.nio.file.Paths
 import java.sql.Timestamp
-import java.util.Date
-import javax.inject.Inject
+import java.util.{Date, UUID}
+import javax.inject.{Inject, Named}
 
+import actors.ModelUploadProcessingActor.PrepareModel
+import akka.actor.ActorRef
 import models._
 import persistence.PolicyModelsDAO
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.cache.AsyncCacheApi
 import play.api.data.Forms._
 import play.api.data._
@@ -36,9 +39,11 @@ object  PmvFormData {
   * Management of the policy models versions is done here.
   */
 class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKits,
-                                         cc:ControllerComponents, models:PolicyModelsDAO) extends InjectedController {
+                                         cc:ControllerComponents, models:PolicyModelsDAO, config:Configuration,
+                                         @Named("upload-process-actor") uploadPostProcessor:ActorRef ) extends InjectedController {
   
   implicit private val ec = cc.executionContext
+  private val uploadPath = Paths.get(config.get[String]("taggingServer.model-uploads.folder"))
   
   private val validModelId = "^[-._a-zA-Z0-9]+$".r
   val vpmForm = Form(
@@ -66,10 +71,11 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     } yield {
       model match {
         case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
-        case Some(vpm) => Ok( views.html.backoffice.versionedPolicyModelViewer(vpm, versions, true, req.flash.get("message")) )
+        case Some(vpm) => Ok(
+          views.html.backoffice.versionedPolicyModelViewer(vpm, versions.map( v => (v, kits.get(KitKey.of(v))) ),
+                                                true, req.flash.get("message")) )
       }
     }
-    
   }
   
   def showNewVpmPage = Action{ req =>
@@ -91,7 +97,7 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
       },
       vpmFd => models.getVersionedModel(vpmFd.id).flatMap({
         case None => {
-          models.add(vpmFd.toVersionedPolicyModel).map( _ => Redirect(routes.PolicyKitManagementCtrl.showVpmList).flashing("message"->"Model '%s' created.".format(vpmFd.id)))
+          models.add(vpmFd.toVersionedPolicyModel).map( vpm => Redirect(routes.PolicyKitManagementCtrl.showVpmPage(vpm.id)).flashing("message"->"Model '%s' created.".format(vpmFd.id)))
         }
         case Some(_) => {
           Future( Ok(views.html.backoffice.versionedPolicyModelEditor(vpmForm.fill(vpmFd).withError("id","Id must be unique"), true)) )
@@ -133,16 +139,26 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     )
   }
   
-  def doSaveNewVersion(modelId:String) = Action.async{ implicit req =>
+  def doSaveNewVersion(modelId:String) = Action(parse.multipartFormData).async{ implicit req =>
     modelForm.bindFromRequest.fold(
       formWithErrors => Future(BadRequest(views.html.backoffice.policyModelVersionEditor(formWithErrors, modelId, None))),
       pfd => {
-        val modelVersion = PolicyModelVersion(-1, modelId, new Timestamp(System.currentTimeMillis()),
-          PublicationStatus.withName(pfd.publicationStatus), CommentingStatus.withName(pfd.commentingStatus),
-          pfd.note
-        )
-        models.addNewVersion(modelVersion).map( mv =>
-          Redirect(routes.PolicyKitManagementCtrl.showVpmPage(modelId)).flashing( "message"->"Created new version '%d'.".format(mv.version) )
+        req.body.file("zippedModel").map( file => {
+          val modelVersion = PolicyModelVersion(-1, modelId, new Timestamp(System.currentTimeMillis()),
+            PublicationStatus.withName(pfd.publicationStatus), CommentingStatus.withName(pfd.commentingStatus),
+            pfd.note
+          )
+          models.addNewVersion(modelVersion).map( mv => {
+            val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
+            file.ref.moveTo( destFile, replace=false )
+            uploadPostProcessor ! PrepareModel(destFile, mv)
+            Redirect(routes.PolicyKitManagementCtrl.showVpmPage(modelId)).flashing( "message"->"Created new version '%d'.".format(mv.version) )
+          })
+        }).getOrElse(
+          Future(Ok( views.html.backoffice.policyModelVersionEditor(
+            modelForm.fill(pfd),
+            modelId,
+            None)))
         )
       }
     )

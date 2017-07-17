@@ -10,7 +10,7 @@ case class RequestedInterviewSession(
   title: String,
   message: Option[String],
   returnButtonTitle:String,
-  kitId: String) {
+  kitId: KitKey) {
 
   val key:String = java.util.UUID.randomUUID().toString
   val sessionStart:Date = new Date

@@ -6,10 +6,14 @@ import javax.inject.Inject
 import play.api.mvc._
 import play.api.cache.Cached
 import models._
+import persistence.PolicyModelsDAO
 import play.api.{Configuration, Logger, routing}
 
 
-class Application @Inject()(cached: Cached, kits:PolicyModelKits, conf:Configuration) extends InjectedController {
+class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
+                            conf:Configuration, cc:ControllerComponents,
+                            kits:PolicyModelKits ) extends InjectedController {
+  implicit val ec = cc.executionContext
   
   private val visualizationsPath = Paths.get(conf.get[String]("taggingServer.visualize.folder"))
   private val MIME_TYPES = Map("svg"->"image/svg+xml", "pdf"->"application/pdf", "png"->"image/png")
@@ -21,9 +25,11 @@ class Application @Inject()(cached: Cached, kits:PolicyModelKits, conf:Configura
         routes.Application.questionnaireCatalog() ))
     }
   }
-
-  def questionnaireCatalog = Action {
-    Ok( views.html.questionnaireCatalog(kits.allKits) )
+  
+  def questionnaireCatalog = Action.async {
+    models.listAllVersionedModels.map( mdls =>
+      Ok( views.html.modelCatalog(mdls) )
+    )
   }
   
   def visualizationFile(path:String) = Action{ req =>
@@ -34,17 +40,6 @@ class Application @Inject()(cached: Cached, kits:PolicyModelKits, conf:Configura
       Ok( content ).withHeaders( ("Mime-type", MIME_TYPES.getOrElse(suffix.last.toLowerCase, "application/octet-stream")) )
     } else {
       NotFound("Visualization " + path + " not found.")
-    }
-  }
-  
-  def reloadModels = Action { req =>
-    Logger.info("reload model requested from " + req.connection.remoteAddress.toString)
-    if ( req.connection.remoteAddress.isLoopbackAddress ) {
-      
-      kits.dropAll()
-      Ok("Kits reloaded")
-    } else {
-      Unauthorized("Dropping models from localhost only")
     }
   }
   
@@ -60,6 +55,19 @@ class Application @Inject()(cached: Cached, kits:PolicyModelKits, conf:Configura
           routes.javascript.PolicyKitManagementCtrl.showVpmList
         )
       ).as("text/javascript")
+    }
+  }
+  
+  def showVersionedPolicyModel(id:String) = Action.async { req =>
+    for {
+      model <- models.getVersionedModel(id)
+      versions <- models.listVersionsFor(id)
+    } yield {
+      model match {
+        case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
+        case Some(vpm) => Ok(
+          views.html.versionedPolicyModelVersionSelector(vpm, versions.map(v => kits.get(KitKey.of(v))).filter(_.nonEmpty).map(_.get)))
+      }
     }
   }
 
