@@ -58,20 +58,28 @@
       @defining( qKit.availableVisualizations ) { avz =>
         @if( avz.hasData){
           <h3>Visualizations</h3>
-          <ul class="visualizationList">
-            @if( avz.decisionGraph.nonEmpty ) {
-              <li><strong>Decision Graph:</strong></li>
-              @for(p <- avz.decisionGraph) {
-                <li><a href="@routes.Application.visualizationFile(qKit.id.modelId + "/" + qKit.id.version + "/" + p.getFileName)">@p.getFileName.toString.split("\\.").last</a></li>
+          <div class="row">
+            <div class="col-md-6">
+              @if( avz.decisionGraph.nonEmpty ) {
+                <strong>Decision Graph:</strong>
+                <ul class="visualizationList">
+                  @for(p <- avz.decisionGraph) {
+                    <li><a href="@routes.Application.visualizationFile(qKit.id.modelId + "/" + qKit.id.version + "/" + p.getFileName)">@p.getFileName.toString.split("\\.").last</a></li>
+                  }
+                </ul>
               }
-            }
-            @if( avz.policySpace.nonEmpty ) {
-              <li><strong>Policy Space:</strong></li>
-              @for(p <- avz.policySpace) {
-                <li><a href="@routes.Application.visualizationFile(qKit.id.modelId + "/" + qKit.id.version + "/" + p.getFileName)">@p.getFileName.toString.split("\\.").last</a></li>
+            </div>
+            <div class="col-md-6">
+              @if( avz.policySpace.nonEmpty ) {
+                <strong>Policy Space:</strong>
+                <ul class="visualizationList">
+                  @for(p <- avz.policySpace) {
+                    <li><a href="@routes.Application.visualizationFile(qKit.id.modelId + "/" + qKit.id.version + "/" + p.getFileName)">@p.getFileName.toString.split("\\.").last</a></li>
+                  }
+                </ul>
               }
-            }
-          </ul>
+            </div>
+          </div>
         }
       }
       <h3>Metadata</h3>

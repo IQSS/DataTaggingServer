@@ -5,6 +5,7 @@
 
   <div class="row">
     <div class="col-md-8">
+      <a href="@routes.Application.publicModelCatalog()"><i class="fa fa-list"></i> Models List</a>
       <h3>
         @vpm.title
       </h3>
@@ -44,8 +45,7 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Publication Status</th>
-              <th>Commenting Status</th>
+              <th>Title</th>
               <th>Last Update</th>
               <th>Actions</th>
             </tr>
@@ -54,8 +54,16 @@
             @for( v <- versions ) {
               <tr>
                 <td>@v.dbData.version</td>
-                <td>@comps.publicationStatus(v.dbData.publicationStatus)</td>
-                <td>@comps.commentingStatus(v.dbData.commentingStatus)</td>
+                <td>
+                  @if(v.model != null) {
+                    @v.model.getMetadata.getTitle
+                    @if(Helpers.hasContent(v.model.getMetadata.getSubTitle)) {
+                      <small>@v.model.getMetadata.getSubTitle</small>
+                    }
+                  } else {
+                    <div class="noData">Missing Model</div>
+                  }
+                </td>
                 <td>@v.dbData.lastUpdate</td>
                 <td>
                   @if(v.canRun){
