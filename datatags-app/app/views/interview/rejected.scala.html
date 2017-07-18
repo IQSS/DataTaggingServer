@@ -6,7 +6,7 @@
   requestedInterview: Option[RequestedInterviewSession],
   answerHistory: Seq[AnswerRecord],
   loc:Option[Localization]
-)
+)(implicit req:Request[_])
 
 @templates.bsNavBar("Dataset Rejected", 'tag) {
   <div class="row">

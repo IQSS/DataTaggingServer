@@ -22,11 +22,11 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
     Action { implicit req =>
     Ok(
       views.html.index(TagsTable.rows,
-        routes.Application.questionnaireCatalog() ))
+        routes.Application.questionnaireCatalog ))
     }
   }
   
-  def questionnaireCatalog = Action.async {
+  def questionnaireCatalog = Action.async { implicit req =>
     models.listAllVersionedModels.map( mdls =>
       Ok( views.html.modelCatalog(mdls) )
     )
@@ -58,7 +58,7 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
     }
   }
   
-  def showVersionedPolicyModel(id:String) = Action.async { req =>
+  def showVersionedPolicyModel(id:String) = Action.async { implicit req =>
     for {
       model <- models.getVersionedModel(id)
       versions <- models.listVersionsFor(id)
@@ -66,7 +66,7 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
       model match {
         case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
         case Some(vpm) => Ok(
-          views.html.versionedPolicyModelVersionSelector(vpm, versions.map(v => kits.get(KitKey.of(v))).filter(_.nonEmpty).map(_.get)))
+          views.html.publicVersionedPolicyModelViewer(vpm, versions.map(v => kits.get(KitKey.of(v))).filter(_.nonEmpty).map(_.get)))
       }
     }
   }

@@ -1,6 +1,6 @@
 @import edu.harvard.iq.datatags.externaltexts.MarkupString
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@( qKit:PolicyModelVersionKit, readme:MarkupString, loc:Localization )
+@( qKit:PolicyModelVersionKit, readme:MarkupString, loc:Localization )(implicit req:Request[_])
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>

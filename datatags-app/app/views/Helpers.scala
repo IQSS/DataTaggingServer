@@ -16,9 +16,11 @@ import play.api.templates._
 import play.twirl.api.Html
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
+import controllers.LoggedInAction
 import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 import edu.harvard.iq.datatags.model.values.TagValue
 import play.api.data.{Field, FormError}
+import play.api.mvc.Request
 
 object Helpers {
   
@@ -176,5 +178,7 @@ object Helpers {
   )
   
   def messageToEng( fe:FormError ):String = msg2eng.getOrElse(fe.message,fe.message)
+  
+  def userPresent(req:Request[_]) = req.session.get(LoggedInAction.KEY).isDefined
   
 }

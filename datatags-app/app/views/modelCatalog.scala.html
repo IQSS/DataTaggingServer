@@ -1,4 +1,4 @@
-@(vpms: Seq[VersionedPolicyModel])
+@(vpms: Seq[VersionedPolicyModel])(implicit req:Request[_])
 
 @templates.bsNavBar("PolicyModels: Server Catalog", 'frontEnd) {
   <div class="container" id="content">

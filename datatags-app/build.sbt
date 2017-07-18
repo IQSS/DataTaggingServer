@@ -25,7 +25,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "3.0.0",
   "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
   "org.mindrot" % "jbcrypt" % "0.3m"
-
 )
 
 LessKeys.compress in Assets := true

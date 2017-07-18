@@ -1,4 +1,4 @@
-@(title:String, section:Symbol, scripts: Html=Html(""), extraHead: Html=Html(""))(content:Html)
+@(title:String, section:Symbol, scripts: Html=Html(""), extraHead: Html=Html(""))(content:Html)(implicit req:Request[_])
 
 @headPart = {
 	@extraHead
@@ -30,7 +30,13 @@
       *@
       
       <ul class="nav navbar-nav navbar-right">
-        <li><a data-toggle="tooltip" data-placement="bottom" title="Log in to manage" href="@routes.UsersCtrl.showLogin()"><i class="fa fa-sign-in"></i></a></li>
+        <li>
+          @if(Helpers.userPresent(req)) {
+            <a data-toggle="tooltip" data-placement="bottom" title="User Home" href="@routes.BackendCtrl.index"><i class="fa fa-cogs"></i></a></li>
+          } else {
+            <a data-toggle="tooltip" data-placement="bottom" title="Log in to manage" href="@routes.UsersCtrl.showLogin"><i class="fa fa-sign-in"></i></a>
+          }
+        </li>
         <li><a data-toggle="tooltip" data-placement="bottom" href="http://datatags.org" target="_blank" title="Project's home"><i class="fa fa-home"></i></a></li>
         <li><a data-toggle="tooltip" data-placement="bottom" href="https://github.com/IQSS/DataTags/" title="We're open source! Visit us at GitHub" target="_blank"><i class="fa fa-github-alt"></i></a></li>
         <li><a data-toggle="tooltip" data-placement="bottom" href="http://iq.harvard.edu" title="Institute of Quantitative Social Science" target="_blank">IQSS</a></li>

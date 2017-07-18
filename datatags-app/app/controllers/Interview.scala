@@ -23,12 +23,10 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
   def interviewIntro(modelId:String, versionNum:Int) = Action { implicit request =>
     kits.get(KitKey(modelId,versionNum)) match {
       case Some(kit) => {
-        Logger.info("Interview setup")
         val userSession = UserSession.create( kit )
         cache.set(userSession.key, userSession)
-        Logger.info( "Stored Set:" + cache.get[UserSession](userSession.key).toString )
         Ok( views.html.interview.intro(kit, None) ).
-          withSession( "uuid" -> userSession.key )
+          withSession( UserSessionAction.KEY -> userSession.key )
       }
       case None => NotFound("Questionnaire with id %s not found.".format(modelId))
     }
@@ -97,7 +95,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
       req.userSession.localization))
   }
   
-  def askNode( modelId:String, versionNum:Int, reqNodeId:String) = UserSessionAction(cache, cc) { req =>
+  def askNode( modelId:String, versionNum:Int, reqNodeId:String) = UserSessionAction(cache, cc) { implicit req =>
     val kitId = KitKey(modelId, versionNum)
     kits.get(kitId) match {
       case Some(kit) => {
@@ -193,7 +191,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
     )
   }
 
-  def accept( modelId:String, versionNum:Int ) = UserSessionAction(cache, cc) { request =>
+  def accept( modelId:String, versionNum:Int ) = UserSessionAction(cache, cc) { implicit request =>
     val session = request.userSession
     val tags = session.tags
     val codeOpt = Option(tags.getType.getTypeNamed("Code")).map(tags.get)
@@ -201,7 +199,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
                                         session.requestedInterview, session.answerHistory, session.localization) )
   }
 
-  def reject( modelId:String, versionNum:Int ) = UserSessionAction(cache, cc) { request =>
+  def reject( modelId:String, versionNum:Int ) = UserSessionAction(cache, cc) { implicit request =>
     val session = request.userSession
     val state = request.userSession.engineState
     val node = session.kit.model.getDecisionGraph.getNode( state.getCurrentNodeId )

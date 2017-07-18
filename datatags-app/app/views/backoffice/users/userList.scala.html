@@ -1,4 +1,4 @@
-@(users:Seq[User])
+@(users:Seq[User], curUser:User)
 @templates.backend("Users", 'backOffice ) {
   <div class="row">
     <div class="col-md-12">
@@ -30,7 +30,13 @@
           <tbody>
             @for( u <- users ) {
               <tr>
-                <td>@u.name</td>
+                <td>
+                  @u.name
+                  @if( u.username == curUser.username ) {
+                    <a class="btn btn-sm btn-default" href="@routes.UsersCtrl.showEditUserPage(u.username)"><i class="fa fa-edit"></i>
+                      Edit</a>
+                  }
+                </td>
                 <td><code>@u.username</code></td>
                 <td>@if(Helpers.hasContent(u.email)){
                   <a href="mailto:@u.email">@u.email</a>

@@ -44,6 +44,7 @@ GET     /vpms/          controllers.PolicyKitManagementCtrl.showVpmList
 GET     /vpms/:id       controllers.Application.showVersionedPolicyModel(id)
 
 # Users
+GET     /admin/                  controllers.BackendCtrl.index
 GET     /admin/login             controllers.UsersCtrl.showLogin
 POST    /admin/login             controllers.UsersCtrl.doLogin
 POST    /admin/logout            controllers.UsersCtrl.doLogout

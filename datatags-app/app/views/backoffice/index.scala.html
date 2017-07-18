@@ -1,0 +1,32 @@
+@(user:User)
+
+@templates.backend("Manage PolicyModels Server", 'index){
+  <div class="row">
+    <div class="col-md-12">
+      <h3>Hello, @user.name!</h3>
+      <p>
+        This is the management console for the PolicyModels Server.
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <h3>Unread Comments</h3>
+      <div class="noData">
+        TBD
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h3>Actions</h3>
+      <a href="@routes.PolicyKitManagementCtrl.showVpmList()" class="btn btn-default btn-block">
+        Manage PolicyModels
+      </a>
+      <a href="@routes.UsersCtrl.showEditUserPage(user.username)" class="btn btn-default btn-block">
+        Edit Profile
+      </a>
+      <a href="@routes.UsersCtrl.showNewUserPage()" class="btn btn-default btn-block">
+        Add User
+      </a>
+    </div>
+  </div>
+}

@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import models.User
 import org.mindrot.jbcrypt.BCrypt
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
@@ -29,7 +29,7 @@ import profile.api._
   // update
   def update( u:User ):Future[User] = {
     db.run {
-      Users.update(u)
+      Users.filter( _.username===u.username).update(u)
     } map { _ => u }
   }
   

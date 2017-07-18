@@ -6,7 +6,7 @@
    requestedInterview: Option[RequestedInterviewSession],
    answerHistory: Seq[AnswerRecord],
    loc:Option[Localization]
-)
+)(implicit req:Request[_])
 
 @scripts = {
     <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>

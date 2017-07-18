@@ -1,4 +1,4 @@
-@(vpm:VersionedPolicyModel, versions:Seq[PolicyModelVersionKit] )
+@(vpm:VersionedPolicyModel, versions:Seq[PolicyModelVersionKit] )(implicit req:Request[_])
 
 
 @templates.bsNavBar(vpm.title, 'frontEnd ) {

@@ -1,10 +1,12 @@
 package controllers
 
+import java.util.UUID
 import javax.inject.Inject
 
 import models.User
 import persistence.UsersDAO
-import play.api.{Configuration, Logger}
+import play.api.cache.SyncCacheApi
+import play.api.{Configuration, Logger, cache}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.{JsObject, JsString}
@@ -30,7 +32,7 @@ object UserFormData {
 case class LoginFormData( username:String, password:String )
 
 class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
-                          users:UsersDAO ) extends InjectedController {
+                          users:UsersDAO, cache:SyncCacheApi ) extends InjectedController {
   implicit private val ec = cc.executionContext
   private val validUserId = "^[-._a-zA-Z0-9]+$".r
   
@@ -67,32 +69,43 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
   }
   
   
-  def showEditUserPage( userId:String ) = Action.async { req =>
-    users.getUser(userId).map({
-      case None => notFound(userId)
-      case Some(user) => Ok( views.html.backoffice.users.userEditor(userForm.fill(UserFormData.of(user)), routes.UsersCtrl.doSaveUser(user.username), isNew=false ))
-    })
+  def showEditUserPage( userId:String ) = LoggedInAction(cache,cc).async { req =>
+    if ( userId == req.user.username ) {
+      users.getUser(userId).map({
+        case None => notFound(userId)
+        case Some(user) => Ok(
+          views.html.backoffice.users.userEditor(userForm.fill(UserFormData.of(user)),
+                                                 routes.UsersCtrl.doSaveUser(user.username),
+                                                 isNew=false))
+      })
+    } else {
+      Future( Forbidden("A user cannot edit the profile of another user.") )
+    }
   }
   
-  def doSaveUser(userId:String) = Action.async { implicit req =>
-    userForm.bindFromRequest().fold(
-      fwe => Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doSaveUser(userId), isNew=false ))),
-      fData => {
-        users.getUser(userId).flatMap({
-          case None => Future(notFound(userId))
-          case Some(user) => {
-            users.update( fData.update(user) ).map( _ => Redirect(routes.UsersCtrl.showUserList) )
-          }
-        })
-      }
-    )
+  def doSaveUser(userId:String) = LoggedInAction(cache,cc).async { implicit req =>
+    if ( userId == req.user.username ) {
+      userForm.bindFromRequest().fold(
+        fwe => Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doSaveUser(userId), isNew = false))),
+        fData => {
+          users.getUser(userId).flatMap({
+            case None => Future(notFound(userId))
+            case Some(user) => {
+              users.update(fData.update(user)).map(_ => Redirect(routes.UsersCtrl.showUserList) )
+            }
+          })
+        }
+      )
+    } else {
+      Future( Forbidden("A user cannot edit the profile of another user.") )
+    }
   }
   
-  def showNewUserPage = Action { req =>
+  def showNewUserPage = LoggedInAction(cache,cc) { req =>
     Ok( views.html.backoffice.users.userEditor(userForm, routes.UsersCtrl.doSaveNewUser, isNew=true) )
   }
   
-  def doSaveNewUser = Action.async { implicit req =>
+  def doSaveNewUser = LoggedInAction(cache,cc).async { implicit req =>
     userForm.bindFromRequest().fold(
       fwe => Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doSaveNewUser, isNew=true))),
       fData => {
@@ -117,8 +130,8 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     )
   }
   
-  def showUserList = Action.async { req =>
-    users.allUsers.map( users => Ok(views.html.backoffice.users.userList(users)) )
+  def showUserList = LoggedInAction(cache,cc).async { req =>
+    users.allUsers.map( users => Ok(views.html.backoffice.users.userList(users, req.user)) )
   }
   
   def showLogin = Action { req =>
@@ -133,7 +146,9 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
           case None => BadRequest(views.html.backoffice.users.login(Some(fd.username), Some("Username/Password does not match")))
           case Some(u) => {
             if ( users.verifyPassword(u, fd.password) ) {
-              Ok("User OK")
+              val userSessionId = UUID.randomUUID.toString
+              cache.set(userSessionId, u)
+              Redirect( routes.BackendCtrl.index ).withSession( LoggedInAction.KEY -> userSessionId )
             } else {
               BadRequest(views.html.backoffice.users.login(Some(fd.username), Some("Username/Password does not match")))
             }
@@ -144,8 +159,11 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
   }
   
   def doLogout = Action { req =>
-    Logger.info("logout")
-    Redirect(routes.Application.index)
+    // delete the user from the cache (if it is there)
+    req.session.get(LoggedInAction.KEY).foreach( key => cache.remove(LoggedInAction.KEY) )
+    
+    // Redirect to index with new session
+    Redirect(routes.Application.index).withNewSession
   }
   
   private def notFound(userId:String) = NotFound("User with username '%s' does not exist.".format(userId))

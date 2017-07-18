@@ -10,7 +10,7 @@ import akka.actor.ActorRef
 import models._
 import persistence.PolicyModelsDAO
 import play.api.{Configuration, Logger}
-import play.api.cache.AsyncCacheApi
+import play.api.cache.SyncCacheApi
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.Json
@@ -38,7 +38,7 @@ object  PmvFormData {
 /**
   * Management of the policy models versions is done here.
   */
-class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKits,
+class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKits,
                                          cc:ControllerComponents, models:PolicyModelsDAO, config:Configuration,
                                          @Named("upload-process-actor") uploadPostProcessor:ActorRef ) extends InjectedController {
   
@@ -64,7 +64,7 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     )(PmvFormData.apply)(PmvFormData.unapply)
   )
   
-  def showVpmPage(id:String)= Action.async { req =>
+  def showVpmPage(id:String)= LoggedInAction(cache,cc).async { req =>
     for {
       model <- models.getVersionedModel(id)
       versions <- models.listVersionsFor(id)
@@ -78,18 +78,18 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     }
   }
   
-  def showNewVpmPage = Action{ req =>
+  def showNewVpmPage = LoggedInAction(cache,cc){ req =>
     Ok( views.html.backoffice.versionedPolicyModelEditor(vpmForm, true) )
   }
   
-  def showEditVpmPage(id:String)= Action.async { req =>
+  def showEditVpmPage(id:String)= LoggedInAction(cache,cc).async { req =>
     models.getVersionedModel(id).map({
       case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
       case Some(vpm) => Ok( views.html.backoffice.versionedPolicyModelEditor(vpmForm.fill(new VpmFormData(vpm)), false) )
     })
   }
   
-  def doSaveNewVpm = Action.async { implicit req =>
+  def doSaveNewVpm = LoggedInAction(cache,cc).async { implicit req =>
     vpmForm.bindFromRequest.fold(
       formWithErrors => {
         Logger.info( formWithErrors.errors.mkString("\n") )
@@ -106,7 +106,7 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     )
   }
   
-  def doSaveVpm(id:String) = Action.async { implicit req =>
+  def doSaveVpm(id:String) = LoggedInAction(cache,cc).async { implicit req =>
     vpmForm.bindFromRequest.fold(
       formWithErrors => {
         Logger.info( formWithErrors.errors.mkString("\n") )
@@ -126,20 +126,20 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     )
   }
   
-  def showVpmList = Action.async{ implicit req =>
+  def showVpmList = LoggedInAction(cache,cc).async{ implicit req =>
     models.listAllVersionedModels.map( models=> {
       Ok(views.html.backoffice.versionedPolicyModelList(models, req.flash.get("message")))
     })
   }
   
-  def apiDoDeleteVpm( id:String ) = Action.async {
+  def apiDoDeleteVpm( id:String ) = LoggedInAction(cache,cc).async {
     models.deleteVersionedPolicyModel(id).map(
       if ( _ ) Ok(Json.obj("result"->true)).flashing("message"->("Model " + id + " deleted"))
             else NotFound(Json.obj("result"->false))
     )
   }
   
-  def doSaveNewVersion(modelId:String) = Action(parse.multipartFormData).async{ implicit req =>
+  def doSaveNewVersion(modelId:String) = LoggedInAction(cache,cc)(parse.multipartFormData).async{ implicit req =>
     modelForm.bindFromRequest.fold(
       formWithErrors => Future(BadRequest(views.html.backoffice.policyModelVersionEditor(formWithErrors, modelId, None))),
       pfd => {
@@ -164,7 +164,7 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     )
   }
   
-  def showNewVersionPage(modelId:String) = Action.async{ implicit req =>
+  def showNewVersionPage(modelId:String) = LoggedInAction(cache,cc).async{ implicit req =>
     models.getVersionedModel(modelId).map({
       case None => NotFound("Can't find model with id '%s'".format(modelId))
       case Some(_) => Ok( views.html.backoffice.policyModelVersionEditor(
@@ -175,11 +175,11 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     
   }
   
-  def showVersionPage(modelId:String, vNum:Int) = Action{ implicit req =>
+  def showVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc){ implicit req =>
     Ok("impl")
   }
   
-  def showEditVersionPage(modelId:String, vNum:Int) = Action.async{ implicit req =>
+  def showEditVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>
     models.getModelVersion(modelId, vNum).map({
       case None => NotFound("Cannot find model version %s/%d".format(modelId, vNum))
       case Some(v) => Ok(views.html.backoffice.policyModelVersionEditor(
@@ -190,7 +190,7 @@ class PolicyKitManagementCtrl @Inject() (cache:AsyncCacheApi, kits:PolicyModelKi
     })
   }
   
-  def doSaveVersion(modelId:String, vNum:Int) = Action.async{ implicit req =>
+  def doSaveVersion(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>
     Logger.info("Saving version %s/%d".format(modelId, vNum))
     modelForm.bindFromRequest.fold(
       formWithErrors => Future(BadRequest(views.html.backoffice.policyModelVersionEditor(formWithErrors, modelId, Some(vNum)))),

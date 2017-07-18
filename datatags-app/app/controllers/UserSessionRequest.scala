@@ -12,11 +12,15 @@ A request with a userSession. If none exists, it goes to a default page
 */
 class UserSessionRequest[A](val userSession: UserSession, request: Request[A]) extends WrappedRequest[A](request)
 
+object UserSessionAction {
+  val KEY = "UserSessionAction-key"
+}
+
 case class UserSessionAction(cache:SyncCacheApi, cc:ControllerComponents) extends ActionBuilder[UserSessionRequest, AnyContent] {
   private implicit val ec = cc.executionContext
 
   def invokeBlock[A](request: Request[A], requestHandler: (UserSessionRequest[A]) => Future[Result]) = {
-    request.session.get("uuid").map { uuid =>
+    request.session.get(UserSessionAction.KEY).map { uuid =>
       cache.get[UserSession](uuid) match {
         case Some(userSession) => requestHandler(new UserSessionRequest(userSession, request))
         case None => {
