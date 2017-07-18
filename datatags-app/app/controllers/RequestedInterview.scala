@@ -24,7 +24,7 @@ class RequestedInterview @Inject() (cache:SyncCacheApi, ws:WSClient,
         kits.get(requestedInterview.kitId) match {
           case None => InternalServerError("Interview not found.")
           case Some(kit) => {
-            val userSession = UserSession.create(kit)
+            val userSession = InterviewSession.create(kit)
             val userSessionWithInterview = userSession.updatedWithRequestedInterview(requestedInterview)
   
             cache.set(userSessionWithInterview.key, userSessionWithInterview)
@@ -37,7 +37,7 @@ class RequestedInterview @Inject() (cache:SyncCacheApi, ws:WSClient,
    }
   }
 
-  def postBackTo(uniqueLinkId: String) = UserSessionAction(cache, cc).async { implicit request =>
+  def postBackTo(uniqueLinkId: String) = InterviewSessionAction(cache, cc).async { implicit request =>
       val json = request.userSession.tags.accept(Jsonizer)
       val callbackURL = request.userSession.requestedInterview.get.callbackURL
       Logger.info(callbackURL)
@@ -46,7 +46,7 @@ class RequestedInterview @Inject() (cache:SyncCacheApi, ws:WSClient,
       }
   }
 
-  def unacceptableDataset(uniqueLinkId: String, reason: String) = UserSessionAction(cache, cc).async { implicit request =>
+  def unacceptableDataset(uniqueLinkId: String, reason: String) = InterviewSessionAction(cache, cc).async { implicit request =>
       val callbackURL = request.userSession.requestedInterview.get.callbackURL
 
       ws.url(callbackURL).post(Json.toJson(reason)).map { response =>

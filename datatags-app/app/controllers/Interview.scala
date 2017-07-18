@@ -23,17 +23,17 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
   def interviewIntro(modelId:String, versionNum:Int) = Action { implicit request =>
     kits.get(KitKey(modelId,versionNum)) match {
       case Some(kit) => {
-        val userSession = UserSession.create( kit )
+        val userSession = InterviewSession.create( kit )
         cache.set(userSession.key, userSession)
         Ok( views.html.interview.intro(kit, None) ).
-          withSession( UserSessionAction.KEY -> userSession.key )
+          addingToSession( InterviewSessionAction.KEY -> userSession.key )
       }
       case None => NotFound("Questionnaire with id %s not found.".format(modelId))
     }
     
   }
 
-  def startInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None ) = UserSessionAction(cache, cc) { implicit req =>
+  def startInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None ) = InterviewSessionAction(cache, cc) { implicit req =>
     val kitId = KitKey(modelId, versionNum)
     kits.get(kitId) match {
       case Some(kit) => {
@@ -78,7 +78,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
     }
   }
 
-  def startInterviewPostReadme(modelId:String, versionNum:Int) = UserSessionAction( cache, cc ) { implicit req =>
+  def startInterviewPostReadme(modelId:String, versionNum:Int) = InterviewSessionAction( cache, cc ) { implicit req =>
     val rte = new RuntimeEngine
     rte.setModel(req.userSession.kit.model)
     val l = rte.setListener(new TaggingEngineListener)
@@ -95,7 +95,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
       req.userSession.localization))
   }
   
-  def askNode( modelId:String, versionNum:Int, reqNodeId:String) = UserSessionAction(cache, cc) { implicit req =>
+  def askNode( modelId:String, versionNum:Int, reqNodeId:String) = InterviewSessionAction(cache, cc) { implicit req =>
     val kitId = KitKey(modelId, versionNum)
     kits.get(kitId) match {
       case Some(kit) => {
@@ -135,7 +135,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
       "serializedHistory"->text
       )(AnswerRequest.apply)(AnswerRequest.unapply) )
 
-  def answer(modelId:String, versionNum:Int, reqNodeId:String) = UserSessionAction(cache, cc) { implicit request =>
+  def answer(modelId:String, versionNum:Int, reqNodeId:String) = InterviewSessionAction(cache, cc) { implicit request =>
     arForm.bindFromRequest.fold(
       { failed => BadRequest("Form submission error: %s\n data:%s".format(failed.errors, failed.data)) },
       { answerReq =>
@@ -172,7 +172,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
    */
   case class RevisitRequest( history:String, idx:Int )
 
-  def revisit( modelId: String, versionNum:Int) = UserSessionAction(cache, cc){ implicit request =>
+  def revisit( modelId: String, versionNum:Int) = InterviewSessionAction(cache, cc){ implicit request =>
 
     val revReqForm = Form( mapping(
                               "serializedHistory"->text, 
@@ -191,7 +191,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
     )
   }
 
-  def accept( modelId:String, versionNum:Int ) = UserSessionAction(cache, cc) { implicit request =>
+  def accept( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc) { implicit request =>
     val session = request.userSession
     val tags = session.tags
     val codeOpt = Option(tags.getType.getTypeNamed("Code")).map(tags.get)
@@ -199,7 +199,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
                                         session.requestedInterview, session.answerHistory, session.localization) )
   }
 
-  def reject( modelId:String, versionNum:Int ) = UserSessionAction(cache, cc) { implicit request =>
+  def reject( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc) { implicit request =>
     val session = request.userSession
     val state = request.userSession.engineState
     val node = session.kit.model.getDecisionGraph.getNode( state.getCurrentNodeId )
@@ -208,7 +208,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
       session.requestedInterview, session.answerHistory, session.localization ) )
   }
   
-  def downloadTags = UserSessionAction(cache, cc) { request =>
+  def downloadTags = InterviewSessionAction(cache, cc) { request =>
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
     val filename =  request.userSession.kit.model.getMetadata.getTitle + "-" + dateFormat.format(request.userSession.sessionStart)
     Ok(request.userSession.tags.accept(Jsonizer))

@@ -22,11 +22,11 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
     Action { implicit req =>
     Ok(
       views.html.index(TagsTable.rows,
-        routes.Application.questionnaireCatalog ))
+        routes.Application.publicModelCatalog() ))
     }
   }
   
-  def questionnaireCatalog = Action.async { implicit req =>
+  def publicModelCatalog = Action.async { implicit req =>
     models.listAllVersionedModels.map( mdls =>
       Ok( views.html.modelCatalog(mdls) )
     )

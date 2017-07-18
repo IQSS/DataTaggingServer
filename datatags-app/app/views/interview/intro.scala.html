@@ -6,7 +6,7 @@
 @templates.bsNavBar("Interview Start Page", 'tag, scripts) {
   <div class="row">
     <div class="col-md-8 col-md-offset-2">
-      <a href="@routes.Application.questionnaireCatalog()"><i class="fa fa-list"></i> Models Catalog</a>
+      <a href="@routes.Application.showVersionedPolicyModel(qKit.id.modelId)"><i class="fa fa-list"></i> Model Versions</a>
       <h3>
         @qKit.model.getMetadata.getTitle
       </h3>

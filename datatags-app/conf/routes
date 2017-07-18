@@ -4,26 +4,27 @@
 
 # Home page
 GET     /                                        controllers.Application.index
-GET     /interviews/                             controllers.Application.questionnaireCatalog
-GET     /interviews/tagDownload                  controllers.Interview.downloadTags
-GET     /interviews/:modelId/:versionNum/intro       controllers.Interview.interviewIntro(modelId, versionNum:Int)
-GET     /interviews/:modelId/:versionNum/start       controllers.Interview.startInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
-GET     /interviews/:modelId/:versionNum/postReadme  controllers.Interview.startInterviewPostReadme(modelId, versionNum:Int)
-GET     /interviews/:modelId/:versionNum/q/:nodeId   controllers.Interview.askNode(modelId, versionNum:Int, nodeId)
-POST    /interviews/:modelId/:versionNum/q/:nodeId   controllers.Interview.answer(modelId, versionNum:Int, nodeId)
-GET     /interviews/:modelId/:versionNum/accept      controllers.Interview.accept(modelId, versionNum:Int)
-GET     /interviews/:modelId/:versionNum/reject      controllers.Interview.reject(modelId, versionNum:Int)
-POST    /interviews/:modelId/:versionNum/revisit/    controllers.Interview.revisit(modelId, versionNum:Int)
+GET     /models/                                 controllers.Application.publicModelCatalog
+GET     /models/tagDownload                      controllers.Interview.downloadTags
+GET     /models/:modelId                         controllers.Application.showVersionedPolicyModel(modelId)
+GET     /models/:modelId/:versionNum/intro       controllers.Interview.interviewIntro(modelId, versionNum:Int)
+GET     /models/:modelId/:versionNum/start       controllers.Interview.startInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
+GET     /models/:modelId/:versionNum/postReadme  controllers.Interview.startInterviewPostReadme(modelId, versionNum:Int)
+GET     /models/:modelId/:versionNum/q/:nodeId   controllers.Interview.askNode(modelId, versionNum:Int, nodeId)
+POST    /models/:modelId/:versionNum/q/:nodeId   controllers.Interview.answer(modelId, versionNum:Int, nodeId)
+GET     /models/:modelId/:versionNum/accept      controllers.Interview.accept(modelId, versionNum:Int)
+GET     /models/:modelId/:versionNum/reject      controllers.Interview.reject(modelId, versionNum:Int)
+POST    /models/:modelId/:versionNum/revisit/    controllers.Interview.revisit(modelId, versionNum:Int)
 
 GET  /visualizations/*path   controllers.Application.visualizationFile(path)
 
 # Requested Interviews
-POST	/api/1/interviewRequest/:modelId/:versionNum   controllers.API.requestInterview(modelId, versionNum:Int)
-GET		/requestedInterview/:uniqueLinkId      controllers.RequestedInterview.start(uniqueLinkId: String)
+POST	/api/1/interviewRequest/:modelId/:versionNum  controllers.API.requestInterview(modelId, versionNum:Int)
+GET		/requestedInterview/:uniqueLinkId             controllers.RequestedInterview.start(uniqueLinkId: String)
 
-POST	/postBackTo/:uniqueLinkId				controllers.RequestedInterview.postBackTo(uniqueLinkId: String)
-POST 	/unacceptableDataset/:uniqueLinkId/:reason		controllers.RequestedInterview.unacceptableDataset(uniqueLinkId: String, reason: String)
-POST 	/tempTestServer							controllers.Test.tempTestServer
+POST	/postBackTo/:uniqueLinkId				            controllers.RequestedInterview.postBackTo(uniqueLinkId: String)
+POST 	/unacceptableDataset/:uniqueLinkId/:reason	controllers.RequestedInterview.unacceptableDataset(uniqueLinkId: String, reason: String)
+POST 	/tempTestServer							                controllers.Test.tempTestServer
 
 # Back-office
 GET     /admin/vpms-m/new     controllers.PolicyKitManagementCtrl.showNewVpmPage
@@ -37,11 +38,8 @@ GET     /admin/vpms/:modelId/versions/new/edit   controllers.PolicyKitManagement
 GET     /admin/vpms/:modelId/versions/:vNum      controllers.PolicyKitManagementCtrl.showVersionPage(modelId, vNum:Int)
 GET     /admin/vpms/:modelId/versions/:vNum/edit controllers.PolicyKitManagementCtrl.showEditVersionPage(modelId, vNum:Int)
 POST    /admin/vpms/:modelId/versions/:vNum      controllers.PolicyKitManagementCtrl.doSaveVersion(modelId, vNum:Int)
+GET     /admin/vpms/          controllers.PolicyKitManagementCtrl.showVpmList
 GET     /admin/vpms/:id       controllers.PolicyKitManagementCtrl.showVpmPage(id)
-
-# Content (and management)
-GET     /vpms/          controllers.PolicyKitManagementCtrl.showVpmList
-GET     /vpms/:id       controllers.Application.showVersionedPolicyModel(id)
 
 # Users
 GET     /admin/                  controllers.BackendCtrl.index

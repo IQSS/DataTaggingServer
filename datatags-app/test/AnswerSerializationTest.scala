@@ -82,7 +82,7 @@ val sut = Serialization( mockFcs, tagsType )
 															 AnswerRecord(c, yes) )
 
 		val serialized = sut.encode( originalAnswers )
-		val session = UserSession(
+		val session = InterviewSession(
 									  "mock session",
 									  null,
 									  Seq(a,b,c),

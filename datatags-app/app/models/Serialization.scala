@@ -26,7 +26,7 @@ class Serialization private( val answerMap: Map[Answer, String],
    * Take the serialized answers and a UserSession, and return
    * a UserSession with the history replaced by the run encoded `serializedAns`.
    */
-  def decode(serializedAns: String, userSession: UserSession) : UserSession = {
+  def decode(serializedAns: String, userSession: InterviewSession) : InterviewSession = {
     // Setup runtime environment
     val rte = new RuntimeEngine
     val l = rte.setListener( new TaggingEngineListener )

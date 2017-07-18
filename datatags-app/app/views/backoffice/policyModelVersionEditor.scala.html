@@ -20,11 +20,11 @@
     <div class="col-md-12">
       <form class="form-horizontal" enctype="multipart/form-data" action="@versionNumber.map(n=>routes.PolicyKitManagementCtrl.doSaveVersion(modelId, n)).getOrElse(routes.PolicyKitManagementCtrl.doSaveNewVersion(modelId))" method="POST">
         <div class="form-group">
-          <label for="publicationStatusSelect" class="col-sm-2 control-label">Publication Status</label>
+          <label for="publicationStatusSelect" class="col-sm-2 control-label">Who can view</label>
           <div class="col-sm-10">
             <select class="form-control" name="publicationStatus" id="publicationStatusSelect">
               @for( v <- PublicationStatus.values ){
-                <option value="@v.toString" @if(form("publicationStatus").value.get==v.toString){selected}>@v.toString</option>
+                <option value="@v.toString" @if(form("publicationStatus").value.get==v.toString){selected}>@Helpers.publicationStatus2Str(v)</option>
               }
             </select>
             <span class="helper-block">
@@ -34,11 +34,11 @@
         </div>
 
         <div class="form-group">
-          <label for="commentingStatusSelect" class="col-sm-2 control-label">Commenting Status</label>
+          <label for="commentingStatusSelect" class="col-sm-2 control-label">Who can comment</label>
           <div class="col-sm-10">
             <select class="form-control" name="commentingStatus" id="commentingStatusSelect">
             @for( v <- CommentingStatus.values ){
-              <option value="@v.toString" @if(form("commentingStatus").value.get==v.toString){selected}>@v.toString</option>
+              <option value="@v.toString" @if(form("commentingStatus").value.get==v.toString){selected}>@Helpers.commentingStatus2Str(v)</option>
             }
             </select>
             <span class="helper-block">

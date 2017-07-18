@@ -5,11 +5,11 @@ import edu.harvard.iq.datatags.model.charts.nodes._
 import edu.harvard.iq.datatags.model.values._
 import models._
 
-class UserSessionSpeck extends PlaySpec {
+class InterviewSessionSpeck extends PlaySpec {
 
 "A New UserSession" must {
   "Have an empty traversed node history" in {
-    val sut = UserSession.create("sample")
+    val sut = InterviewSession.create("sample")
     sut.traversed.size mustBe 0
     sut.answerHistory.size mustBe 0
   }
@@ -17,7 +17,7 @@ class UserSessionSpeck extends PlaySpec {
 
 "A UserSession" must {
   "be updated when using updatedWith" in {
-    val base = UserSession.create("sample")
+    val base = InterviewSession.create("sample")
     val ans1 = AnswerRecord( new AskNode("a","AA"), new Answer("indeed") )
     val history1 = Seq( new TodoNode("a"), new TodoNode("b"), new TodoNode("c") )
 

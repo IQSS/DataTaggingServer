@@ -13,14 +13,14 @@ case class AnswerRecord( question: AskNode, answer: Answer)
 /**
  * All the data needed to maintain continuous user experience.
  */
-case class UserSession( key:String,
-                        engineState: RuntimeEngineState,
-                        traversed: Seq[Node],
-                        kit: PolicyModelVersionKit,
-                        localization: Option[Localization],
-                        answerHistory: Seq[AnswerRecord],
-                        sessionStart: Date,
-                        requestedInterview: Option[RequestedInterviewSession] ) {
+case class InterviewSession(key:String,
+                            engineState: RuntimeEngineState,
+                            traversed: Seq[Node],
+                            kit: PolicyModelVersionKit,
+                            localization: Option[Localization],
+                            answerHistory: Seq[AnswerRecord],
+                            sessionStart: Date,
+                            requestedInterview: Option[RequestedInterviewSession] ) {
 
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat
@@ -28,11 +28,11 @@ case class UserSession( key:String,
     Option(parser.parseCompoundValue(tagType, engineState.getSerializedTagValue )).getOrElse(tagType.createInstance())
   }
 
-  def updatedWith( ansRec: AnswerRecord, newNodes: Seq[Node], state: RuntimeEngineState ) = 
+  def updatedWith( ansRec: AnswerRecord, newNodes: Seq[Node], state: RuntimeEngineState ) =
         copy( engineState=state, answerHistory=answerHistory :+ ansRec, traversed=traversed++newNodes)
 
-  def updatedWith( newNodes: Seq[Node], state: RuntimeEngineState ) = 
-        copy( engineState=state, traversed=traversed++newNodes)  
+  def updatedWith( newNodes: Seq[Node], state: RuntimeEngineState ) =
+        copy( engineState=state, traversed=traversed++newNodes)
 
   def setHistory( history:Seq[Node], answers: Seq[AnswerRecord] ) =
         copy( traversed=history, answerHistory=answers )
@@ -42,9 +42,9 @@ case class UserSession( key:String,
 
 }
 
-object UserSession {
+object InterviewSession {
   def create(mKit: PolicyModelVersionKit ) =
-        UserSession( java.util.UUID.randomUUID().toString,
+        InterviewSession( "ks$"+java.util.UUID.randomUUID().toString,
                      null,
                      Seq(),
                      mKit,

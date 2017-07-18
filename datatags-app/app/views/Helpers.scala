@@ -19,6 +19,7 @@ import com.vladsch.flexmark.parser.Parser
 import controllers.LoggedInAction
 import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 import edu.harvard.iq.datatags.model.values.TagValue
+import models.{CommentingStatus, PublicationStatus}
 import play.api.data.{Field, FormError}
 import play.api.mvc.Request
 
@@ -180,5 +181,16 @@ object Helpers {
   def messageToEng( fe:FormError ):String = msg2eng.getOrElse(fe.message,fe.message)
   
   def userPresent(req:Request[_]) = req.session.get(LoggedInAction.KEY).isDefined
+  
+  val publicationStatus2Str = Map(
+    PublicationStatus.Private    -> "Logged-in users only",
+    PublicationStatus.LinkOnly   -> "Logged-in users or users with a link",
+    PublicationStatus.Published  -> "Everyone"  )
+  
+  val commentingStatus2Str = Map(
+    CommentingStatus.Closed            -> "Nobody",
+    CommentingStatus.LoggedInUsersOnly -> "Logged-in users only",
+    CommentingStatus.Everyone          -> "Everyone"
+  )
   
 }
