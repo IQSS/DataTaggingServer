@@ -84,8 +84,8 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
   private val rootVisualizationsPath = Paths.get(config.get[String]("taggingServer.visualize.folder"))
   private val rootModelsPath = Paths.get(config.get[String]("taggingServer.models.folder"))
   
-  var allKits: TrieMap[KitKey,PolicyModelVersionKit] = TrieMap()
-  val locs:    TrieMap[KitKey, mutable.Map[String,Localization]] = TrieMap()
+  private val allKits: TrieMap[KitKey,PolicyModelVersionKit] = TrieMap()
+  private val allLocalizations: TrieMap[KitKey, mutable.Map[String,Localization]] = TrieMap()
   
   if ( rootVisualizationsPath==null ) {
     Logger.error("Cannot get base visualization path from the config.")
@@ -94,6 +94,11 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
   loadAllModels()
   
   def get(id:KitKey):Option[PolicyModelVersionKit] = allKits.get(id)
+  
+  def removeVersion( kk:KitKey ):Unit = {
+    allKits.remove(kk)
+    allLocalizations.remove(kk)
+  }
   
   /**
     * Loads a single kit from the given path. Adds the kit to the kit collection.
@@ -146,16 +151,16 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
   }
   
   def localization( kitId:KitKey, localizationName:String ): Option[Localization] = {
-    val res = locs.get(kitId).flatMap( _.get(localizationName) )
+    val res = allLocalizations.get(kitId).flatMap( _.get(localizationName) )
     if ( res.isDefined ) {
       res
       
     } else {
       if ( allKits.contains(kitId) ) {
-        if ( ! locs.contains(kitId) ) {
-          locs(kitId) = TrieMap()
+        if ( ! allLocalizations.contains(kitId) ) {
+          allLocalizations(kitId) = TrieMap()
         }
-        val locMap = locs(kitId)
+        val locMap = allLocalizations(kitId)
     
         val locLoad = new LocalizationLoader()
         val loc = locLoad.load(allKits(kitId).model, localizationName)

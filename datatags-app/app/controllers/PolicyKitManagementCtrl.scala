@@ -133,9 +133,9 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   }
   
   def apiDoDeleteVpm( id:String ) = LoggedInAction(cache,cc).async {
-    models.deleteVersionedPolicyModel(id).map(
-      if ( _ ) Ok(Json.obj("result"->true)).flashing("message"->("Model " + id + " deleted"))
-            else NotFound(Json.obj("result"->false))
+    models.deleteVersionedPolicyModel(id).map( deleted =>
+      if ( deleted ) Ok(Json.obj("result"->true)).flashing("message"->("Model " + id + " deleted"))
+                else NotFound(Json.obj("result"->false))
     )
   }
   
@@ -190,7 +190,7 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
     })
   }
   
-  def doSaveVersion(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>
+  def doSaveVersion(modelId:String, vNum:Int) = LoggedInAction(cache,cc)(parse.multipartFormData).async{ implicit req =>
     Logger.info("Saving version %s/%d".format(modelId, vNum))
     modelForm.bindFromRequest.fold(
       formWithErrors => Future(BadRequest(views.html.backoffice.policyModelVersionEditor(formWithErrors, modelId, Some(vNum)))),
@@ -199,6 +199,12 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
           PublicationStatus.withName(pfd.publicationStatus), CommentingStatus.withName(pfd.commentingStatus),
           pfd.note
         )
+        req.body.file("zippedModel").foreach( file => {
+          val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
+          file.ref.moveTo( destFile, replace=false )
+          uploadPostProcessor ! PrepareModel(destFile, modelVersion)
+          kits.removeVersion( KitKey.of(modelVersion))
+        })
         models.updateVersion(modelVersion).map( mv =>
           Redirect(routes.PolicyKitManagementCtrl.showVpmPage(mv.parentId)).flashing( "message"->"Version '%d' updated.".format(vNum) )
         )
