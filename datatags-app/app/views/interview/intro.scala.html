@@ -34,11 +34,11 @@
                 @if( qKit.model.getLocalizations.size>1 ) {
                   @for( locName <- qKit.model.getLocalizations ) {
                     <a href="@routes.Interview.startInterview(qKit.id.modelId, qKit.id.version, Some(locName))"
-                    class="btn btn-primary btn-lg">Start Interview (@locName)</a>
+                     class="btn btn-primary btn-lg">Begin Questionnaire (@locName)</a>
                   }
                 } else {
                   <a href="@routes.Interview.startInterview(qKit.id.modelId, qKit.id.version)"
-                  class="btn btn-primary btn-lg">Start Interview</a>
+                  class="btn btn-primary btn-lg">Begin Questionnaire</a>
                 }
               </div>
             </div>

@@ -13,10 +13,10 @@
     <div class="col-md-12">
       <div class="panel panel-danger">
         <div class="panel-heading">
-          <h3 class="panel-title">Interview Terminated due to Rejection</h3>
+          <h3 class="panel-title">Rejection</h3>
         </div>
         <div class="panel-body">
-          @loc.flatMap( l=>o2o(l.getNodeText(node.getId)).map( renderMarkdown _ ) ).getOrElse( Html(node.getReason))
+          @loc.flatMap( l=>o2o(l.getNodeText(node.getId)).map(renderMarkdown) ).getOrElse( Html(node.getReason))
         </div>
       </div>
     </div>

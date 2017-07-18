@@ -43,11 +43,11 @@ case class UserSession( key:String,
 }
 
 object UserSession {
-  def create( questionnaire: PolicyModelVersionKit ) =
-        UserSession( java.util.UUID.randomUUID().toString, 
+  def create(mKit: PolicyModelVersionKit ) =
+        UserSession( java.util.UUID.randomUUID().toString,
                      null,
                      Seq(),
-                     questionnaire,
+                     mKit,
                      None,
                      Seq(), 
                      new Date,

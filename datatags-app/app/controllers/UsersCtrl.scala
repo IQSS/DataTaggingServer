@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import models.User
 import persistence.UsersDAO
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.{JsObject, JsString}
@@ -27,9 +27,11 @@ object UserFormData {
   def of( u:User ) = UserFormData(u.username, u.name, Option(u.email), Option(u.orcid), Option(u.url), Option(""), Option(""))
 }
 
+case class LoginFormData( username:String, password:String )
+
 class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
                           users:UsersDAO ) extends InjectedController {
-  implicit val ec = cc.executionContext
+  implicit private val ec = cc.executionContext
   private val validUserId = "^[-._a-zA-Z0-9]+$".r
   
   val userForm = Form(mapping(
@@ -44,10 +46,14 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     )(UserFormData.apply)(UserFormData.unapply)
   )
   
+  val loginForm = Form(mapping(
+      "username" -> text,
+      "password" -> text
+    )(LoginFormData.apply)(LoginFormData.unapply)
+  )
   
   def apiAddUser = Action(parse.tolerantJson).async { req =>
     if ( req.connection.remoteAddress.isLoopbackAddress ) {
-  
       val payload = req.body.asInstanceOf[JsObject]
       val username = payload("username").as[JsString].value
       val password = payload("password").as[JsString].value
@@ -113,6 +119,33 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
   
   def showUserList = Action.async { req =>
     users.allUsers.map( users => Ok(views.html.backoffice.users.userList(users)) )
+  }
+  
+  def showLogin = Action { req =>
+    Ok( views.html.backoffice.users.login(None,None) )
+  }
+  
+  def doLogin = Action.async{ implicit req =>
+    loginForm.bindFromRequest().fold(
+      fwi => Future(BadRequest(views.html.backoffice.users.login(None,Some("Error processing login form")))),
+      fd => {
+        users.getUser(fd.username).map({
+          case None => BadRequest(views.html.backoffice.users.login(Some(fd.username), Some("Username/Password does not match")))
+          case Some(u) => {
+            if ( users.verifyPassword(u, fd.password) ) {
+              Ok("User OK")
+            } else {
+              BadRequest(views.html.backoffice.users.login(Some(fd.username), Some("Username/Password does not match")))
+            }
+          }
+        })
+      }
+    )
+  }
+  
+  def doLogout = Action { req =>
+    Logger.info("logout")
+    Redirect(routes.Application.index)
   }
   
   private def notFound(userId:String) = NotFound("User with username '%s' does not exist.".format(userId))

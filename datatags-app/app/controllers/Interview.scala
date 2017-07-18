@@ -1,7 +1,7 @@
 package controllers
 
 import play.api.mvc._
-import play.api.cache.AsyncCacheApi
+import play.api.cache.SyncCacheApi
 import play.api.data._
 import play.api.data.Forms._
 import edu.harvard.iq.datatags.runtime._
@@ -18,15 +18,17 @@ import play.api.Logger
 /**
  * Controller for the interview part of the application.
  */
-class Interview @Inject() (cache:AsyncCacheApi, kits:PolicyModelKits, cc:ControllerComponents) extends InjectedController {
+class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:ControllerComponents) extends InjectedController {
 
   def interviewIntro(modelId:String, versionNum:Int) = Action { implicit request =>
     kits.get(KitKey(modelId,versionNum)) match {
       case Some(kit) => {
+        Logger.info("Interview setup")
         val userSession = UserSession.create( kit )
         cache.set(userSession.key, userSession)
+        Logger.info( "Stored Set:" + cache.get[UserSession](userSession.key).toString )
         Ok( views.html.interview.intro(kit, None) ).
-          withSession( request2session + ("uuid" -> userSession.key) )
+          withSession( "uuid" -> userSession.key )
       }
       case None => NotFound("Questionnaire with id %s not found.".format(modelId))
     }

@@ -4,7 +4,7 @@ import javax.inject.Inject
 
 import play.api._
 import play.api.mvc._
-import play.api.cache.{AsyncCacheApi, CacheApi}
+import play.api.cache.{AsyncCacheApi, CacheApi, SyncCacheApi}
 import play.api.libs.ws._
 import play.api.libs.json.Json
 import models._
@@ -14,11 +14,12 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
 
-class RequestedInterview @Inject() (cache:AsyncCacheApi, ws:WSClient,
+class RequestedInterview @Inject() (cache:SyncCacheApi, ws:WSClient,
                                     kits:PolicyModelKits, ec:ExecutionContext, cc:ControllerComponents) extends InjectedController {
 
-  def start(uniqueLinkId: String) = Action.async { implicit request =>
-    cache.get[RequestedInterviewSession](uniqueLinkId).map( {
+  def start(uniqueLinkId: String) = Action { implicit request =>
+    cache.get[RequestedInterviewSession](uniqueLinkId) match {
+   	  case None => BadRequest
    	  case Some(requestedInterview) => {
         kits.get(requestedInterview.kitId) match {
           case None => InternalServerError("Interview not found.")
@@ -33,8 +34,7 @@ class RequestedInterview @Inject() (cache:AsyncCacheApi, ws:WSClient,
           }
         }
       }
-   	  case None => BadRequest
-   })
+   }
   }
 
   def postBackTo(uniqueLinkId: String) = UserSessionAction(cache, cc).async { implicit request =>

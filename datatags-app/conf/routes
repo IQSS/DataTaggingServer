@@ -44,6 +44,9 @@ GET     /vpms/          controllers.PolicyKitManagementCtrl.showVpmList
 GET     /vpms/:id       controllers.Application.showVersionedPolicyModel(id)
 
 # Users
+GET     /admin/login             controllers.UsersCtrl.showLogin
+POST    /admin/login             controllers.UsersCtrl.doLogin
+POST    /admin/logout            controllers.UsersCtrl.doLogout
 GET     /admin/users/            controllers.UsersCtrl.showUserList
 GET     /admin/users/new         controllers.UsersCtrl.showNewUserPage
 POST    /admin/users/            controllers.UsersCtrl.doSaveNewUser
@@ -58,6 +61,6 @@ GET  /javascriptRoutes       controllers.Application.javascriptRoutes
 # Game and funs
 GET	    /test/tagsDisplay/:modelId/:versionNum  controllers.Test.showTagTree(modelId, versionNum:Int, loc:Option[String]?=None)
 
-PUT     /test/models/:name                controllers.Test.addVersionedModel(name)
-GET     /test/models/                     controllers.Test.listVersionedModels
-GET     /test/models/:name                controllers.Test.showModel(name)
+PUT     /test/models/:name  controllers.Test.addVersionedModel(name)
+GET     /test/models/       controllers.Test.listVersionedModels
+GET     /test/models/:name  controllers.Test.showModel(name)
