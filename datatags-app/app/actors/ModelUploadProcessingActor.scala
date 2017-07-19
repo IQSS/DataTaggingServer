@@ -1,6 +1,8 @@
 package actors
 
+import java.nio.file.attribute.{PosixFilePermission, PosixFilePermissions}
 import java.nio.file.{Files, Path, Paths}
+import java.util
 import java.util.UUID
 import java.util.stream.Collectors
 import java.util.zip.ZipInputStream
@@ -67,6 +69,11 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
           val extractedFileFolder = extractedFilePath.getParent
           if (! Files.exists(extractedFileFolder) ) {
             Files.createDirectories(extractedFileFolder)
+            val perms=new java.util.HashSet[PosixFilePermission]()
+            for ( p <- PosixFilePermission.values() ) {
+              perms.add(p)
+            }
+            Files.setPosixFilePermissions(extractedFileFolder, perms)
           }
       
           val outStream = Files.newOutputStream(extractedFilePath)
@@ -102,9 +109,9 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
       // spill content
       Files.list(path).iterator().asScala
         .foreach( topLevelFolder => {
-        Files.list(topLevelFolder).iterator().asScala
-          .foreach(sp => Files.move(sp, path.resolve(sp.getFileName)))
-        Files.delete(topLevelFolder)
+          Files.list(topLevelFolder).iterator().asScala
+            .foreach(sp => Files.move(sp, path.resolve(sp.getFileName)))
+          Files.delete(topLevelFolder)
       })
       true
     } else {
