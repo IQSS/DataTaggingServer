@@ -43,25 +43,11 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
     }
   }
   
-  def javascriptRoutes = cached("jsRoutes") {
-    Action { implicit request =>
-      Ok(
-        routing.JavaScriptReverseRouter("jsRoutes")(
-          routes.javascript.Interview.askNode,
-          routes.javascript.Interview.answer,
-          routes.javascript.Interview.interviewIntro,
-          routes.javascript.Interview.startInterview,
-          routes.javascript.PolicyKitManagementCtrl.apiDoDeleteVpm,
-          routes.javascript.PolicyKitManagementCtrl.showVpmList
-        )
-      ).as("text/javascript")
-    }
-  }
-  
   def showVersionedPolicyModel(id:String) = Action.async { implicit req =>
     for {
       model <- models.getVersionedModel(id)
-      versions <- models.listVersionsFor(id)
+      versions <- models.listVersionsFor(id).map( seq => seq.filter(_.publicationStatus==PublicationStatus.Published) )
+      
     } yield {
       model match {
         case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
@@ -71,4 +57,20 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
     }
   }
 
+  def javascriptRoutes = cached("jsRoutes") {
+    Action { implicit request =>
+      Ok(
+        routing.JavaScriptReverseRouter("jsRoutes")(
+          routes.javascript.InterviewCtrl.askNode,
+          routes.javascript.InterviewCtrl.answer,
+          routes.javascript.InterviewCtrl.interviewIntro,
+          routes.javascript.InterviewCtrl.startInterview,
+          routes.javascript.InterviewCtrl.accessByLink,
+          routes.javascript.PolicyKitManagementCtrl.apiDoDeleteVpm,
+          routes.javascript.PolicyKitManagementCtrl.showVpmList
+        )
+      ).as("text/javascript")
+    }
+  }
+  
 }

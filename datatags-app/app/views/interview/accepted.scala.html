@@ -42,7 +42,7 @@
 
               <div class="text-right">
                 <br />
-                <a href="@routes.Interview.downloadTags" class="btn btn-primary">
+                <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
                   <i class="fa fa-download"></i>&nbsp;Download Policy as JSON
                 </a>
               </div>
@@ -71,7 +71,7 @@
       }
       case None => {
           <div class="center-block" style="text-align: center">
-            <a href="@routes.Interview.interviewIntro(qKit.id.modelId, qKit.id.version)" class="btn btn-primary">Start Again</a>
+            <a href="@routes.InterviewCtrl.interviewIntro(qKit.id.modelId, qKit.id.version)" class="btn btn-primary">Start Again</a>
           </div>
       }
     }

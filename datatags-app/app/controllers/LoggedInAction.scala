@@ -15,6 +15,7 @@ class LoggedInRequest[A](val user: User, request: Request[A]) extends WrappedReq
 
 object LoggedInAction {
   val KEY = "LoggedInAction-key"
+  def userPresent(req:Request[_]) = req.session.get(LoggedInAction.KEY).isDefined
 }
 
 case class LoggedInAction(cache:SyncCacheApi, cc:ControllerComponents) extends ActionBuilder[LoggedInRequest, AnyContent] {

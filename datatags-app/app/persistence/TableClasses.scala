@@ -42,12 +42,13 @@ class PolicyModelVersionTable(tag:Tag) extends Table[PolicyModelVersion](tag, "p
   def commentingStatus  = column[String]("commenting_status")
   def lastUpdate        = column[Timestamp]("last_update")
   def note = column[String]("note")
+  def accessLink = column[String]("access_link")
   
   def pk = primaryKey("policy_model_versions_pkey", (version, modelId))
   
-  def * = (version, modelId, lastUpdate, publicationStatus, commentingStatus, note) <> (
-    (t:(Int,String,Timestamp,String,String,String)) => PolicyModelVersion(t._1,t._2,t._3,PublicationStatus.withName(t._4), CommentingStatus.withName(t._5), t._6),
-    (pmv:PolicyModelVersion) => Some((pmv.version, pmv.parentId, pmv.lastUpdate, pmv.publicationStatus.toString, pmv.commentingStatus.toString, pmv.note))
+  def * = (version, modelId, lastUpdate, publicationStatus, commentingStatus, note, accessLink) <> (
+    (t:(Int,String,Timestamp,String,String,String, String)) => PolicyModelVersion(t._1,t._2,t._3,PublicationStatus.withName(t._4), CommentingStatus.withName(t._5), t._6, t._7),
+    (pmv:PolicyModelVersion) => Some((pmv.version, pmv.parentId, pmv.lastUpdate, pmv.publicationStatus.toString, pmv.commentingStatus.toString, pmv.note, pmv.accessLink))
   )
   
 }

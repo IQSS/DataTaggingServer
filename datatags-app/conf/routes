@@ -5,18 +5,21 @@
 # Home page
 GET     /                                        controllers.Application.index
 GET     /models/                                 controllers.Application.publicModelCatalog
-GET     /models/tagDownload                      controllers.Interview.downloadTags
+GET     /models/tagDownload                      controllers.InterviewCtrl.downloadTags
 GET     /models/:modelId                         controllers.Application.showVersionedPolicyModel(modelId)
-GET     /models/:modelId/:versionNum/intro       controllers.Interview.interviewIntro(modelId, versionNum:Int)
-GET     /models/:modelId/:versionNum/start       controllers.Interview.startInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
-GET     /models/:modelId/:versionNum/postReadme  controllers.Interview.startInterviewPostReadme(modelId, versionNum:Int)
-GET     /models/:modelId/:versionNum/q/:nodeId   controllers.Interview.askNode(modelId, versionNum:Int, nodeId)
-POST    /models/:modelId/:versionNum/q/:nodeId   controllers.Interview.answer(modelId, versionNum:Int, nodeId)
-GET     /models/:modelId/:versionNum/accept      controllers.Interview.accept(modelId, versionNum:Int)
-GET     /models/:modelId/:versionNum/reject      controllers.Interview.reject(modelId, versionNum:Int)
-POST    /models/:modelId/:versionNum/revisit/    controllers.Interview.revisit(modelId, versionNum:Int)
+GET     /models/:modelId/:versionNum/intro       controllers.InterviewCtrl.interviewIntro(modelId, versionNum:Int)
+GET     /models/:modelId/:versionNum/start       controllers.InterviewCtrl.startInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
+GET     /models/:modelId/:versionNum/postReadme  controllers.InterviewCtrl.startInterviewPostReadme(modelId, versionNum:Int)
+GET     /models/:modelId/:versionNum/q/:nodeId   controllers.InterviewCtrl.askNode(modelId, versionNum:Int, nodeId)
+POST    /models/:modelId/:versionNum/q/:nodeId   controllers.InterviewCtrl.answer(modelId, versionNum:Int, nodeId)
+GET     /models/:modelId/:versionNum/accept      controllers.InterviewCtrl.accept(modelId, versionNum:Int)
+GET     /models/:modelId/:versionNum/reject      controllers.InterviewCtrl.reject(modelId, versionNum:Int)
+POST    /models/:modelId/:versionNum/revisit/    controllers.InterviewCtrl.revisit(modelId, versionNum:Int)
 
 GET  /visualizations/*path   controllers.Application.visualizationFile(path)
+
+# Link to access a model with no login
+GET  /access/models/:accessLink                  controllers.InterviewCtrl.accessByLink(accessLink)
 
 # Requested Interviews
 POST	/api/1/interviewRequest/:modelId/:versionNum  controllers.API.requestInterview(modelId, versionNum:Int)

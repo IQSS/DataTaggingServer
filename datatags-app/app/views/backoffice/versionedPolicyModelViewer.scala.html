@@ -6,6 +6,11 @@
       window.setTimeout( function(){ window.location.reload(); }, 3000 );
     </script>
   }
+  <script language="JavaScript">
+    $(document).ready( function(){
+        JsUtils.fillAccessLinks();
+    })
+  </script>
 }
 
 @templates.backend("Versioned Policy Model Editor", 'backOffice, scripts ) {
@@ -69,14 +74,18 @@
             @for( v <- versions ) {
               <tr>
                 <td>@v._1.version</td>
-                <td>@comps.publicationStatus(v._1.publicationStatus)</td>
+                <td>@comps.publicationStatus(v._1.publicationStatus)
+                  @if( v._1.publicationStatus == PublicationStatus.LinkOnly ) {
+                    <br><code><a href="" data-role="accessLink" data-link="@v._1.accessLink"></a></code>
+                  }
+                </td>
                 <td>@comps.commentingStatus(v._1.commentingStatus)</td>
                 <td>@v._1.lastUpdate</td>
                 <td>
                   <a class="btn btn-default btn-sm" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(v._1.parentId, v._1.version)"><i class="fa fa-edit"></i> Edit</a>
                   @v._2 match {
                     case None      => {<button type="button" class="btn btn-default" disabled>Processing...</button>}
-                    case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary btn-sm" href="@routes.Interview.interviewIntro(v._1.parentId, v._1.version)"><i class="fa fa-play"></i>Run</a>}}
+                    case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary btn-sm" href="@routes.InterviewCtrl.interviewIntro(v._1.parentId, v._1.version)"><i class="fa fa-play"></i>Run</a>}}
                   }
                 </td>
               </tr>

@@ -14,7 +14,7 @@
     @if( versions.nonEmpty ) {
       <div class="col-md-4">
         <div class="text-right">
-          <a href="@routes.Interview.interviewIntro(versions.head.dbData.parentId, versions.head.dbData.version)"
+          <a href="@routes.InterviewCtrl.interviewIntro(versions.head.dbData.parentId, versions.head.dbData.version)"
           class="btn btn-lg btn-primary">
             <i class="fa fa-play"></i> Run Latest Version
           </a>
@@ -35,7 +35,7 @@
     <div class="col-md-12">
       @if( versions.isEmpty ) {
         <div class="noData">
-          This model currently has no runnable versions.
+          This model currently has no published versions.
         </div>
       } else {
         <h4>
@@ -67,7 +67,7 @@
                 <td>@v.dbData.lastUpdate</td>
                 <td>
                   @if(v.canRun){
-                    <a class="btn btn-primary btn-sm" href="@routes.Interview.interviewIntro(v.dbData.parentId, v.dbData.version)"><i class="fa fa-play"></i> Run</a>
+                    <a class="btn btn-primary btn-sm" href="@routes.InterviewCtrl.interviewIntro(v.dbData.parentId, v.dbData.version)"><i class="fa fa-play"></i> Run</a>
                   }
                 </td>
               </tr>
