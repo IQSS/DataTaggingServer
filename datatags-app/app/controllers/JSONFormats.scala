@@ -1,14 +1,16 @@
 package controllers
 
-import models.RequestedInterviewData
-import play.api.libs.json.{Json, Reads}
+import models.{CustomizationDTO, RequestedInterviewData}
+import play.api.libs.json.{Format, Json, Reads}
 
 /**
-  * Created by michael on 7/3/17.
+  * Holds JSON format objects.
   */
 object JSONFormats {
   
   implicit val requestedInterviewDataReader : Reads[RequestedInterviewData] = Json.reads[RequestedInterviewData]
-    
+  
+  /* Converts Json to CustomizationDTO object and vice versa */
+  implicit val customizationDTOFmt:Format[CustomizationDTO] = Json.format[CustomizationDTO]
   
 }

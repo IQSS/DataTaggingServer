@@ -26,7 +26,9 @@ class SettingsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvid
   
   def store( stng:Setting ):Future[Boolean] = {
     db.run{
+//      Settings.filter( _.key === stng.key.toString).update(stng)
       Settings.insertOrUpdate(stng)
+      
     }.map( _ > 0 )
   }
   

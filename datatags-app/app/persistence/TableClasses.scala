@@ -68,7 +68,7 @@ class UserTable(tag:Tag) extends Table[User](tag,"users") {
 
 class SettingTable(tag:Tag) extends Table[Setting](tag, "settings") {
   
-  def key = column[String]("key")
+  def key = column[String]("key", O.PrimaryKey)
   def value = column[String]("value")
   
   def * = (key, value) <> (

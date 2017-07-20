@@ -35,6 +35,8 @@ POST    /admin/vpms-m/        controllers.PolicyKitManagementCtrl.doSaveNewVpm
 GET     /admin/vpms-m/:id     controllers.PolicyKitManagementCtrl.showEditVpmPage(id)
 POST    /admin/vpms-m/:id     controllers.PolicyKitManagementCtrl.doSaveVpm(id)
 DELETE  /admin/vpms-m/:id     controllers.PolicyKitManagementCtrl.apiDoDeleteVpm(id)
+GET     /api/customization    controllers.BackendCtrl.apiGetCustomizations
+POST    /api/customization    controllers.BackendCtrl.apiSetCustomizations
 
 POST    /admin/vpms/:modelId/versions/           controllers.PolicyKitManagementCtrl.doSaveNewVersion(modelId)
 GET     /admin/vpms/:modelId/versions/new/edit   controllers.PolicyKitManagementCtrl.showNewVersionPage(modelId)
@@ -46,6 +48,7 @@ GET     /admin/vpms/:id       controllers.PolicyKitManagementCtrl.showVpmPage(id
 
 # Users
 GET     /admin/                  controllers.BackendCtrl.index
+GET     /admin/customization     controllers.BackendCtrl.showCustomization
 GET     /admin/login             controllers.UsersCtrl.showLogin
 POST    /admin/login             controllers.UsersCtrl.doLogin
 POST    /admin/logout            controllers.UsersCtrl.doLogout
