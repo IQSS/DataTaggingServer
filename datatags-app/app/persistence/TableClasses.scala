@@ -63,5 +63,16 @@ class UserTable(tag:Tag) extends Table[User](tag,"users") {
   def encPass  = column[String]("encrypted_password")
   
   def * = (username, name, email, orcid, url, encPass) <> (User.tupled, User.unapply)
+
+}
+
+class SettingTable(tag:Tag) extends Table[Setting](tag, "settings") {
   
+  def key = column[String]("key")
+  def value = column[String]("value")
+  
+  def * = (key, value) <> (
+    (t:(String, String)) => Setting(SettingKey.withName(t._1), t._2),
+    (s:Setting) => Some((s.key.toString, s.value))
+  )
 }
