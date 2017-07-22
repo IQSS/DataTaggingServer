@@ -1,6 +1,6 @@
 package controllers
 
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 import java.sql.Timestamp
 import java.util.UUID
 import javax.inject.{Inject, Named}
@@ -203,10 +203,13 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
               pfd.note, pmv.accessLink
             )
             req.body.file("zippedModel").foreach( file => {
-              val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
-              file.ref.moveTo( destFile, replace=false )
-              uploadPostProcessor ! PrepareModel(destFile, modelVersion)
-              kits.removeVersion( KitKey.of(modelVersion))
+              // validate the file is non-empty
+              if ( Files.size(file.ref.path) > 0 ) {
+                val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
+                file.ref.moveTo( destFile, replace=false )
+                kits.removeVersion( KitKey.of(modelVersion) )
+                uploadPostProcessor ! PrepareModel(destFile, modelVersion)
+              }
             })
             models.updateVersion(modelVersion).map( mv =>
               Redirect(routes.PolicyKitManagementCtrl.showVpmPage(mv.parentId)).flashing( "message"->"Version '%d' updated.".format(vNum) )
