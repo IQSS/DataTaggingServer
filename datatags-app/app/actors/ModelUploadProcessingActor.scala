@@ -30,9 +30,14 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
   
   override def receive: Receive = {
     case PrepareModel(path, pmv) => {
-      val ttl = pmv.parentId + "/" + pmv.version + ": "
-      Logger.info("Received request to prepare model " + ttl)
+      val ttl = "[UPP] " + pmv.parentId + "/" + pmv.version + ": "
+      Logger.info(ttl + "Received request to prepare model")
       val modelPath = modelsFolderPath.resolve(pmv.parentId).resolve(pmv.version.toString)
+      
+      if ( Files.exists(modelPath) ) {
+        Logger.info(ttl + "Deleting content of old " + modelPath)
+        Files.list(modelPath).iterator().asScala.foreach( delete )
+      }
       
       // unzip
       Logger.info(ttl + "unzipping...")
@@ -52,9 +57,9 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
         vizActor ! CreateVisualizationFiles(newKit)
       }
       
-      Logger.info(ttl + "deleting")
+      Logger.info(ttl + "deleting %s".format(path))
       Files.delete(path)
-      Logger.info( ttl + " DONE")
+      Logger.info(ttl + " DONE")
     }
   }
   
@@ -118,6 +123,13 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
     } else {
       false
     }
+  }
+  
+  private def delete( path:Path ):Unit = {
+    if ( Files.isDirectory(path) ) {
+      Files.list(path).iterator().asScala.foreach( delete )
+    }
+    Files.delete(path)
   }
   
 }

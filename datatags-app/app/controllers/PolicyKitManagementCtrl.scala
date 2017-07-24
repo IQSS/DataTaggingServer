@@ -205,10 +205,14 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
             req.body.file("zippedModel").foreach( file => {
               // validate the file is non-empty
               if ( Files.size(file.ref.path) > 0 ) {
+                Logger.info("%s/%d: new file uploaded.".format(modelId, vNum))
                 val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
                 file.ref.moveTo( destFile, replace=false )
                 kits.removeVersion( KitKey.of(modelVersion) )
                 uploadPostProcessor ! PrepareModel(destFile, modelVersion)
+                
+              } else {
+                Logger.info("%s/%d: no new file uploaded.".format(modelId, vNum))
               }
             })
             models.updateVersion(modelVersion).map( mv =>

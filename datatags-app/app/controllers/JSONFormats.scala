@@ -1,7 +1,9 @@
 package controllers
 
+import java.sql.Timestamp
+
 import models.{CustomizationDTO, RequestedInterviewData}
-import play.api.libs.json.{Format, Json, Reads}
+import play.api.libs.json._
 
 /**
   * Holds JSON format objects.

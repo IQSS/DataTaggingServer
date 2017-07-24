@@ -112,7 +112,7 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
     * @return the kit loading result.
     */
   def loadSingleKit(pmv:PolicyModelVersion, modelPath:Path ):PolicyModelVersionKit = {
-    Logger.info( "Reading model %s".format(modelPath.toString))
+    Logger.info( "[PMKs] Reading model %s".format(modelPath.toString))
     
     var model:PolicyModel = null
     val msgs = mutable.Buffer[ValidationMessage]()
@@ -128,17 +128,17 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
         val loadRes = PolicyModelLoader.verboseLoader().load(pmdp.read(policyModelMdPath))
   
         if ( loadRes.isSuccessful ) {
-          Logger.info("Model '%s' loaded".format(loadRes.getModel.getMetadata.getTitle))
+          Logger.info("[PMKs] Model %s/%d ('%s') loaded".format(pmv.parentId, pmv.version, loadRes.getModel.getMetadata.getTitle))
         } else {
-          Logger.warn("Failed to load model")
+          Logger.warn("[PMKs] Failed to load model %s/%d".format(pmv.parentId, pmv.version))
         }
         model = loadRes.getModel
-        Logger.info("Message count: " + loadRes.getMessages.size())
+        Logger.info("[PMKs] Message count: " + loadRes.getMessages.size())
         loadRes.getMessages.asScala.foreach( msgs.+= )
         
       } catch {
         case pmle:PolicyModelLoadingException => {
-          Logger.warn("Error loading policy model %s: %s".format(modelPath.getFileName.toString, pmle.getMessage) )
+          Logger.warn("[PMKs] Error loading policy model %s: %s".format(modelPath.getFileName.toString, pmle.getMessage) )
           msgs += new ValidationMessage(Level.ERROR, "Error parsing model metadata: " + pmle.getMessage )
           
         }

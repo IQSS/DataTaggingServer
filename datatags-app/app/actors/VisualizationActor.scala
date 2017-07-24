@@ -47,7 +47,12 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
   def createDecisionGraphVisualizationFile(model:PolicyModel, folder:Path, fileExtension:String): Unit ={
     
     val outputPath = folder.resolve( PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME + "." + fileExtension)
-
+    
+    if ( Files.exists(outputPath)) {
+      Logger.info("[VIZ] deleting old file %s".format(outputPath))
+      Files.delete(outputPath)
+    }
+    
     val pb = new ProcessBuilder(pathToDot.toString, "-T" + fileExtension)
     val viz: AbstractGraphvizDecisionGraphVisualizer = if (style.contains("f11")) {
         new GraphvizDecisionGraphF11Visualizer(style.contains("-show-ends"))
@@ -68,11 +73,11 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
     dump.start()
     val statusCode = gv.waitFor
     if (statusCode != 0) {
-      Logger.info("While visualizing decision graph of model «" + model.getMetadata.getTitle + "», Graphviz terminated with an error (exit code: " + statusCode + ")")
+      Logger.info("[VIZ] While visualizing decision graph of model «" + model.getMetadata.getTitle + "», Graphviz terminated with an error (exit code: " + statusCode + ")")
     }
     else {
       dump.await()
-      Logger.info("File created at: " +  outputPath)
+      Logger.info("[VIZ] File created at: " +  outputPath)
     }
   }
   
