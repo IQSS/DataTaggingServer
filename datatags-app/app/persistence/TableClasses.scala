@@ -64,3 +64,17 @@ class UserTable(tag:Tag) extends Table[User](tag,"users") {
   def * = (username, name, email, orcid, url, encPass) <> (User.tupled, User.unapply)
   
 }
+
+class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
+  def writer = column[String]("writer")
+  def comment = column[String]("comment")
+  def versionPolicyModelID = column[String]("version_policy_model_id")
+  def version = column[Int]("version")
+  def targetType = column[String]("target_type")
+  def targetContent = column[String]("target_content")
+  def status = column[String]("status")
+  def time  = column[Timestamp]("time")
+  def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
+
+  def * = (writer, comment, versionPolicyModelID, version, targetType, targetContent, status, time, id) <> (Comment.tupled, Comment.unapply)
+}

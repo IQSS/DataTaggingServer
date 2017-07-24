@@ -48,11 +48,13 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
       Ok(
         routing.JavaScriptReverseRouter("jsRoutes")(
           routes.javascript.Interview.askNode,
+          routes.javascript.Interview.askNode,
           routes.javascript.Interview.answer,
           routes.javascript.Interview.interviewIntro,
           routes.javascript.Interview.startInterview,
           routes.javascript.PolicyKitManagementCtrl.apiDoDeleteVpm,
-          routes.javascript.PolicyKitManagementCtrl.showVpmList
+          routes.javascript.PolicyKitManagementCtrl.showVpmList,
+          routes.javascript.CommentsCtrl.apiAddComment
         )
       ).as("text/javascript")
     }
