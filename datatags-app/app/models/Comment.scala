@@ -13,6 +13,6 @@ case class Comment (
                    targetType:String,
                    targetContent:String,
                    status:String,
-                   time:Timestamp,
+                   time:Timestamp = new Timestamp(System.currentTimeMillis()),
                    id:Long = 0L
                    )

@@ -1,0 +1,13 @@
+@(formID:String, versionPolicyModelID:String, version:Int, targetType:String, targetContent:String)
+<div class="addComment" id="@formID">
+    <label>Name</label> <input type="text" data-role="name">
+    <input type="hidden" data-role="versionPolicyModelID" value="@versionPolicyModelID">
+    <input type="hidden" data-role="version" value="@version">
+    <input type="hidden" data-role="targetType" value="@targetType">
+    <input type="hidden" data-role="targetContent" value="@targetContent">
+    <textarea rows="4" cols="20" data-role="comment"></textarea>
+    <div class="buttons">
+        <button type="button" onclick="Comments.closeForm('@formID')">exit</button>
+        <button type="button" onclick="Comments.save('@formID')">save</button>
+    </div>
+</div>
