@@ -20,20 +20,20 @@ class CommentsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvid
 
   //add
   def addComment( c:Comment ):Future[Comment] = {
-    db.run{
+    db.run {
       Comments += c
     } map ( _ => c )
   }
 
   //update
   def update( c:Comment ):Future[Comment] = {
-    db.run{
+    db.run {
       Comments.filter(_.id===c.id).update(c)
     } map { _ => c}
   }
 
   def deleteComment( c:Comment ):Future[Int] = {
-    db.run{
+    db.run {
       Comments.filter(_.id===c.id).delete
     }
   }
