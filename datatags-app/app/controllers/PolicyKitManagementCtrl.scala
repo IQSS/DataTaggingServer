@@ -1,6 +1,6 @@
 package controllers
 
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 import java.sql.Timestamp
 import java.util.UUID
 import javax.inject.{Inject, Named}
@@ -146,7 +146,7 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
         req.body.file("zippedModel").map( file => {
           val modelVersion = PolicyModelVersion(-1, modelId, new Timestamp(System.currentTimeMillis()),
             PublicationStatus.withName(pfd.publicationStatus), CommentingStatus.withName(pfd.commentingStatus),
-            pfd.note
+            pfd.note, UUID.randomUUID().toString
           )
           models.addNewVersion(modelVersion).map( mv => {
             val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
@@ -195,19 +195,28 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
     modelForm.bindFromRequest.fold(
       formWithErrors => Future(BadRequest(views.html.backoffice.policyModelVersionEditor(formWithErrors, modelId, Some(vNum)))),
       pfd => {
-        val modelVersion = PolicyModelVersion(vNum, modelId, new Timestamp(System.currentTimeMillis()),
-          PublicationStatus.withName(pfd.publicationStatus), CommentingStatus.withName(pfd.commentingStatus),
-          pfd.note
-        )
-        req.body.file("zippedModel").foreach( file => {
-          val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
-          file.ref.moveTo( destFile, replace=false )
-          uploadPostProcessor ! PrepareModel(destFile, modelVersion)
-          kits.removeVersion( KitKey.of(modelVersion))
+        models.getModelVersion( modelId, vNum ).flatMap({
+          case None => Future(NotFound("Model version '%s/%d' does not exist".format(modelId, vNum)))
+          case Some(pmv) => {
+            val modelVersion = PolicyModelVersion(vNum, modelId, new Timestamp(System.currentTimeMillis()),
+              PublicationStatus.withName(pfd.publicationStatus), CommentingStatus.withName(pfd.commentingStatus),
+              pfd.note, pmv.accessLink
+            )
+            req.body.file("zippedModel").foreach( file => {
+              // validate the file is non-empty
+              if ( Files.size(file.ref.path) > 0 ) {
+                val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
+                file.ref.moveTo( destFile, replace=false )
+                kits.removeVersion( KitKey.of(modelVersion) )
+                uploadPostProcessor ! PrepareModel(destFile, modelVersion)
+              }
+            })
+            models.updateVersion(modelVersion).map( mv =>
+              Redirect(routes.PolicyKitManagementCtrl.showVpmPage(mv.parentId)).flashing( "message"->"Version '%d' updated.".format(vNum) )
+            )
+          }
         })
-        models.updateVersion(modelVersion).map( mv =>
-          Redirect(routes.PolicyKitManagementCtrl.showVpmPage(mv.parentId)).flashing( "message"->"Version '%d' updated.".format(vNum) )
-        )
+        
       }
     )
   }

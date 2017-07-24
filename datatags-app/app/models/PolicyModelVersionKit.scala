@@ -22,10 +22,15 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class KitKey( modelId:String, version:Int ){
   def resolve(p:Path):Path = p.resolve(modelId).resolve(version.toString)
+  def encode = modelId + "\t" + version
 }
 
 object KitKey {
   def of(pmv:PolicyModelVersion) = KitKey(pmv.parentId, pmv.version)
+  def parse(kks:String):KitKey = {
+    val comps = kks.split("\t")
+    KitKey(comps(0), comps(1).toInt)
+  }
 }
 
 /**

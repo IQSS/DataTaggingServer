@@ -1,8 +1,7 @@
 package actors
 
-import java.nio.file.attribute.{PosixFilePermission, PosixFilePermissions}
-import java.nio.file.{Files, Path, Paths}
-import java.util
+import java.nio.file.attribute.PosixFilePermission
+import java.nio.file._
 import java.util.UUID
 import java.util.stream.Collectors
 import java.util.zip.ZipInputStream
@@ -97,7 +96,8 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
     * @param path the path to (maybe) re-layout
     */
   private def reLayout( path:Path ) = {
-    val content:Set[Path] = Files.list(path).collect(Collectors.toSet()).asScala.toSet
+    val content:Set[Path] = Files.list(path).iterator().asScala
+                                 .filter(!Files.isHidden(_)).toSet
     if ( content.forall(Files.isDirectory(_)) ) {
   
       // Prevent file name collisions
@@ -108,9 +108,10 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
       
       // spill content
       Files.list(path).iterator().asScala
+          .filter(Files.isDirectory(_))
         .foreach( topLevelFolder => {
           Files.list(topLevelFolder).iterator().asScala
-            .foreach(sp => Files.move(sp, path.resolve(sp.getFileName)))
+            .foreach(sp => Files.move(sp, path.resolve(sp.getFileName), StandardCopyOption.REPLACE_EXISTING))
           Files.delete(topLevelFolder)
       })
       true

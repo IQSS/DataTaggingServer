@@ -12,23 +12,70 @@ import java.text.SimpleDateFormat
 import javax.inject.Inject
 
 import edu.harvard.iq.datatags.model.graphs.Answer
+import persistence.PolicyModelsDAO
 import play.api.Logger
 
+import scala.concurrent.Future
+
+
+object InterviewCtrl {
+  val INVITED_INTERVIEW_KEY = "InterviewCtrl#INVITED_INTERVIEW_KEY"
+}
 
 /**
  * Controller for the interview part of the application.
  */
-class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:ControllerComponents) extends InjectedController {
+class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
+                              models:PolicyModelsDAO, cc:ControllerComponents) extends InjectedController {
 
-  def interviewIntro(modelId:String, versionNum:Int) = Action { implicit request =>
-    kits.get(KitKey(modelId,versionNum)) match {
-      case Some(kit) => {
-        val userSession = InterviewSession.create( kit )
-        cache.set(userSession.key, userSession)
-        Ok( views.html.interview.intro(kit, None) ).
-          addingToSession( InterviewSessionAction.KEY -> userSession.key )
+  private implicit val ec = cc.executionContext
+  
+  def interviewIntro(modelId:String, versionNum:Int) = Action.async { implicit request =>
+    for {
+      kitOpt <- Future(kits.get(KitKey(modelId,versionNum)))
+      pmvOpt <- models.getModelVersion(modelId, versionNum)
+    } yield {
+      kitOpt match {
+        case Some(kit) => {
+          pmvOpt.map( pmv => {
+            // ensure viewing permissions
+            if ( canView(request, pmv) ) {
+              val userSession = InterviewSession.create( kit )
+              cache.set(userSession.key, userSession)
+              Ok( views.html.interview.intro(kit, None) ).
+                addingToSession( InterviewSessionAction.KEY -> userSession.key )
+              
+            } else {
+              NotFound("Model with id %s/%d not found.".format(modelId, versionNum)) // really that's a NotAuthorized, but that would give away the fact that the version exists.
+            }
+            
+          }).getOrElse(NotFound("ModelVersion with id %s/%d not found.".format(modelId, versionNum)))
+        }
+        case None => NotFound("Model with id %s/%d not found.".format(modelId, versionNum))
       }
-      case None => NotFound("Questionnaire with id %s not found.".format(modelId))
+    }
+   }
+  
+  /**
+    * Logged in users can view any model. Anyone can view a published model. People with the correct link
+    * can view only what their link allows.
+    * @param r request asking for the model version
+    * @param pmv model version to be views
+    * @return can the request view the model
+    */
+  private def canView( r:Request[_], pmv:PolicyModelVersion ):Boolean = {
+    if ( LoggedInAction.userPresent(r) ) return true
+    if ( pmv.publicationStatus == PublicationStatus.Published ) return true
+    
+    if ( pmv.publicationStatus == PublicationStatus.LinkOnly ) {
+      val linkSessionStringOpt = r.session.get(InterviewCtrl.INVITED_INTERVIEW_KEY)
+      if (linkSessionStringOpt.isEmpty) return false;
+      val linkSessionString = linkSessionStringOpt.get
+      val allowedKitKey = KitKey.parse(linkSessionString)
+      return allowedKitKey == KitKey.of(pmv)
+      
+    } else {
+      return false
     }
     
   }
@@ -74,7 +121,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
               req.userSession.localization))
           })
       }
-      case None => NotFound("Questionnaire with id %s not found.".format(kitId))
+      case None => NotFound("Model with id %s not found.".format(kitId))
     }
   }
 
@@ -124,7 +171,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
           session.answerHistory,
           session.localization) )
       }
-      case None => NotFound("Questionnaire with id %s not found.".format(kitId.toString))
+      case None => NotFound("Model with id %s not found.".format(kitId.toString))
     }
   }
 
@@ -158,9 +205,9 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
         // save state and decide where to go from here
         cache.set( session.key, session.updatedWith( ansRec, runRes.traversed, runRes.state))
         runRes.state.getStatus match {
-          case RuntimeEngineStatus.Running => Redirect( routes.Interview.askNode( kitKey.modelId, kitKey.version, runRes.state.getCurrentNodeId ) )
-          case RuntimeEngineStatus.Reject  => Redirect( routes.Interview.reject( kitKey.modelId, kitKey.version ) )
-          case RuntimeEngineStatus.Accept  => Redirect( routes.Interview.accept( kitKey.modelId, kitKey.version ) )
+          case RuntimeEngineStatus.Running => Redirect( routes.InterviewCtrl.askNode( kitKey.modelId, kitKey.version, runRes.state.getCurrentNodeId ) )
+          case RuntimeEngineStatus.Reject  => Redirect( routes.InterviewCtrl.reject( kitKey.modelId, kitKey.version ) )
+          case RuntimeEngineStatus.Accept  => Redirect( routes.InterviewCtrl.accept( kitKey.modelId, kitKey.version ) )
           case _ => InternalServerError("Bad interview state")
         }
       }
@@ -186,7 +233,7 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
                                 .serializer.decode(revisitRequest.history.take(revisitRequest.idx), request.userSession)
 
         cache.set( updatedSession.key, updatedSession )
-        Redirect( routes.Interview.askNode( modelId, versionNum, updatedSession.engineState.getCurrentNodeId ) )
+        Redirect( routes.InterviewCtrl.askNode( modelId, versionNum, updatedSession.engineState.getCurrentNodeId ) )
       }
     )
   }
@@ -208,13 +255,21 @@ class Interview @Inject() (cache:SyncCacheApi, kits:PolicyModelKits, cc:Controll
       session.requestedInterview, session.answerHistory, session.localization ) )
   }
   
-  def downloadTags = InterviewSessionAction(cache, cc) { request =>
+  def downloadTags = InterviewSessionAction(cache, cc) { implicit request =>
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
     val filename =  request.userSession.kit.model.getMetadata.getTitle + "-" + dateFormat.format(request.userSession.sessionStart)
     Ok(request.userSession.tags.accept(Jsonizer))
       .withHeaders( "Content-disposition" -> "attachment; filename=\"%s\"".format(filename) )
   }
-
+  
+  def accessByLink(accessLink:String) = Action.async{ implicit req =>
+    models.getModelVersionByAccessLink(accessLink).map({
+      case None => NotFound("Link no longer active")
+      case Some(pmv) => Redirect(routes.InterviewCtrl.interviewIntro(pmv.parentId, pmv.version))
+                            .addingToSession( InterviewCtrl.INVITED_INTERVIEW_KEY->KitKey(pmv.parentId, pmv.version).encode)
+    })
+  }
+  
   def advanceEngine(kit:PolicyModelVersionKit, state: RuntimeEngineState, ans: Answer ) : EngineRunResult = {
     val rte = new RuntimeEngine
     rte.setModel( kit.model )

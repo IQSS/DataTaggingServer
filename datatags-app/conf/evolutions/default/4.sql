@@ -1,19 +1,11 @@
-# --- Adds comments
+# -- Add link to policy model versions
 
-# -- !Ups
+# --- !Ups
+alter table policy_model_versions add column access_link VARCHAR(42);
 
-create table comments (
-  writer varchar(64),
-  comment varchar(1024),
-  version_policy_model_id char(64),
-  version Integer,
-  target_type char(64),
-  target_content char(64),
-  status varchar(64),
-  time TIMESTAMP,
-  id serial PRIMARY KEY
+create index by_link on policy_model_versions (access_link);
 
-);
+update policy_model_versions set access_link=CONCAT(model_id,'-',version_num);
 
-# -- !Downs
-drop table comments;
+# --- !Downs
+alter table policy_model_versions drop column access_link;

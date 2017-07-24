@@ -42,12 +42,13 @@ class PolicyModelVersionTable(tag:Tag) extends Table[PolicyModelVersion](tag, "p
   def commentingStatus  = column[String]("commenting_status")
   def lastUpdate        = column[Timestamp]("last_update")
   def note = column[String]("note")
+  def accessLink = column[String]("access_link")
   
   def pk = primaryKey("policy_model_versions_pkey", (version, modelId))
   
-  def * = (version, modelId, lastUpdate, publicationStatus, commentingStatus, note) <> (
-    (t:(Int,String,Timestamp,String,String,String)) => PolicyModelVersion(t._1,t._2,t._3,PublicationStatus.withName(t._4), CommentingStatus.withName(t._5), t._6),
-    (pmv:PolicyModelVersion) => Some((pmv.version, pmv.parentId, pmv.lastUpdate, pmv.publicationStatus.toString, pmv.commentingStatus.toString, pmv.note))
+  def * = (version, modelId, lastUpdate, publicationStatus, commentingStatus, note, accessLink) <> (
+    (t:(Int,String,Timestamp,String,String,String, String)) => PolicyModelVersion(t._1,t._2,t._3,PublicationStatus.withName(t._4), CommentingStatus.withName(t._5), t._6, t._7),
+    (pmv:PolicyModelVersion) => Some((pmv.version, pmv.parentId, pmv.lastUpdate, pmv.publicationStatus.toString, pmv.commentingStatus.toString, pmv.note, pmv.accessLink))
   )
   
 }
@@ -62,7 +63,7 @@ class UserTable(tag:Tag) extends Table[User](tag,"users") {
   def encPass  = column[String]("encrypted_password")
   
   def * = (username, name, email, orcid, url, encPass) <> (User.tupled, User.unapply)
-  
+
 }
 
 class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
@@ -77,4 +78,14 @@ class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
 
   def * = (writer, comment, versionPolicyModelID, version, targetType, targetContent, status, time, id) <> (Comment.tupled, Comment.unapply)
+}
+class SettingTable(tag:Tag) extends Table[Setting](tag, "settings") {
+  
+  def key = column[String]("key", O.PrimaryKey)
+  def value = column[String]("value")
+  
+  def * = (key, value) <> (
+    (t:(String, String)) => Setting(SettingKey.withName(t._1), t._2),
+    (s:Setting) => Some((s.key.toString, s.value))
+  )
 }

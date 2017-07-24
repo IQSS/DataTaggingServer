@@ -6,25 +6,25 @@ import javax.inject.Inject
 import play.api.mvc._
 import play.api.cache.Cached
 import models._
-import persistence.PolicyModelsDAO
+import persistence.{PolicyModelsDAO, SettingsDAO}
 import play.api.{Configuration, Logger, routing}
 
 
 class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
                             conf:Configuration, cc:ControllerComponents,
-                            kits:PolicyModelKits ) extends InjectedController {
+                            kits:PolicyModelKits, settings:SettingsDAO ) extends InjectedController {
   implicit val ec = cc.executionContext
   
   private val visualizationsPath = Paths.get(conf.get[String]("taggingServer.visualize.folder"))
   private val MIME_TYPES = Map("svg"->"image/svg+xml", "pdf"->"application/pdf", "png"->"image/png")
   
-  def index = cached("homePage"){
-    Action { implicit req =>
-    Ok(
-      views.html.index(TagsTable.rows,
-        routes.Application.publicModelCatalog() ))
-    }
-  }
+  def index = Action.async { implicit req =>
+    settings.get( SettingKey.THIS_INSTANCE_TEXT ).map( stng =>
+      Ok(
+        views.html.index(stng, TagsTable.rows, routes.Application.publicModelCatalog())
+   ))}
+   
+  
   
   def publicModelCatalog = Action.async { implicit req =>
     models.listAllVersionedModels.map( mdls =>
@@ -42,28 +42,12 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
       NotFound("Visualization " + path + " not found.")
     }
   }
-  
-  def javascriptRoutes = cached("jsRoutes") {
-    Action { implicit request =>
-      Ok(
-        routing.JavaScriptReverseRouter("jsRoutes")(
-          routes.javascript.Interview.askNode,
-          routes.javascript.Interview.askNode,
-          routes.javascript.Interview.answer,
-          routes.javascript.Interview.interviewIntro,
-          routes.javascript.Interview.startInterview,
-          routes.javascript.PolicyKitManagementCtrl.apiDoDeleteVpm,
-          routes.javascript.PolicyKitManagementCtrl.showVpmList,
-          routes.javascript.CommentsCtrl.apiAddComment
-        )
-      ).as("text/javascript")
-    }
-  }
-  
+
   def showVersionedPolicyModel(id:String) = Action.async { implicit req =>
     for {
       model <- models.getVersionedModel(id)
-      versions <- models.listVersionsFor(id)
+      versions <- models.listVersionsFor(id).map( seq => seq.filter(_.publicationStatus==PublicationStatus.Published) )
+      
     } yield {
       model match {
         case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
@@ -73,4 +57,23 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
     }
   }
 
+  def javascriptRoutes = cached("jsRoutes") {
+    Action { implicit request =>
+      Ok(
+        routing.JavaScriptReverseRouter("jsRoutes")(
+          routes.javascript.InterviewCtrl.askNode,
+          routes.javascript.InterviewCtrl.answer,
+          routes.javascript.InterviewCtrl.interviewIntro,
+          routes.javascript.InterviewCtrl.startInterview,
+          routes.javascript.InterviewCtrl.accessByLink,
+          routes.javascript.PolicyKitManagementCtrl.apiDoDeleteVpm,
+          routes.javascript.PolicyKitManagementCtrl.showVpmList,
+          routes.javascript.BackendCtrl.apiGetCustomizations,
+          routes.javascript.BackendCtrl.apiSetCustomizations,
+          routes.javascript.CommentsCtrl.apiAddComment
+        )
+      ).as("text/javascript")
+    }
+  }
+  
 }

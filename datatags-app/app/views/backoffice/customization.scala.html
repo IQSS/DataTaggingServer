@@ -1,0 +1,37 @@
+@(settings:Map[SettingKey.Value, Setting])(implicit req:Request[_])
+
+@extraHead = {
+  <link rel="stylesheet" type="text/css" href="@routes.Assets.at("vnd/pell/pell.min.css")">
+  <style>
+    .pell-content {
+      background-color: #fff;
+    }
+    .pell-button {
+      width:2.5em;
+    }
+  </style>
+}
+
+@scripts = {
+  <script src="@routes.Assets.at("vnd/pell/pell.min.js")"></script>
+  <script src="@routes.Assets.at("js/Customization.js")"></script>
+  <script>
+          $(document).ready( function(){
+            customizationSetup();
+          } );
+  </script>
+}
+
+@templates.backend("Manage PolicyModels Server", 'customize, scripts, extraHead){
+<div class="row">
+  <div class="col-md-12">
+    <h1>
+      <div class="pull-right"><button onclick="save()" class="btn btn-large btn-primary"><i class="fa fa-save"></i> Save</button></div>
+      Server Customization
+    </h1>
+    <h3>Front Page Text</h3>
+    <div id="pell"></div>
+  </div>
+</div>
+
+}

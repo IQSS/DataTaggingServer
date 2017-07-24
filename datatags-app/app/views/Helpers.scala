@@ -44,6 +44,8 @@ object Helpers {
   
   def hasContent(s: String) = (s != null) && s.trim.nonEmpty
   
+  def hasContent( so:Option[String]) = so.nonEmpty && so.get.trim.nonEmpty
+  
   def render(markupString: MarkupString):Html = {
     markupString.getFormat match {
       case MarkupFormat.Markdown => renderMarkdown(markupString.getContent)

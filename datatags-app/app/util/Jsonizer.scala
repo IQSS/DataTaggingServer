@@ -2,14 +2,13 @@ package util
 
 import edu.harvard.iq.datatags.model.values._
 import edu.harvard.iq.datatags.model.values.TagValue
-
+import models.CustomizationDTO
 import play.api.libs.json._
 import play.api.libs.json.Json
 
-
 import scala.collection.JavaConversions._
 
-
+// TODO merge with controllers.JSONFormats
 object Jsonizer extends TagValue.Visitor[JsValue]{
 
 	def visitToDoValue (todo: ToDoValue) = Json.toJson(todo.getType.getName)
@@ -26,5 +25,5 @@ object Jsonizer extends TagValue.Visitor[JsValue]{
 		val compoundSeq = compoundMap.toSeq
 		JsObject(compoundSeq)
 	}
-
+ 
 }

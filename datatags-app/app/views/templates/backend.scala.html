@@ -3,6 +3,7 @@
 @headPart = {
 	@extraHead
 	<link href="@routes.Assets.at("css/navbar-extras.min.css")" rel="stylesheet">
+  <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
 }
 
 @bsBase(title, scripts, headPart) {
@@ -33,6 +34,9 @@
         </li>
         <li>
           <a href="@routes.UsersCtrl.showUserList()">Users</a>
+        </li>
+        <li>
+          <a href="@routes.BackendCtrl.showCustomization()">Customize</a>
         </li>
       </ul>
 
