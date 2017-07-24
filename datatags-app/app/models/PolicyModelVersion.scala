@@ -19,7 +19,7 @@ object CommentingStatus extends Enumeration {
   val Closed = Value
   
   /** Only logged in users can comment */
-  val LoggedInUsersOnly = Value
+//  val LoggedInUsersOnly = Value
   
   /** Everyone can comment */
   val Everyone = Value

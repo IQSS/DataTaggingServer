@@ -145,9 +145,10 @@
       }
 
       <h3>
+        @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
         <div class="pull-right">
-          @comps.comments("cmnt", qKit.dbData.parentId, qKit.dbData.version, "meta", "readme")
-        </div>
+          @comps.comments("cmnt", qKit.dbData.parentId, qKit.dbData.version, None, "meta", "policy-space")
+        </div>}
         Policy Space
       </h3>
       <p>

@@ -112,11 +112,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
             val updated = req.userSession.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
             cache.set(req.userSession.key, updated)
 
-            Ok(views.html.interview.question(kitId,
+            Ok(views.html.interview.question(kit,
               rte.getCurrentNode.asInstanceOf[AskNode],
               updated.tags,
               l.traversedNodes,
-              kit.serializer,
               Seq(),
               req.userSession.localization))
           })
@@ -133,11 +132,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
     val updated = req.userSession.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
     cache.set(req.userSession.key, updated)
   
-    Ok(views.html.interview.question(KitKey(modelId, versionNum),
+    Ok(views.html.interview.question(req.userSession.kit,
       rte.getCurrentNode.asInstanceOf[AskNode],
       updated.tags,
       l.traversedNodes,
-      req.userSession.kit.serializer,
       Seq(),
       req.userSession.localization))
   }
@@ -163,11 +161,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
   
         val askNode = kit.model.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
   
-        Ok( views.html.interview.question( kit.id,
+        Ok( views.html.interview.question( kit,
           askNode,
           session.tags,
           session.traversed,
-          kit.serializer,
           session.answerHistory,
           session.localization) )
       }

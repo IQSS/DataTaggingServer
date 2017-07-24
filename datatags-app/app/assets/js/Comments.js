@@ -12,31 +12,44 @@ var Comments = (function(){
             versionedPolicyModelID : $("#"+formID + " [data-role='versionPolicyModelID']").val(),
             version : Number($("#"+formID + " [data-role='version']").val()),
             targetType: $("#"+formID + " [data-role='targetType']").val(),
-            targetContent: $("#"+formID + " [data-role='targetContent']").val(),
+            targetContent: $("#"+formID + " [data-role='targetContent']").val()
         };
+
+        var loc = $("#"+formID + " [data-role='localization']").val();
+        uploadObj.loc = loc;
+
         var call = jsRoutes.controllers.CommentsCtrl.apiAddComment();
 
         $.ajax(call.url, {
-            type: "POST",
+            type: call.type,
             data: JSON.stringify(uploadObj),
             dataType: "json",
             contentType: "application/json; charset=utf-8"
+
         }).done(function (data, status, jqXhr) {
+            $("#"+formID + " [data-role='comment']").val("");
             swal({
                 title:"Comment added.",
-                type:"success"
+                text:"Thank you!",
+                type:"success",
+                timer: 2500
             });
+
         }).fail( function(jXHR, status, message){
             console.log(jXHR);
             console.log(status);
             console.log(message);
+
         }).always( function(){
             closeForm(formID);
+
         });
     }
+
     function closeForm(formID) {
         $("#"+formID).slideUp();
     }
+
     return {
         save: save,
         closeForm: closeForm

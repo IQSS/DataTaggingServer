@@ -191,7 +191,7 @@ object Helpers {
   
   val commentingStatus2Str = Map(
     CommentingStatus.Closed            -> "Nobody",
-    CommentingStatus.LoggedInUsersOnly -> "Logged-in users only",
+//    CommentingStatus.LoggedInUsersOnly -> "Logged-in users only",
     CommentingStatus.Everyone          -> "Everyone"
   )
   

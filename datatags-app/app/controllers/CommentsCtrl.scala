@@ -18,7 +18,7 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, cc:ControllerComponents) exte
   def apiAddComment = Action(parse.tolerantJson).async {implicit req =>
     req.body.validate[CommentDTO] match {
         case s:JsSuccess[CommentDTO] => {
-          comments.addComment(s.value.toComment()).map(_ => Ok(Json.toJson("message" -> "comment added")))
+          comments.addComment(s.value.toComment()).map(_ => Ok(Json.toJson("message" -> "Comment sent")))
         }
         case e:JsError => {
           Logger.info("Error parsing JSON: " + e.errors.map(_.toString).mkString("\n"))

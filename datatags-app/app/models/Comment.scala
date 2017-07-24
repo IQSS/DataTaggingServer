@@ -13,6 +13,7 @@ case class Comment (
                    comment:String,
                    versionedPolicyModelID:String,
                    version:Int,
+                   localization:Option[String],
                    targetType:String,
                    targetContent:String,
                    status:String,
@@ -25,11 +26,16 @@ case class CommentDTO( id:Option[Long],
                        comment:String,
                        versionedPolicyModelID:String,
                        version:Int,
+                       localization:Option[String],
                        targetType:String,
                        targetContent:String ) {
-  def toComment() = Comment(writer, comment, versionedPolicyModelID,version, targetType, targetContent, "", new Timestamp(System.currentTimeMillis), id.getOrElse(0) )
+  def toComment() = Comment(writer, comment, versionedPolicyModelID,version, localization,
+                            targetType, targetContent, "",
+                            new Timestamp(System.currentTimeMillis), id.getOrElse(0) )
 }
 
 object CommentDTO {
-  def of(c:Comment):CommentDTO = CommentDTO(Some(c.id), c.writer, c.comment, c.versionedPolicyModelID, c.version, c.targetType, c.targetContent)
+  def of(c:Comment):CommentDTO = CommentDTO(Some(c.id), c.writer, c.comment,
+                                            c.versionedPolicyModelID, c.version, c.localization,
+                                            c.targetType, c.targetContent)
 }

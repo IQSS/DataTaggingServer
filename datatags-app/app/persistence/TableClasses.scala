@@ -70,6 +70,7 @@ class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
   def writer = column[String]("writer")
   def comment = column[String]("comment")
   def versionPolicyModelID = column[String]("version_policy_model_id")
+  def localization = column[Option[String]]("localization")
   def version = column[Int]("version")
   def targetType = column[String]("target_type")
   def targetContent = column[String]("target_content")
@@ -77,7 +78,7 @@ class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
   def time  = column[Timestamp]("time")
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
 
-  def * = (writer, comment, versionPolicyModelID, version, targetType, targetContent, status, time, id) <> (Comment.tupled, Comment.unapply)
+  def * = (writer, comment, versionPolicyModelID, version, localization, targetType, targetContent, status, time, id) <> (Comment.tupled, Comment.unapply)
 }
 class SettingTable(tag:Tag) extends Table[Setting](tag, "settings") {
   

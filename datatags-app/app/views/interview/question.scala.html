@@ -1,9 +1,8 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@( kitKey: KitKey,
+@( pmvKit: PolicyModelVersionKit,
    questionNode: edu.harvard.iq.datatags.model.graphs.nodes.AskNode,
    dataTags: edu.harvard.iq.datatags.model.values.CompoundValue,
    history:Seq[edu.harvard.iq.datatags.model.graphs.nodes.Node],
-   serializer:Serialization,
    answerHistory: Seq[AnswerRecord],
    loc:Option[Localization]
 )(implicit req:Request[_])
@@ -21,7 +20,13 @@
     <div class="col-md-12">
         <div class="panel panel-primary">
             <div class="panel-heading">
-                <h3 class="panel-title">Question: Please select one answer</h3>
+                <h3 class="panel-title clearfix">
+                  @if( pmvKit.dbData.commentingStatus != CommentingStatus.Closed ) {
+                    <div class="pull-right">
+                    @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, None, "node", questionNode.getId)
+                    </div>}
+                  Question: Please select one answer
+                </h3>
             </div>
             <div class="panel-body">
                 <span class="questionText">
@@ -45,14 +50,14 @@
 
             </div>
             <div class="panel-footer">
-                @helper.form( action=routes.InterviewCtrl.answer(kitKey.modelId, kitKey.version, questionNode.getId), 'id->"answerForm" ) {
+                @helper.form( action=routes.InterviewCtrl.answer(pmvKit.id.modelId, pmvKit.id.version, questionNode.getId), 'id->"answerForm" ) {
                     @for( ans <- questionNode.getAnswers ) {
                         <button class="btn btn-default"
                                 onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();" >
                                 @loc.map( l=>l.localizeAnswer(ans.getAnswerText)).getOrElse(Helpers.makeUpper(ans.getAnswerText))</button>
                     }
                     <input type="hidden" name="answerText" id="answerText" value="" />
-                    <input type="hidden" name="serializedHistory" id="serializedHistory" value="@serializer.encode(answerHistory)"/>
+                    <input type="hidden" name="serializedHistory" id="serializedHistory" value="@pmvKit.serializer.encode(answerHistory)"/>
                 }
             </div>
         </div>
@@ -66,7 +71,7 @@
             </div>
             <div class="panel-body">
                 @if( answerHistory.nonEmpty ) {
-                    @comps.answerHistory(answerHistory, kitKey, reverse=true, serializer, loc)
+                    @comps.answerHistory(answerHistory, pmvKit.id, reverse=true, pmvKit.serializer, loc)
                 } else {
                     <div class="well well-sm text-center">
                         <span class="muted small">This space will contain your answers, and will allow you to revisit them when needed.</span>

@@ -24,22 +24,29 @@
 <div class="row">
   <div class="col-md-12">
     <div class="mdRender">
+      @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
+        <div class="pull-right">
+        @comps.comments("cmntReadme", qKit.dbData.parentId, qKit.dbData.version, Some(loc.getLanguage), "meta", "readme")
+        </div>}
       @Helpers.render(readme)
     </div>
   </div>
 </div>
   <div class="row">
     <div class="col-md-12">
-      <h3>Policy Space</h3>
+      <h3>
+        @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
+          <div class="pull-right">
+          @comps.comments("cmntPS", qKit.dbData.parentId, qKit.dbData.version, Some(loc.getLanguage), "meta", "policy-space")
+          </div>}
+        Policy Space</h3>
       @comps.tagType(qKit.model.getSpaceRoot, Some(loc) )
     </div>
   </div>
 <div class="row">
   <div class="col-md-12">
     <div class="text-center" style="padding: 1em">
-
       <a href="@routes.InterviewCtrl.startInterviewPostReadme(qKit.id.modelId, qKit.id.version)" class="btn btn-primary btn-lg">Start</a>
-
     </div>
   </div>
 </div>

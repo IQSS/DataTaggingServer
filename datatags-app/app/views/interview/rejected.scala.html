@@ -1,7 +1,7 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
 @import Helpers.{o2o, renderMarkdown}
-@(qKit: PolicyModelVersionKit,
+@(pmvKit: PolicyModelVersionKit,
   node: RejectNode,
   requestedInterview: Option[RequestedInterviewSession],
   answerHistory: Seq[AnswerRecord],
@@ -13,7 +13,12 @@
     <div class="col-md-12">
       <div class="panel panel-danger">
         <div class="panel-heading">
-          <h3 class="panel-title">Rejection</h3>
+          <h3 class="panel-title clearfix">
+            @if( pmvKit.dbData.commentingStatus != CommentingStatus.Closed ) {
+              <div class="pull-right">
+              @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, None, "node", node.getId)
+              </div>}
+            Rejection</h3>
         </div>
         <div class="panel-body">
           @loc.flatMap( l=>o2o(l.getNodeText(node.getId)).map(renderMarkdown) ).getOrElse( Html(node.getReason))
@@ -28,7 +33,7 @@
           <h3 class="panel-title">Answer History</h3>
         </div>
         <div class="panel-body">
-        @comps.answerHistory(answerHistory, qKit.id, false, qKit.serializer, loc)
+        @comps.answerHistory(answerHistory, pmvKit.id, false, pmvKit.serializer, loc)
         </div>
       </div>
     </div>
@@ -45,7 +50,7 @@
     }
     case None => {
       <div class="col-md-2 col-md-offset-5">
-        <a href="@routes.InterviewCtrl.interviewIntro(qKit.id.modelId, qKit.id.version)" class="btn btn-primary">Start Again</a>
+        <a href="@routes.InterviewCtrl.interviewIntro(pmvKit.id.modelId, pmvKit.id.version)" class="btn btn-primary">Start Again</a>
       </div>
     }
   }
