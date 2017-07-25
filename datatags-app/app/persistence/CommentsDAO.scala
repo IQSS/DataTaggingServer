@@ -37,4 +37,19 @@ class CommentsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvid
       Comments.filter(_.id===c.id).delete
     }
   }
+  
+  def listForModelVersion( modelId:String, versionNum:Int ):Future[Seq[Comment]] = {
+    db.run {
+      Comments.filter( row => row.versionPolicyModelID===modelId && row.version===versionNum )
+              .sortBy( _.time.desc )
+              .result
+    }
+  }
+  
+  def listRecent( count:Int ):Future[Seq[Comment]] = {
+    db.run {
+      Comments.sortBy(_.time.desc ).take(count).result
+    }
+  }
+  
 }
