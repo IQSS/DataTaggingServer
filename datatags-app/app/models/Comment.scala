@@ -16,7 +16,7 @@ case class Comment (
                    localization:Option[String],
                    targetType:String,
                    targetContent:String,
-                   status:String,
+                   resolved:Boolean,
                    time:Timestamp,
                    id:Long = 0L
                    )
@@ -30,7 +30,7 @@ case class CommentDTO( id:Option[Long],
                        targetType:String,
                        targetContent:String ) {
   def toComment() = Comment(writer, comment, versionedPolicyModelID,version, localization,
-                            targetType, targetContent, "",
+                            targetType, targetContent, false,
                             new Timestamp(System.currentTimeMillis), id.getOrElse(0) )
 }
 

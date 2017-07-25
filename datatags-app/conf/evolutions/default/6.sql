@@ -10,7 +10,7 @@ create table comments (
   version Integer,
   target_type char(64),
   target_content char(64),
-  status varchar(64),
+  resolved boolean,
   time TIMESTAMP,
   id serial PRIMARY KEY
 

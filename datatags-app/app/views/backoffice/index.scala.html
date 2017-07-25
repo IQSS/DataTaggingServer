@@ -1,4 +1,4 @@
-@(user:User)
+@(user:User, recentComments:Seq[Comment])
 
 @templates.backend("Manage PolicyModels Server", 'index){
   <div class="row">
@@ -12,9 +12,31 @@
   <div class="row">
     <div class="col-md-6">
       <h3>Recent Comments</h3>
-      <div class="noData">
-        TBD
-      </div>
+      @if( recentComments.isEmpty ) {
+        <div class="noData">No Comments</div>
+      } else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Writer</th>
+              <th>Time</th>
+              <th>Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for( cmt <- recentComments ){
+              <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            }
+          </tbody>
+
+        </table>
+      }
     </div>
     <div class="col-md-6">
       <h3>Actions</h3>

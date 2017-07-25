@@ -21,7 +21,7 @@ class BackendCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settings:Set
   
   
   def index = LoggedInAction(cache, cc).async { req =>
-    Future(Ok(views.html.backoffice.index(req.user)))
+    Future(Ok(views.html.backoffice.index(req.user, Seq())))
   }
   
   def showCustomization = LoggedInAction(cache, cc){ implicit req =>
