@@ -27,4 +27,8 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, cc:ControllerComponents) exte
 
       }
     }
+  
+  def showComment(id:Long) = Action { implicit req =>
+    Ok("Showing comment " + id)
+  }
 }

@@ -46,6 +46,8 @@ POST    /admin/vpms/:modelId/versions/:vNum      controllers.PolicyKitManagement
 GET     /admin/vpms/          controllers.PolicyKitManagementCtrl.showVpmList
 GET     /admin/vpms/:id       controllers.PolicyKitManagementCtrl.showVpmPage(id)
 
+GET     /admin/comments/:id   controllers.CommentsCtrl.showComment(id:Long)
+
 # Users
 GET     /admin/                  controllers.BackendCtrl.index
 GET     /admin/customization     controllers.BackendCtrl.showCustomization

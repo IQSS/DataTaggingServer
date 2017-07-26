@@ -1,0 +1,4 @@
+@(cmt:Comment)
+@defining( if(cmt.resolved) "default" else "primary" ) { cclass=>
+  <span class="label label-@cclass">@if(cmt.resolved){resolved}else{open}</span>
+}

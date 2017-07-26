@@ -3,7 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import models._
-import persistence.{PolicyModelsDAO, SettingsDAO}
+import persistence.{CommentsDAO, PolicyModelsDAO, SettingsDAO}
 import play.api.{Configuration, Logger}
 import play.api.cache.{Cached, SyncCacheApi}
 import play.api.libs.json.{JsError, JsSuccess, Json}
@@ -15,13 +15,17 @@ import scala.concurrent.Future
   * Controller for non-specific actions in the app back-end.
   */
 class BackendCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settings:SettingsDAO,
+                            comments:CommentsDAO,
                             cc:ControllerComponents ) extends InjectedController {
   implicit private val ec = cc.executionContext
   import JSONFormats.customizationDTOFmt
   
   
   def index = LoggedInAction(cache, cc).async { req =>
-    Future(Ok(views.html.backoffice.index(req.user, Seq())))
+    comments.listRecent(15).map( commentDNs => {
+      Logger.info( commentDNs.map(_.comment.versionedPolicyModelID).map(s=>s + "("+ s.length + ")").mkString("\n"))
+      Ok(views.html.backoffice.index(req.user, commentDNs))
+    })
   }
   
   def showCustomization = LoggedInAction(cache, cc){ implicit req =>

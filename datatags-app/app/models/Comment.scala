@@ -19,7 +19,9 @@ case class Comment (
                    resolved:Boolean,
                    time:Timestamp,
                    id:Long = 0L
-                   )
+                   ) {
+  val vpmId = versionedPolicyModelID.trim
+}
 
 case class CommentDTO( id:Option[Long],
                        writer:String,

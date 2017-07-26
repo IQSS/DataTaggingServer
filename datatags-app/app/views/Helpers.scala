@@ -1,8 +1,9 @@
 package views
 
 
+import java.text.SimpleDateFormat
 import java.util
-import java.util.Optional
+import java.util.{Date, Optional}
 
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
@@ -194,5 +195,10 @@ object Helpers {
 //    CommentingStatus.LoggedInUsersOnly -> "Logged-in users only",
     CommentingStatus.Everyone          -> "Everyone"
   )
+  
+  def dateTimeFormat( d:Date ):String = {
+    val fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm")
+    fmt.format(d)
+  }
   
 }

@@ -1,4 +1,5 @@
-@(vpm:VersionedPolicyModel, versions:Seq[(PolicyModelVersion, Option[PolicyModelVersionKit])], enableEdits:Boolean, message:Option[String] )
+@(vpm:VersionedPolicyModel,
+        versions:Seq[(PolicyModelVersion, Option[PolicyModelVersionKit])], enableEdits:Boolean, message:Option[String] )
 
 @scripts ={
   @if(versions.map(_._2).exists(_.isEmpty)){
@@ -64,8 +65,8 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Publication Status</th>
-              <th>Commenting Status</th>
+              <th>Title</th>
+              <th>Status</th>
               <th>Last Update</th>
               <th>Actions</th>
             </tr>
@@ -73,14 +74,23 @@
           <tbody>
             @for( v <- versions ) {
               <tr>
-                <td>@v._1.version</td>
-                <td>@comps.publicationStatus(v._1.publicationStatus)
+                <td><a href="@routes.PolicyKitManagementCtrl.showVersionPage(vpm.id,v._1.version)">@v._1.version</a></td>
+                <td><a href="@routes.PolicyKitManagementCtrl.showVersionPage(vpm.id,v._1.version)">
+                  @v._2.map( k=>if(k.model!=null) {k.model.getMetadata.getTitle} else{"Model not loaded"}).getOrElse("Model Missing")
+                </a>
+                  @for( kit <- v._2 ) {
+                    @if(kit.messages.nonEmpty){<span class="label label-warning"><i class="fa fa-warning"></i></span>}
+                    @if(! kit.canRun){<span class="label label-danger"><i class="fa fa-times-circle"></i> model error</span>
+                  }
+                </td>
+                <td>
+                  @comps.commentingStatus(v._1.commentingStatus)
+                  @comps.publicationStatus(v._1.publicationStatus)
                   @if( v._1.publicationStatus == PublicationStatus.LinkOnly ) {
                     <br><code><a href="" data-role="accessLink" data-link="@v._1.accessLink"></a></code>
                   }
                 </td>
-                <td>@comps.commentingStatus(v._1.commentingStatus)</td>
-                <td>@v._1.lastUpdate</td>
+                <td>@Helpers.dateTimeFormat(v._1.lastUpdate)</td>
                 <td>
                   <a class="btn btn-default btn-sm" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(v._1.parentId, v._1.version)"><i class="fa fa-edit"></i> Edit</a>
                   @v._2 match {
@@ -89,23 +99,6 @@
                   }
                 </td>
               </tr>
-              @if(v._1.note.trim.nonEmpty){
-                <tr>
-                  <td>&nbsp;</td>
-                  <td colspan="3" class="noteTd">@v._1.note</td>
-                  <td>&nbsp;</td>
-                </tr>
-              }
-              @for( kit <- v._2 ){
-                @if(kit.messages.nonEmpty){
-                  <tr>
-                    <td>&nbsp;</td>
-                    <td colspan="3" class="noteTd">
-                      @comps.kitMessageList(kit.messages)
-                    </td>
-                    <td>&nbsp;</td>
-                  </tr>
-                }
               }
             }
           </tbody>

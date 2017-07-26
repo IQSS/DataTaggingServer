@@ -1,4 +1,4 @@
-@(user:User, recentComments:Seq[Comment])
+@(user:User, recentComments:Seq[CommentDN])
 
 @templates.backend("Manage PolicyModels Server", 'index){
   <div class="row">
@@ -19,27 +19,29 @@
           <thead>
             <tr>
               <th>Model</th>
-              <th>Writer</th>
+              <th>By</th>
+              <th>On</th>
               <th>Time</th>
-              <th>Comment</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            @for( cmt <- recentComments ){
+            @for( cdn <- recentComments ){
               <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td><a href="@routes.CommentsCtrl.showComment(cdn.comment.id)">
+                  @cdn.modelName/@cdn.versionTitle</a></td>
+                <td>@cdn.comment.writer</td>
+                <td>@cdn.comment.targetType / @cdn.comment.targetContent</td>
+                <td>@Helpers.dateTimeFormat(cdn.comment.time)</td>
+                <td>@comps.commentStatus(cdn.comment)</td>
               </tr>
             }
           </tbody>
-
         </table>
       }
     </div>
     <div class="col-md-6">
-      <h3>Actions</h3>
+      <h3>Common Actions</h3>
       <a href="@routes.PolicyKitManagementCtrl.showVpmList()" class="btn btn-default btn-block">
         Manage PolicyModels
       </a>
