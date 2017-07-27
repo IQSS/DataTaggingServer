@@ -1,5 +1,13 @@
 @(username:Option[String], message:Option[String])
-@templates.bsBase("Log in"){
+
+@scripts = {
+  <script lang="Javascript">
+          $(document).ready( function(){
+            $("#usernameInput").focus();
+          } );
+  </script>
+}
+@templates.bsBase("Log in", scripts){
 
 }{
   <div class="row">

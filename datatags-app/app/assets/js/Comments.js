@@ -50,8 +50,26 @@ var Comments = (function(){
         $("#"+formID).slideUp();
     }
 
+    function openForm(formID) {
+        var ctrl = $("#cmntReadme [data-role='name']");
+        if ( ctrl.is(":visible") ) {
+            closeForm(formID);
+
+        } else {
+            $("#"+formID).slideDown(
+                {
+                    complete: function(){
+                        $("#" + formID + " [data-role='name']").focus();
+                    }
+                }
+            );
+        }
+
+    }
+
     return {
         save: save,
-        closeForm: closeForm
+        closeForm: closeForm,
+        openForm: openForm
     };
 })();

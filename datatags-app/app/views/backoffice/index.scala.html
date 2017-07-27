@@ -29,9 +29,9 @@
             @for( cdn <- recentComments ){
               <tr>
                 <td><a href="@routes.CommentsCtrl.showComment(cdn.comment.id)">
-                  @cdn.modelName/@cdn.versionTitle</a></td>
+                  @cdn.modelName/version @cdn.comment.version (@cdn.versionTitle)</a></td>
                 <td>@cdn.comment.writer</td>
-                <td>@cdn.comment.targetType / @cdn.comment.targetContent</td>
+                <td>@cdn.comment.targetType/@cdn.comment.targetContent</td>
                 <td>@Helpers.dateTimeFormat(cdn.comment.time)</td>
                 <td>@comps.commentStatus(cdn.comment)</td>
               </tr>

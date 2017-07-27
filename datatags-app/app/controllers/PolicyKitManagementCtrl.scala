@@ -8,7 +8,7 @@ import javax.inject.{Inject, Named}
 import actors.ModelUploadProcessingActor.PrepareModel
 import akka.actor.ActorRef
 import models._
-import persistence.PolicyModelsDAO
+import persistence.{CommentsDAO, PolicyModelsDAO}
 import play.api.{Configuration, Logger}
 import play.api.cache.SyncCacheApi
 import play.api.data.Forms._
@@ -39,7 +39,8 @@ object  PmvFormData {
   * Management of the policy models versions is done here.
   */
 class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKits,
-                                         cc:ControllerComponents, models:PolicyModelsDAO, config:Configuration,
+                                         cc:ControllerComponents, models:PolicyModelsDAO,
+                                         comments:CommentsDAO, config:Configuration,
                                          @Named("upload-process-actor") uploadPostProcessor:ActorRef ) extends InjectedController {
   
   implicit private val ec = cc.executionContext
@@ -172,11 +173,18 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
         modelId,
         None))
     })
-    
   }
   
-  def showVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc){ implicit req =>
-    Ok("impl")
+  def showVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>
+    for {
+      mdlOpt <- models.getVersionedModel(modelId)
+      vsnOpt <- models.getModelVersion(modelId, vNum)
+      comments <- comments.listForModelVersion(modelId,vNum)
+    } yield {
+      mdlOpt.flatMap{ mdl =>
+        vsnOpt.map( vsn=> Ok(views.html.backoffice.policyModelVersionViewer(vsn, kits.get(KitKey(modelId,vNum)),mdl,comments) ))
+      }.getOrElse( NotFound("model or version not found."))
+    }
   }
   
   def showEditVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>

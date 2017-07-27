@@ -1,6 +1,6 @@
 @(formID:String, versionPolicyModelID:String, version:Int, locOpt:Option[String], targetType:String, targetContent:String)
 <div class="commentComponent">
-  <button onclick="$('#@formID').slideToggle()" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> Comment</button>
+  <button onclick="Comments.openForm('@formID')" class="btn btn-sm btn-success"><i class="fa fa-edit"></i> Comment</button>
   <div class="commentFormDiv" id="@formID" style="display:none">
     <input type="hidden" data-role="versionPolicyModelID" value="@versionPolicyModelID">
     <input type="hidden" data-role="version" value="@version">

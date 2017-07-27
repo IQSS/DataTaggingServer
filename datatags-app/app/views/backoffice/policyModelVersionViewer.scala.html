@@ -1,0 +1,10 @@
+@(pmv:PolicyModelVersion, kitOpt:Option[PolicyModelVersionKit], vpm:VersionedPolicyModel, comments:Seq[Comment])
+
+@templates.backend("Versioned Policy Model Editor", 'backOffice ) {
+
+  <div class="row">
+    <div class="col-md-12">
+      <h3>@kitOpt.flatMap(k=>if(k.model != null) Some(k.model.getMetadata.getTitle) else None).getOrElse(vpm.id + "/" + pmv.version) </h3>
+    </div>
+  </div>
+}
