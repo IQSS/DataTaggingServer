@@ -95,7 +95,7 @@
                   <a class="btn btn-default btn-sm" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(v._1.parentId, v._1.version)"><i class="fa fa-edit"></i> Edit</a>
                   @v._2 match {
                     case None      => {<button type="button" class="btn btn-default" disabled>Processing...</button>}
-                    case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary btn-sm" href="@routes.InterviewCtrl.interviewIntro(v._1.parentId, v._1.version)"><i class="fa fa-play"></i>Run</a>}}
+                    case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary btn-sm" href="@routes.InterviewCtrl.interviewIntro(v._1.parentId, v._1.version)"><i class="fa fa-play"></i> Run</a>}}
                   }
                 </td>
               </tr>

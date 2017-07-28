@@ -1,0 +1,18 @@
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
+@import Helpers.{o2o, renderMarkdown}
+@(node:RejectNode, pmvKit:PolicyModelVersionKit, loc:Option[Localization],
+        answerHistory:Seq[AnswerRecord], enableComments:Boolean)
+<div class="panel panel-danger">
+  <div class="panel-heading">
+    <h3 class="panel-title clearfix">
+      @if( enableComments ) {
+        <div class="pull-right">
+        @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, loc.map(_.getLanguage), "node", node.getId)
+        </div>}
+      Rejection</h3>
+  </div>
+  <div class="panel-body">
+  @loc.flatMap( l=>o2o(l.getNodeText(node.getId)).map(renderMarkdown) ).getOrElse( Html(node.getReason))
+  </div>
+</div>

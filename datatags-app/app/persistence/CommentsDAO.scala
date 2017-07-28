@@ -22,6 +22,12 @@ class CommentsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvid
   private val Comments = TableQuery[CommentTable]
   private val VersionedModels = TableQuery[VersionedPolicyModelTable]
 
+  def get(id:Long):Future[Option[Comment]] = {
+    db.run {
+      Comments.filter( _.id === id ).result
+    } map { _.headOption }
+  }
+  
   //add
   def addComment( c:Comment ):Future[Comment] = {
     db.run {
@@ -58,7 +64,7 @@ class CommentsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvid
   
   def listRecent( count:Int ):Future[Seq[CommentDN]] = {
     db.run {
-      Comments.sortBy(_.time.asc ).take(count)
+      Comments.sortBy( _.time.desc ).take(count)
               .join(VersionedModels.map( vm => (vm.title, vm.id)))
               .on( (cm,vm)=> cm.versionPolicyModelID === vm._2 ).result
     } map ( rows => rows.map(

@@ -1,10 +1,161 @@
 @(pmv:PolicyModelVersion, kitOpt:Option[PolicyModelVersionKit], vpm:VersionedPolicyModel, comments:Seq[Comment])
 
-@templates.backend("Versioned Policy Model Editor", 'backOffice ) {
+@scripts ={
+@if(kitOpt.isEmpty){
+  <script language="Javascript">
+          window.setTimeout( function(){ window.location.reload(); }, 3000 );
+  </script>
+}
+  <script language="JavaScript">
+          $(document).ready( function(){
+            JsUtils.fillAccessLinks();
+          })
+  </script>
+}
+
+
+@templates.backend("Version Viewer", 'backOffice, scripts ) {
+  <div class="row">
+    <div class="col-md-12">
+      <a href="@routes.PolicyKitManagementCtrl.showVpmPage(vpm.id)">
+        <i class="fa fa-arrow-left"></i> @vpm.title
+      </a>
+      <h3>
+        <div class="pull-right">
+          @kitOpt match {
+            case None      => {<button type="button" class="btn btn-default" disabled>Processing...</button>}
+            case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary btn-sm" href="@routes.InterviewCtrl.interviewIntro(pmv.parentId, pmv.version)"><i class="fa fa-play"></i> Run</a>}}
+          }
+          <a class="btn btn-default" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(pmv.parentId, pmv.version)">
+            <i class="fa fa-edit"></i> Edit
+          </a>
+        </div>
+        @kitOpt.flatMap( k => Option(k.model)).map(_.getMetadata.getTitle ).getOrElse(vpm.id + "/" + pmv.version)
+      </h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <h4>Server Data</h4>
+      <div class="help">
+        This part shows the status of the version in the server. It is editable by clicking the <a href="@routes.PolicyKitManagementCtrl.showEditVersionPage(pmv.parentId, pmv.version)">
+          <i class="fa fa-edit"></i> Edit
+        </a> button.
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <table class="table">
+        <tbody>
+          <tr>
+            <th>Last Update</th>
+            <td>@Helpers.dateTimeFormat(pmv.lastUpdate)</td>
+          </tr>
+          <tr>
+            <th>Viewable By</th>
+            <td>
+              @comps.publicationStatus(pmv.publicationStatus)
+              @if( pmv.publicationStatus == PublicationStatus.LinkOnly ) {
+                <br><code><a href="" data-role="accessLink" data-link="@pmv.accessLink"></a></code>
+              }
+            </td>
+          </tr>
+          <tr>
+            <th>Commenting Status</th>
+            <td>
+              @comps.commentingStatus(pmv.commentingStatus)
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="col-md-6">
+      <strong>Note</strong>
+      @if( Helpers.hasContent(pmv.note) ) {
+        <div class="well">@pmv.note</div>
+      } else {
+        <div class="noData">This version has no note.</div>
+      }
+    </div>
+  </div>
+
+  @for( kit <- kitOpt ) {
+    <div class="row">
+      <div class="col-md-12">
+        <h4>Model Data</h4>
+        <div class="help">
+        This part shows data about the policy model itself. It cannot be edited in this site; a new model .zip file has to be uploaded
+          in order to change the data here.
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-6">
+        <h5>Metadata</h5>
+        @if( kit.model!=null ) {
+          @comps.modelVersionMetadataTable(kit.model.getMetadata)
+        } else {
+          <div class="alert alert-danger">Model failed to load. See messages section.</div>
+        }
+      </div>
+      <div class="col-md-6">
+        <h5>Messages</h5>
+        @comps.kitMessageList(kit.messages)
+      </div>
+    </div>
+  }
 
   <div class="row">
     <div class="col-md-12">
-      <h3>@kitOpt.flatMap(k=>if(k.model != null) Some(k.model.getMetadata.getTitle) else None).getOrElse(vpm.id + "/" + pmv.version) </h3>
+      @defining( comments.count(!_.resolved)) { unresolved =>
+        <h4>Comments @if(unresolved>0){<span class="badge">@unresolved</span>}</h4>
+      }
+      <div class="help">
+        Comments users left on various parts of this model.
+      </div>
+      @if( comments.isEmpty ) {
+        <div class="noData">
+          No comments.
+        </div>
+      } else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Who</th>
+              <th>Subject</th>
+              <th>Time</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+          @for(cmt <- comments) {
+            <tr>
+              <td>@cmt.writer</td>
+              <td>@cmt.targetType.trim/@cmt.targetContent @cmt.localization.map(l => " (Localization " + l + ")").getOrElse("")
+              </td>
+              <td>@Helpers.dateTimeFormat(cmt.time)</td>
+              <td>@comps.commentStatus(cmt)</td>
+              <td>
+                <a class="btn btn-sm btn-default" href="@routes.CommentsCtrl.showComment(cmt.id)"><i class="fa fa-eye"></i>
+                  View</a>
+                <button class="btn btn-sm btn-default">Mark as Resolved</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="commentCtnr" colspan="5">
+                <div class="commentContent">
+                @cmt.comment
+                </div>
+              </td>
+            </tr>
+          }
+          </tbody>
+        </table>
+      }
     </div>
   </div>
+
 }

@@ -1,0 +1,48 @@
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
+@(questionNode:AskNode, pmvKit:PolicyModelVersionKit, loc:Option[Localization],
+        answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean)
+<div class="panel panel-primary">
+  <div class="panel-heading">
+    <h3 class="panel-title clearfix">
+      @if( enableComments ) {
+        <div class="pull-right">
+        @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, None, "node", questionNode.getId)
+        </div>}
+      Question: Please select one answer
+    </h3>
+  </div>
+  <div class="panel-body">
+    @defining( loc.map(l=>l.getNodeText(questionNode.getId)).getOrElse(java.util.Optional.empty) ){ nodeTextOpt =>
+      @if( nodeTextOpt.isPresent ) {
+        @Helpers.renderMarkdown( nodeTextOpt.get )
+      }else{
+        <span class="questionText">
+          @Helpers.bulletPoint(questionNode.getText)
+        </span>
+        @if( ! questionNode.getTermNames.isEmpty() ) {
+          <h4 class="text-muted">Terms</h4>
+          <dl>
+          @for( termName <- questionNode.getTermNames ) {
+            <dt>@termName</dt>
+            <dl>@Helpers.bulletPoint(questionNode.getTermText(termName))</dl>
+          }
+          </dl>
+        }
+      }
+    }
+  </div>
+  <div class="panel-footer">
+  @helper.form( action=routes.InterviewCtrl.answer(pmvKit.id.modelId, pmvKit.id.version, questionNode.getId), 'id->"answerForm" ) {
+    @for( ans <- questionNode.getAnswers ) {
+      <button type="button" class="btn btn-default" @if(interactive){
+      onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"} >
+      @loc.map( l=>l.localizeAnswer(ans.getAnswerText)).getOrElse(Helpers.makeUpper(ans.getAnswerText))</button>
+    }
+    @if( interactive ) {
+      <input type="hidden" name="answerText" id="answerText" value="" />
+      <input type="hidden" name="serializedHistory" id="serializedHistory" value="@pmvKit.serializer.encode(answerHistory)"/>
+    }
+  }
+  </div>
+</div>

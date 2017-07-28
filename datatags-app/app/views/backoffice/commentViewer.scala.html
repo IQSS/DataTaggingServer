@@ -1,0 +1,59 @@
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@import edu.harvard.iq.datatags.externaltexts.MarkupString
+@import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
+@import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
+@(cmt:Comment, qKit:PolicyModelVersionKit, locOpt:Option[Localization], readmeOpt:Option[MarkupString])
+
+@templates.backend("Version Viewer", 'backOffice ) {
+  <div class="row">
+    <div class="col-md-12">
+      <a href="@routes.PolicyKitManagementCtrl.showVersionPage(qKit.id.modelId, qKit.id.version)">
+        <i class="fa fa-arrow-left"></i> @{Option(qKit.model).map(_.getMetadata.getTitle ).getOrElse(qKit.id.modelId + "/" + qKit.id.version)}
+      </a>
+      <h3>
+        <div class="pull-right">
+          <button class="btn btn-default">Mark as Resolved</button>
+        </div>
+        Comment @comps.commentStatus(cmt)
+      </h3>
+      <div>
+        <em>@cmt.writer</em> commented at @Helpers.dateTimeFormat(cmt.time)
+        on <code>@cmt.targetType.trim/@cmt.targetContent.trim</code>
+        @locOpt.map( loc=>"(localization: "+ loc.getLanguage + ")")
+      </div>
+      <div class="commentContent">
+        @cmt.comment
+      </div>
+      <hr>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <h4>Comment Context</h4>
+      <div class="commentSubjectCtnr">
+        @if(cmt.targetType.trim == "meta"){
+          @cmt.targetContent.trim match {
+            case "policy-space" => {@comps.tagType(qKit.model.getSpaceRoot, locOpt)}
+            case "readme" => {
+              @if(readmeOpt.isDefined) {
+                @Helpers.render(readmeOpt.get)
+              } else {
+                <div class="alert alert-warning">README missing</div>
+              }
+            }
+          }
+        } else {
+          @defining(qKit.model.getDecisionGraph.getNode(cmt.targetContent)) {
+            case ask: AskNode => {
+              @comps.questionPanel(ask, qKit, locOpt, Seq(), enableComments=false, interactive=false)
+            }
+            case rej: RejectNode => {
+              @comps.rejectPanel(rej, qKit, locOpt, Seq(), enableComments=false)
+            }
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

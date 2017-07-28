@@ -16,7 +16,7 @@ var Comments = (function(){
         };
 
         var loc = $("#"+formID + " [data-role='localization']").val();
-        uploadObj.loc = loc;
+        uploadObj.localization = loc;
 
         var call = jsRoutes.controllers.CommentsCtrl.apiAddComment();
 

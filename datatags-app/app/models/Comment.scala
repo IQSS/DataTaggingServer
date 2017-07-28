@@ -21,6 +21,8 @@ case class Comment (
                    id:Long = 0L
                    ) {
   val vpmId = versionedPolicyModelID.trim
+  def trimmed = copy(writer=writer.trim, comment=comment.trim, versionedPolicyModelID=versionedPolicyModelID.trim,
+                      localization=localization.map(_.trim), targetType=targetType.trim, targetContent=targetContent.trim)
 }
 
 case class CommentDTO( id:Option[Long],

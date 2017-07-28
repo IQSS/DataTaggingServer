@@ -105,6 +105,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
         // if there's a readme present, we show it first. Else, we start the interview.
         readmeOpt.map( readMe => Ok(views.html.interview.showReadme(kit, readMe, l10n.get)) )
           .getOrElse({
+            // No readme, perform the first decision graph traversal.
             val rte = new RuntimeEngine
             rte.setModel(kit.model)
             val l = rte.setListener(new TaggingEngineListener)

@@ -1,0 +1,60 @@
+@import edu.harvard.iq.datatags.model.metadata.PolicyModelData
+@(md:PolicyModelData)
+<table class="table">
+  <tbody>
+    @if( md.getAuthors.size > 0 ) {
+      <tr>
+        <th>Authors</th>
+        <td>
+          <ul class="authorList">
+          @for( a<-md.getAuthors ){<li>@comps.author(a)</li>}
+          </ul>
+        </td>
+      </tr>
+    }
+    @for( doi <- Option(md.getDoi) ) {
+      <tr>
+        <th>DOI</th>
+        <td>@doi</td>
+      </tr>
+    }
+    @for( version <- Option(md.getVersion) ) {
+      <tr>
+        <th>Version</th>
+        <td>@version</td>
+      </tr>
+    }
+    @for( rd <- Option(md.getReleaseDate) ) {
+      <tr>
+        <th>Released</th>
+        <td>@rd</td>
+      </tr>
+    }
+    @if( md.getKeywords.size > 0 ) {
+      <tr>
+        <th>Keywords</th>
+        <td>@md.getKeywords.asScala.mkString(", ")</td>
+      </tr>
+    }
+    @if( md.getReferences.size > 0 ) {
+      <tr>
+        <th>References</th>
+        <td>
+          <ul>
+          @for( ref <- md.getReferences ) {
+            <li>
+              <h6>
+                @for(url<-Option(ref.getUrl)){
+                  <a href="@url" target="_blank">@url</a>}
+                @for(doi<-Option(ref.getDoi)){ (doi:@doi)}
+              </h6>
+              @ref.getText
+            </li>
+          }
+          </ul>
+        </td>
+      </tr>
+    }
+
+  </tbody>
+</table>

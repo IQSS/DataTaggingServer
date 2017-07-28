@@ -16,7 +16,7 @@
           <h3 class="panel-title clearfix">
             @if( pmvKit.dbData.commentingStatus != CommentingStatus.Closed ) {
               <div class="pull-right">
-              @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, None, "node", node.getId)
+              @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, loc.map(_.getLanguage), "node", node.getId)
               </div>}
             Rejection</h3>
         </div>

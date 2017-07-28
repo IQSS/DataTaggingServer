@@ -23,7 +23,8 @@
                 <h3 class="panel-title clearfix">
                   @if( pmvKit.dbData.commentingStatus != CommentingStatus.Closed ) {
                     <div class="pull-right">
-                    @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, None, "node", questionNode.getId)
+                    @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, loc.map(_.getLanguage),
+                                    "node", questionNode.getId)
                     </div>}
                   Question: Please select one answer
                 </h3>

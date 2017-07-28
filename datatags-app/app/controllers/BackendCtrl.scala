@@ -23,8 +23,7 @@ class BackendCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settings:Set
   
   def index = LoggedInAction(cache, cc).async { req =>
     comments.listRecent(10).map( commentDNs => {
-      Logger.info( commentDNs.map(_.comment.versionedPolicyModelID).map(s=>s + "("+ s.length + ")").mkString("\n"))
-      Ok(views.html.backoffice.index(req.user, commentDNs))
+      Ok(views.html.backoffice.index(req.user, commentDNs.sortBy( -_.comment.time.getTime )))
     })
   }
   
