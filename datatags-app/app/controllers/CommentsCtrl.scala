@@ -56,7 +56,24 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, kits:PolicyModelKits,
           
         }
       }
-      
     }
   }
+  
+  def apiSetCommentStatus(id:Long) = Action.async{ implicit req =>
+    comments.get(id).flatMap({
+      case None => Future(NotFound(Json.obj("message"->"Comment %d not found.".format(id))))
+      case Some(cmt) => {
+        val body = req.body.asJson.getOrElse(JsString(""))
+        
+        val newCmt = body match {
+          case jss:JsString => cmt.copy(resolved = jss.value.trim.toLowerCase=="resolved" )
+          case _ => cmt
+        }
+        comments.update(newCmt).map(nnc =>
+          Ok(Json.obj("message"->"Comment %d updated".format(id), "newStatus"->nnc.resolved))
+        )
+      }
+    })
+  }
+  
 }

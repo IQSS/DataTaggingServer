@@ -12,9 +12,11 @@
       </a>
       <h3>
         <div class="pull-right">
-          <button class="btn btn-default">Mark as Resolved</button>
+          <button class="btn btn-default"
+                  onclick="Comments.setResolved(this, 'commentStatus', @cmt.id, @if(cmt.resolved){false}else{true})">
+                  Mark as @if(cmt.resolved){Unresolved}else{Resolved}</button>
         </div>
-        Comment @comps.commentStatus(cmt)
+        Comment @comps.commentStatus(cmt, Some("commentStatus"))
       </h3>
       <div>
         <em>@cmt.writer</em> commented at @Helpers.dateTimeFormat(cmt.time)

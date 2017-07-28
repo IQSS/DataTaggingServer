@@ -64,12 +64,45 @@ var Comments = (function(){
                 }
             );
         }
+    }
 
+    function setCommentResolved( cmtId, isResolved, callback ) {
+        var call = jsRoutes.controllers.CommentsCtrl.apiSetCommentStatus(cmtId);
+        $.ajax(call.url, {
+            type: call.type,
+            data: JSON.stringify(isResolved?"resolved":"not-resolved"),
+            dataType: "json",
+            contentType: "application/json; charset=utf-8"
+
+        }).done(function (data, status, jqXhr) {
+            if ( callback ) {
+                callback();
+            }
+        });
+    }
+
+    function setResolved( btn, labelId, cmtId, isResolved ) {
+        $(btn).html("<i class='fa fa-spin fa-cog'></i>");
+        $(btn).attr("disabled", "disabled");
+        setCommentResolved(cmtId, isResolved, function(){
+            $(btn).html("Mark as " + (isResolved?"Unresolved":"Resolved") );
+            $(btn).removeAttr("disabled");
+            btn.onclick=function(){ setResolved(btn, labelId, cmtId, !isResolved); };
+
+            if ( labelId ) {
+                var classes = ["label-primary", "label-default"];
+                var $label = $("#" + labelId);
+                $label.removeClass(classes[isResolved?0:1]);
+                $label.addClass(classes[isResolved?1:0]);
+                $label.text(isResolved?"resolved":"open");
+            }
+        });
     }
 
     return {
         save: save,
         closeForm: closeForm,
-        openForm: openForm
+        openForm: openForm,
+        setResolved: setResolved
     };
 })();

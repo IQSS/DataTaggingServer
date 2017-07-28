@@ -137,11 +137,12 @@
               <td>@cmt.targetType.trim/@cmt.targetContent @cmt.localization.map(l => " (Localization " + l + ")").getOrElse("")
               </td>
               <td>@Helpers.dateTimeFormat(cmt.time)</td>
-              <td>@comps.commentStatus(cmt)</td>
+              <td>@comps.commentStatus(cmt, Some("cmtsts"+cmt.id))</td>
               <td>
                 <a class="btn btn-sm btn-default" href="@routes.CommentsCtrl.showComment(cmt.id)"><i class="fa fa-eye"></i>
                   View</a>
-                <button class="btn btn-sm btn-default">Mark as Resolved</button>
+                <button class="btn btn-sm btn-default" onclick="Comments.setResolved(this, '@{"cmtsts"+cmt.id}', @cmt.id, @if(cmt.resolved){false}else{true})">
+                  Mark as @if(cmt.resolved){Unresolved}else{Resolved}</button>
               </td>
             </tr>
             <tr>

@@ -70,7 +70,8 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
           routes.javascript.PolicyKitManagementCtrl.showVpmList,
           routes.javascript.BackendCtrl.apiGetCustomizations,
           routes.javascript.BackendCtrl.apiSetCustomizations,
-          routes.javascript.CommentsCtrl.apiAddComment
+          routes.javascript.CommentsCtrl.apiAddComment,
+          routes.javascript.CommentsCtrl.apiSetCommentStatus
         )
       ).as("text/javascript")
     }
