@@ -50,8 +50,8 @@ var Comments = (function(){
         $("#"+formID).slideUp();
     }
 
-    function openForm(formID) {
-        var ctrl = $("#cmntReadme [data-role='name']");
+    function toggleForm(formID) {
+        var ctrl = $("#" + formID +" [data-role='name']");
         if ( ctrl.is(":visible") ) {
             closeForm(formID);
 
@@ -102,7 +102,7 @@ var Comments = (function(){
     return {
         save: save,
         closeForm: closeForm,
-        openForm: openForm,
+        toggleForm: toggleForm,
         setResolved: setResolved
     };
 })();
