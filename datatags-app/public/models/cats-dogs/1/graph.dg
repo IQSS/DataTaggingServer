@@ -1,0 +1,27 @@
+[#import dogs: dogs.dg]
+[#import cats: cats.dg]
+
+[>q-order< ask:
+  {text: Do the dogs first?}
+  {answers:
+      {yes: [call: dogs>dog][call: cats>cat]}
+      {no:  [call: cats>cat][call:dogs>dog]}
+  }
+]
+[todo: specify mice]
+[>sec-frogs< section:
+  {title: Add frogs}
+  [todo: Add frog 1]
+  [todo: Add frog 2]
+]
+[set: Rice=Full]
+[>pre-rej< ask:
+  {text: Skip Veterinarian exam?}
+  {terms:
+    {Veterinarian exam: Something you should really do}
+  }
+  {answers:
+    {yes: [>ouch< reject:Can't skip a veterinarian exam!]}
+  }
+]
+[end]

@@ -58,6 +58,15 @@ POST    /admin/users/            controllers.UsersCtrl.doSaveNewUser
 GET     /admin/users/:id/edit    controllers.UsersCtrl.showEditUserPage(id)
 POST    /admin/users/:id/edit    controllers.UsersCtrl.doSaveUser(id)
 POST    /admin/api/users/        controllers.UsersCtrl.apiAddUser
+GET     /admin/forgotPassword    controllers.UsersCtrl.showForgotPassword
+POST    /admin/forgotPassword    controllers.UsersCtrl.doForgotPassword
+GET     /admin/resetPassword/:id controllers.UsersCtrl.showResetPassword(id)
+POST    /admin/resetPassword/    controllers.UsersCtrl.doResetPassword
+GET     /admin/inviteUser/        controllers.UsersCtrl.showInviteUser
+POST    /admin/inviteUser/        controllers.UsersCtrl.doInviteUser
+GET     /admin/newUserInvitation/:id controllers.UsersCtrl.showNewUserInvitation(id)
+POST    /admin/newUserInvitaion/  controllers.UsersCtrl.doNewUserInvitation
+POST    /admin/changePassword    controllers.UsersCtrl.doChangePassword
 
 # Comments
 POST    /admin/api/comments/      controllers.CommentsCtrl.apiAddComment
