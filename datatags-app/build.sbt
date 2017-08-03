@@ -34,3 +34,6 @@ includeFilter in (Assets, LessKeys.less) := "*.less"
 TwirlKeys.templateImports += "views.Helpers"
 
 TwirlKeys.templateImports += "scala.collection.JavaConverters._"
+
+libraryDependencies += "com.typesafe.play" %% "play-mailer" % "6.0.0"
+libraryDependencies += "com.typesafe.play" %% "play-mailer-guice" % "6.0.0"

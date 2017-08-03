@@ -91,3 +91,18 @@ class SettingTable(tag:Tag) extends Table[Setting](tag, "settings") {
     (s:Setting) => Some((s.key.toString, s.value))
   )
 }
+
+class UuidForInvitationTable(tag:Tag) extends Table[UuidForInvitation](tag,"uuid_for_invitation"){
+  def uuid = column[String]("uuid", O.PrimaryKey)
+
+  def * = (uuid) <> (UuidForInvitation, UuidForInvitation.unapply)
+}
+
+class UuidForForgotPasswordTable(tag:Tag) extends Table[UuidForForgotPassword](tag, "uuid_for_forgot_password"){
+  def username = column[String]("username", O.PrimaryKey)
+  def uuid     = column[String]("uuid")
+  def reset_password_date = column[Timestamp]("reset_password_date")
+
+  def * = (username, uuid, reset_password_date) <> (UuidForForgotPassword.tupled, UuidForForgotPassword.unapply)
+}
+

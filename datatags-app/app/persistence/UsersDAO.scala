@@ -1,5 +1,6 @@
 package persistence
 
+import java.sql.Timestamp
 import javax.inject.Inject
 
 import models.User
@@ -25,24 +26,36 @@ import profile.api._
       Users += u
     } map ( _ => u )
   }
-  
+
   // update
   def update( u:User ):Future[User] = {
     db.run {
       Users.filter( _.username===u.username).update(u)
     } map { _ => u }
   }
-  
+
   // changePass
   def updatePassword( u:User, newPass:String ):Future[User] = {
     update(u.copy(encryptedPassword = BCrypt.hashpw(newPass, BCrypt.gensalt())))
   }
-  
+
   // usernameExists
   def usernameExists( u:String):Future[Boolean] = {
     db.run{
       Users.map( _.username ).filter( _ === u ).exists.result
     }
+  }
+
+  def emailExists ( e:String): Future[Boolean] = {
+    db.run{
+      Users.map(_.email ).filter( _ === e).exists.result
+    }
+  }
+
+  def getUserByEmail(email:String):Future[Option[User]] = {
+    db.run{
+      Users.filter (_.email === email).result
+    } map { res => res.headOption }
   }
   
   def getUser(username:String):Future[Option[User]] = {
