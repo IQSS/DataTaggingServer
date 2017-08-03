@@ -159,9 +159,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
         } else {
           req.userSession
         }
-  
+        
         val askNode = kit.model.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
-  
         Ok( views.html.interview.question( kit,
           askNode,
           session.tags,
