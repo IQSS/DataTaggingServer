@@ -1,4 +1,13 @@
-@templates.bsBase("Invite User"){
+@()
+@scripts = {
+  <script >
+          $(document).ready( function(){
+            $("#protocol_and_host").val(window.location.protocol + "//" + window.location.host);
+          } );
+  </script>
+}
+
+@templates.bsBase("Invite User",scripts){
 
 }{
     <div class="row">

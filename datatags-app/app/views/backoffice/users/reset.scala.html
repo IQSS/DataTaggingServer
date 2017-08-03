@@ -11,11 +11,11 @@
 @templates.bsBase("Reset Password", scripts)(Html("")){
     <div class="row">
         <div class="col-md-12">
-            <h1>Log In</h1>
+            <h1>Password Reset</h1>
         </div>
     </div>
     <div class="row">
-        <div class="col-md-8 col-md-offset-2">
+        <div class="col-md-12">
             <form class="form-horizontal" action="@routes.UsersCtrl.doResetPassword()" method="POST">
                 @for( m <- message ){
                     <div class="form-group has-error">
@@ -23,14 +23,14 @@
                     </div>
                 }
                 <div class="form-group">
-                    <label for="password1Input" class="col-sm-2 control-label">Password</label>
+                    <label for="password1Input" class="col-sm-2 control-label">New Password</label>
                     <div class="col-sm-10">
                         <input type="password" class="form-control" id="password1Input" name="password1" value=""
                         placeholder="Password">
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="password2Input" class="col-sm-2 control-label">Password (again)</label>
+                    <label for="password2Input" class="col-sm-2 control-label">New Password (again)</label>
                     <div class="col-sm-10">
                         <input type="password" class="form-control" id="password2Input" name="password2" value=""
                         placeholder="Password">

@@ -1,3 +1,6 @@
+# -- add forgot password link table
+
+# -- !Ups
 create table uuid_for_forgot_password(
   username varchar(64) PRIMARY KEY,
   uuid    varchar(64),
@@ -6,4 +9,5 @@ create table uuid_for_forgot_password(
   FOREIGN KEY (username) REFERENCES users(username)
 );
 
+# -- !Downs
 drop table uuid_for_forgot_password;

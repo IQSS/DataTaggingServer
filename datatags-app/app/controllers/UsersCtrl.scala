@@ -15,6 +15,7 @@ import play.api.libs.mailer._
 import play.api.mvc.{ControllerComponents, InjectedController}
 
 import scala.concurrent.Future
+import scala.concurrent.duration.Duration
 
 
 case class UserFormData( username:String,
@@ -119,12 +120,13 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
       userForm.bindFromRequest().fold(
         fwe => Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doSaveUser(userId), isNew = false, false))),
         fData => {
-          users.getUser(userId).flatMap({
-            case None => Future(notFound(userId))
-            case Some(user) => {
-              users.update(fData.update(user)).map(_ => Redirect(routes.UsersCtrl.showUserList) )
-            }
-          })
+          for {
+            userOpt <- users.getUser(userId)
+            _ <- userOpt.map( user => users.update(fData.update(user)) ).getOrElse(Future(()))
+          } yield {
+            userOpt.map(_ => Redirect(routes.UsersCtrl.showUserList))
+                     .getOrElse(notFound(userId))
+          }
         }
       )
     } else {
@@ -140,30 +142,32 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     userForm.bindFromRequest().fold(
       fwe => Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doSaveNewUser, isNew=true, false))),
       fData => {
-        users.usernameExists(fData.username).flatMap{ exists =>
-          if ( exists ) {
-            val form = userForm.fill(fData).withError("username", "Username already taken")
-            Future(BadRequest( views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doSaveNewUser, isNew=true, false )))
+        val res = for {
+          usernameExists <- users.usernameExists(fData.username)
+          emailExists    <- fData.email.map(users.emailExists).getOrElse(Future(false))
+          passwordOK     = fData.pass1.nonEmpty && fData.pass1 == fData.pass2
+          canCreateUser  = !usernameExists && !emailExists && passwordOK
+          
+        } yield {
+          
+          if ( canCreateUser ) {
+            val user = User(fData.username, fData.name, fData.email.getOrElse(""),
+              fData.orcid.getOrElse(""), fData.url.getOrElse(""),
+              users.hashPassword(fData.pass1.get))
+              users.addUser(user).map( _ => Redirect(routes.UsersCtrl.showUserList()) )
+            
           } else {
-            fData.email.map{email => users.emailExists(email)}.getOrElse(Future(false)).flatMap {emailProblem =>
-              if ( emailProblem ){
-                val form = userForm.fill(fData).withError("email", "Email already exists")
-                Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doSaveNewUser, isNew=true, false)))
-              } else {
-                if (fData.pass1.nonEmpty && fData.pass1 == fData.pass2) {
-                  val user = User(fData.username, fData.name, fData.email.getOrElse(""),
-                    fData.orcid.getOrElse(""), fData.url.getOrElse(""),
-                    users.hashPassword(fData.pass1.get))
-                  users.addUser(user).map(_ => Redirect(routes.UsersCtrl.showUserList()))
-                } else {
-                  val form = userForm.fill(fData).withError("password1", "Passwords must match, and cannot be empty")
-                    .withError("password2", "Passwords must match, and cannot be empty")
-                  Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doSaveNewUser, isNew = true, false)))
-                }
-              }
-            }
+            var form = userForm.fill(fData)
+            if ( emailExists ) form = form.withError("email", "Email already exists")
+            if ( usernameExists ) form = form.withError("username", "Username already taken")
+            if ( !passwordOK ) form = form.withError("password1", "Passwords must match, and cannot be empty")
+                                          .withError("password2", "Passwords must match, and cannot be empty")
+            Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doSaveNewUser, isNew = true, false)))
           }
         }
+        
+        scala.concurrent.Await.result(res, Duration(2000, scala.concurrent.duration.MILLISECONDS))
+        
       }
     )
   }
@@ -264,7 +268,8 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
               case None => uuidForForgotPassword.addUuidForForgotPassword(UuidForForgotPassword(u.username, userSessionId, new Timestamp(System.currentTimeMillis())))
               case Some(u) => uuidForForgotPassword.updateOneTimeLinkArgs(u, userSessionId, new Timestamp(System.currentTimeMillis()))
             })
-            val email = Email("Forgot my password", conf.get[String]("play.mailer.user"), Seq(fd.email), bodyText = Some(fd.protocol_and_host + "/admin/resetPassword/" + userSessionId))
+            val bodyText = "To reset your password, please click the link below: \n " + fd.protocol_and_host + "/admin/resetPassword/" + userSessionId
+            val email = Email("Forgot my password", conf.get[String]("play.mailer.user"), Seq(fd.email), bodyText = Some(bodyText))
             mailerClient.send(email)
             Redirect( routes.UsersCtrl.showLogin() )
           }
@@ -277,7 +282,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     Ok( views.html.backoffice.users.forgotPassword(None,None) )
   }
 
-  def showResetPassword(ramdomUuid:String) = Action { req =>
+  def showResetPassword(randomUuid:String) = Action { req =>
     Ok( views.html.backoffice.users.reset(None) )
   }
 
