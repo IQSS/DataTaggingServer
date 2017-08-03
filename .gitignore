@@ -14,3 +14,5 @@ DataTagsWebApp/scripts/username
 DataTagsWebApp/scripts/vars.sh
 /DataTagsWebApp/datatags-app-nb/datatags-app/nbproject/private/
 .idea
+datatags-app/public/visualizations/*
+datatags-app/public/model-uploads/*
