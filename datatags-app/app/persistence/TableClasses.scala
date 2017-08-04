@@ -99,9 +99,11 @@ class UuidForInvitationTable(tag:Tag) extends Table[UuidForInvitation](tag,"uuid
 }
 
 class UuidForForgotPasswordTable(tag:Tag) extends Table[UuidForForgotPassword](tag, "uuid_for_forgot_password"){
-  def username = column[String]("username", O.PrimaryKey)
+  def username = column[String]("username")
   def uuid     = column[String]("uuid")
   def reset_password_date = column[Timestamp]("reset_password_date")
+
+  def pk = primaryKey("uuid_for_forgot_password_pkey", (username, uuid))
 
   def * = (username, uuid, reset_password_date) <> (UuidForForgotPassword.tupled, UuidForForgotPassword.unapply)
 }

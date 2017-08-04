@@ -37,8 +37,10 @@ class UuidForForgotPasswordDAO @Inject() (protected val dbConfigProvider:Databas
     update(u.copy(uuid = newUuid, resetPasswordDate = newDate))
   }
 
-  def deleteUuid(u:UuidForForgotPassword): Future[UuidForForgotPassword] = {
-    update(u.copy(uuid = ""))
+  def deleteUuid(u:String): Future[Int] = {
+    db.run{
+      uuids.filter(_.username === u).delete
+    }
   }
 
   def getUuid(u:String):Future[Option[UuidForForgotPassword]] = {
@@ -47,9 +49,9 @@ class UuidForForgotPasswordDAO @Inject() (protected val dbConfigProvider:Databas
     } map { res => res.headOption }
   }
 
-  def getUsernameByUuid(u:String):Future[Option[String]] = {
+  def getUuidmeByUuid(u:String):Future[Option[UuidForForgotPassword]] = {
     db.run{
       uuids.filter(_.uuid === u).result
-    } map {res => res.headOption.map(_.username) }
+    } map {res => res.headOption }
   }
 }

@@ -173,46 +173,42 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
   }
 
   def showNewUserInvitation(uuid:String) = Action { req =>
-    Ok( views.html.backoffice.users.userEditor(userForm, routes.UsersCtrl.doNewUserInvitation, isNew=true, true, Some(uuid)) )
+    Ok( views.html.backoffice.users.userEditor(userForm, routes.UsersCtrl.doNewUserInvitation, isNew=true, true, uuid=Some(uuid)) )
   }
 
   def doNewUserInvitation = Action.async { implicit req =>
     userForm.bindFromRequest().fold(
       fwe => Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doNewUserInvitation, isNew=true, true))),
       fData => {
-        uuidForInvitation.uuidExists(fData.uuid.get).flatMap { uuidExists =>
-          if (uuidExists) {
-            users.usernameExists(fData.username).flatMap { exists =>
-              if (exists) {
-                val form = userForm.fill(fData).withError("username", "Username already taken")
-                Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doNewUserInvitation, isNew = true, true, fData.uuid)))
-              } else {
-                fData.email.map { email => users.emailExists(email) }.getOrElse(Future(false)).flatMap { emailProblem =>
-                  if (emailProblem) {
-                    val form = userForm.fill(fData).withError("email", "Email already exists")
-                    Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doNewUserInvitation, isNew = true, true, fData.uuid)))
-                  } else {
-                    if (fData.pass1.nonEmpty && fData.pass1 == fData.pass2) {
-                      val user = User(fData.username, fData.name, fData.email.getOrElse(""),
-                        fData.orcid.getOrElse(""), fData.url.getOrElse(""),
-                        users.hashPassword(fData.pass1.get))
-                      uuidForInvitation.deleteUuid(fData.uuid.get)
-                      users.addUser(user).map(_ => Redirect(routes.UsersCtrl.showLogin()))
-                    } else {
-                      val form = userForm.fill(fData).withError("password1", "Passwords must match, and cannot be empty")
-                        .withError("password2", "Passwords must match, and cannot be empty")
-                      Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doNewUserInvitation, isNew = true, true, fData.uuid)))
-                    }
-                  }
-                }
-              }
-            }
+
+        val res = for {
+          uuidExists     <- fData.uuid.map(uuidForInvitation.uuidExists).getOrElse(Future(false))
+          usernameExists <- users.usernameExists(fData.username)
+          emailExists    <- fData.email.map(users.emailExists).getOrElse(Future(false))
+          passwordOK     = fData.pass1.nonEmpty && fData.pass1 == fData.pass2
+          canCreateUser  = uuidExists && !usernameExists && !emailExists && passwordOK
+        } yield {
+          if (canCreateUser){
+            val user = User(fData.username, fData.name, fData.email.getOrElse(""),
+              fData.orcid.getOrElse(""), fData.url.getOrElse(""),
+              users.hashPassword(fData.pass1.get))
+            Logger.info("uuid " + fData.uuid.get)
+            uuidForInvitation.deleteUuid(fData.uuid.get)
+            users.addUser(user).map(_ => Redirect(routes.UsersCtrl.showLogin()))
           }
-          else {
-            val form = userForm.fill(fData).withError("uuid", "invitation id does not exist")
-            Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doNewUserInvitation, isNew = true, true)))
+          else{
+            var form = userForm.fill(fData)
+            Logger.info("uuidExists " + uuidExists)
+            if ( !uuidExists ) form = form.withError("uuid", "invitation id does not exist")
+            if ( usernameExists ) form = form.withError("username", "Username already taken")
+            if ( emailExists ) form = form.withError("email", "Email already exists")
+            if ( !passwordOK ) form = form.withError("password1", "Passwords must match, and cannot be empty")
+              .withError("password2", "Passwords must match, and cannot be empty")
+            Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doNewUserInvitation, isNew = true, true, uuid = fData.uuid)))
           }
         }
+        scala.concurrent.Await.result(res, Duration(2000, scala.concurrent.duration.MILLISECONDS))
+
       }
     )
 
@@ -230,18 +226,23 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     loginForm.bindFromRequest().fold(
       fwi => Future(BadRequest(views.html.backoffice.users.login(None,Some("Error processing login form")))),
       fd => {
-        users.getUser(fd.username).map({
-          case None => BadRequest(views.html.backoffice.users.login(Some(fd.username), Some("Username/Password does not match")))
-          case Some(u) => {
-            if ( users.verifyPassword(u, fd.password) ) {
-              val userSessionId = UUID.randomUUID.toString
+        for {
+          userOpt <- users.getUser(fd.username)
+          passwordOK = userOpt.exists(users.verifyPassword(_, fd.password))
+
+        } yield {
+          if ( passwordOK ){
+            val userSessionId = UUID.randomUUID.toString
+            userOpt.map(u => {
               cache.set(userSessionId, u)
-              Redirect( routes.BackendCtrl.index ).withSession( LoggedInAction.KEY -> userSessionId )
-            } else {
-              BadRequest(views.html.backoffice.users.login(Some(fd.username), Some("Username/Password does not match")))
-            }
+              Redirect( routes.BackendCtrl.index() ).withSession( LoggedInAction.KEY -> userSessionId )
+            }).getOrElse(BadRequest(views.html.backoffice.users.login(Some(fd.username),
+              Some("Username/Password does not match"))))
+          } else {
+            BadRequest(views.html.backoffice.users.login(Some(fd.username),
+                   Some("Username/Password does not match")))
           }
-        })
+        }
       }
     )
   }
@@ -260,20 +261,24 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     emailForm.bindFromRequest().fold(
       fwi => Future(BadRequest(views.html.backoffice.users.forgotPassword(None,Some("Error processing forgot password form")))),
       fd => {
-        users.getUserByEmail(fd.email).map({
-          case None => BadRequest(views.html.backoffice.users.forgotPassword(Some(fd.email), Some("email does not exist")))
-          case Some(u) => {
-            val userSessionId = UUID.randomUUID.toString
-            uuidForForgotPassword.getUuid(u.username).map({
-              case None => uuidForForgotPassword.addUuidForForgotPassword(UuidForForgotPassword(u.username, userSessionId, new Timestamp(System.currentTimeMillis())))
-              case Some(u) => uuidForForgotPassword.updateOneTimeLinkArgs(u, userSessionId, new Timestamp(System.currentTimeMillis()))
-            })
+        for {
+          userOpt <- users.getUserByEmail(fd.email)
+          userSessionId = UUID.randomUUID.toString
+          emailExists <- userOpt.map(u => uuidForForgotPassword.addUuidForForgotPassword(
+            UuidForForgotPassword(u.username, userSessionId, new Timestamp(System.currentTimeMillis())))
+            .map(_=>true))
+            .getOrElse(Future(false))
+        } yield {
+          if ( emailExists ){
             val bodyText = "To reset your password, please click the link below: \n " + fd.protocol_and_host + "/admin/resetPassword/" + userSessionId
             val email = Email("Forgot my password", conf.get[String]("play.mailer.user"), Seq(fd.email), bodyText = Some(bodyText))
             mailerClient.send(email)
             Redirect( routes.UsersCtrl.showLogin() )
           }
-        })
+          else {
+            BadRequest(views.html.backoffice.users.forgotPassword(Some(fd.email), Some("email does not exist")))
+          }
+        }
       }
     )
   }
@@ -290,38 +295,30 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     resetPassForm.bindFromRequest().fold(
       fwi => Future(BadRequest(views.html.backoffice.users.reset(Some("Error processing reset password form")))),
       fd => {
-        val randomUuid = fd.uuid
-        uuidForForgotPassword.getUsernameByUuid(randomUuid).flatMap({
-          case None => Future(BadRequest(views.html.backoffice.users.reset(Some("uuid does not exist"))))
-          case Some(username) => {
-            users.getUser(username).flatMap({
-              case None => Future(BadRequest(views.html.backoffice.users.reset(Some("uuid does not exist"))))
-              case Some(u) => {
-                val oneWeek = 1000 * 60 * 60 * 24 * 7
-                uuidForForgotPassword.getUuid(u.username).map({
-                  case None => BadRequest(views.html.backoffice.users.reset(Some("uuid does not exist")))
-                  case Some(uuid) =>{
-                    val currentTime = System.currentTimeMillis()
-                    if (currentTime - uuid.resetPasswordDate.getTime > oneWeek) {
-                      BadRequest(views.html.backoffice.users.reset(Some("It's been more then a week")))
-                    }
-                    else if (fd.password1.nonEmpty && fd.password1 == fd.password2) {
-                      users.updatePassword(u, fd.password1)
-                      uuidForForgotPassword.deleteUuid(uuid)
-                      Redirect(routes.UsersCtrl.showLogin())
-                    }
-                    else {
-                      val form = resetPassForm.fill(fd).withError("password1", "Passwords must match, and cannot be empty")
-                        .withError("password2", "Passwords must match, and cannot be empty")
-                      BadRequest(views.html.backoffice.users.reset(Some("Passwords must match, and cannot be empty")))
-                    }
-                    Redirect(routes.UsersCtrl.showLogin())
-                  }
-                })
-              }
-            })
+        for {
+          uuidOpt     <- uuidForForgotPassword.getUuidmeByUuid(fd.uuid)
+          userOpt     <- uuidOpt.map(u => users.getUser(u.username)).getOrElse(Future(None))
+          timeOK      =  uuidOpt.exists(u => {
+                            val oneWeek = 1000 * 60 * 60 * 24 * 7
+                            val currentTime = System.currentTimeMillis()
+                            currentTime - u.resetPasswordDate.getTime < oneWeek})
+          passwordOK  =  fd.password1.nonEmpty && fd.password1 == fd.password2
+          resetOK = passwordOK && timeOK
+        } yield {
+          if (resetOK) {
+            userOpt.map(u => {
+              uuidForForgotPassword.deleteUuid(u.username)
+              users.updatePassword(u, fd.password1)
+              Redirect(routes.UsersCtrl.showLogin())}
+            ).getOrElse(BadRequest(views.html.backoffice.users.reset(Some("uuid does not exist"))))
+          } else {
+            if ( !timeOK ){
+              BadRequest(views.html.backoffice.users.reset(Some("It's been more then a week")))
+            } else {
+              BadRequest(views.html.backoffice.users.reset(Some("Passwords must match, and cannot be empty")))
+            }
           }
-        })
+        }
       }
     )
   }
