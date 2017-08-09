@@ -67,7 +67,7 @@ POST    /admin/resetPassword/    controllers.UsersCtrl.doResetPassword
 GET     /admin/inviteUser/        controllers.UsersCtrl.showInviteUser
 POST    /admin/inviteUser/        controllers.UsersCtrl.doInviteUser
 GET     /admin/newUserInvitation/:id controllers.UsersCtrl.showNewUserInvitation(id)
-POST    /admin/newUserInvitaion/  controllers.UsersCtrl.doNewUserInvitation
+POST    /admin/newUserInvitation/  controllers.UsersCtrl.doNewUserInvitation
 POST    /admin/changePassword    controllers.UsersCtrl.doChangePassword
 
 # Comments

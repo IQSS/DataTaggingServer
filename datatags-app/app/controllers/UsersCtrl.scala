@@ -4,6 +4,7 @@ import java.sql.Timestamp
 import java.util.{Date, UUID}
 import javax.inject.Inject
 
+import akka.http.scaladsl.model.HttpEntity.Chunked
 import models.{User, UuidForForgotPassword, UuidForInvitation}
 import persistence.{UsersDAO, UuidForForgotPasswordDAO, UuidForInvitationDAO}
 import play.api.cache.SyncCacheApi
@@ -135,12 +136,12 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
   }
   
   def showNewUserPage = LoggedInAction(cache,cc) { req =>
-    Ok( views.html.backoffice.users.userEditor(userForm, routes.UsersCtrl.doSaveNewUser, isNew=true, false) )
+    Ok( views.html.backoffice.users.userEditor(userForm, routes.UsersCtrl.doSaveNewUser, isNew=true, isInvite=false) )
   }
   
   def doSaveNewUser = LoggedInAction(cache,cc).async { implicit req =>
     userForm.bindFromRequest().fold(
-      fwe => Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doSaveNewUser, isNew=true, false))),
+      fwe => Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doSaveNewUser, isNew=true, isInvite=false))),
       fData => {
         val res = for {
           usernameExists <- users.usernameExists(fData.username)
@@ -149,7 +150,6 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
           canCreateUser  = !usernameExists && !emailExists && passwordOK
           
         } yield {
-          
           if ( canCreateUser ) {
             val user = User(fData.username, fData.name, fData.email.getOrElse(""),
               fData.orcid.getOrElse(""), fData.url.getOrElse(""),
@@ -162,7 +162,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
             if ( usernameExists ) form = form.withError("username", "Username already taken")
             if ( !passwordOK ) form = form.withError("password1", "Passwords must match, and cannot be empty")
                                           .withError("password2", "Passwords must match, and cannot be empty")
-            Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doSaveNewUser, isNew = true, false)))
+            Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doSaveNewUser, isNew = true, isInvite=false)))
           }
         }
         
@@ -173,14 +173,16 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
   }
 
   def showNewUserInvitation(uuid:String) = Action { req =>
-    Ok( views.html.backoffice.users.userEditor(userForm, routes.UsersCtrl.doNewUserInvitation, isNew=true, true, uuid=Some(uuid)) )
+    Ok( views.html.backoffice.users.userEditor( userForm.bind(Map("uuid"->uuid)).discardingErrors, routes.UsersCtrl.doNewUserInvitation,
+                                                isNew=true, isInvite=true ))
   }
 
-  def doNewUserInvitation = Action.async { implicit req =>
+  def doNewUserInvitation() = Action.async { implicit req =>
     userForm.bindFromRequest().fold(
-      fwe => Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doNewUserInvitation, isNew=true, true))),
+      fwe => {
+        Future(BadRequest(views.html.backoffice.users.userEditor(fwe, routes.UsersCtrl.doNewUserInvitation, isNew=true, isInvite=true)))
+      },
       fData => {
-
         val res = for {
           uuidExists     <- fData.uuid.map(uuidForInvitation.uuidExists).getOrElse(Future(false))
           usernameExists <- users.usernameExists(fData.username)
@@ -192,19 +194,17 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
             val user = User(fData.username, fData.name, fData.email.getOrElse(""),
               fData.orcid.getOrElse(""), fData.url.getOrElse(""),
               users.hashPassword(fData.pass1.get))
-            Logger.info("uuid " + fData.uuid.get)
             uuidForInvitation.deleteUuid(fData.uuid.get)
             users.addUser(user).map(_ => Redirect(routes.UsersCtrl.showLogin()))
           }
           else{
             var form = userForm.fill(fData)
-            Logger.info("uuidExists " + uuidExists)
             if ( !uuidExists ) form = form.withError("uuid", "invitation id does not exist")
             if ( usernameExists ) form = form.withError("username", "Username already taken")
             if ( emailExists ) form = form.withError("email", "Email already exists")
             if ( !passwordOK ) form = form.withError("password1", "Passwords must match, and cannot be empty")
               .withError("password2", "Passwords must match, and cannot be empty")
-            Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doNewUserInvitation, isNew = true, true, uuid = fData.uuid)))
+            Future(BadRequest(views.html.backoffice.users.userEditor(form, routes.UsersCtrl.doNewUserInvitation, isNew = true, isInvite=true)))
           }
         }
         scala.concurrent.Await.result(res, Duration(2000, scala.concurrent.duration.MILLISECONDS))

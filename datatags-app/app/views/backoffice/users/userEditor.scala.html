@@ -1,12 +1,12 @@
-@(form:Form[UserFormData], destination:Call, isNew:Boolean, isInvite:Boolean, uuid:Option[String]=None, activeFirst:Boolean=true)
+@(form:Form[UserFormData], destination:Call, isNew:Boolean, isInvite:Boolean, activeFirst:Boolean=true)
 
-@scripts = {
-  <script >
-          $(document).ready( function(){
-            $("#uuid").val(window.location.href.split("/")[window.location.href.split("/").length - 1])
-          } );
-  </script>
-}
+@*@scripts = {*@
+  @*<script >*@
+          @*$(document).ready( function(){*@
+            @*$("#uuid").val(window.location.href.split("/")[window.location.href.split("/").length - 1])*@
+          @*} );*@
+  @*</script>*@
+@*}*@
 
 @content = {
   <div class="container">
@@ -43,7 +43,7 @@
           }else{
             <div class="tab-pane" id="userEditor">
           }
-            <form class="form-horizontal mt-1" action="@destination.url" method="POST">
+              <form class="form-horizontal mt-1" action="@destination.url" method="POST">
               @if( form.hasGlobalErrors ){
                 <ul>
                 @for( ge <- form.globalErrors ){
@@ -157,9 +157,7 @@
                   <button type="submit" class="btn btn-primary">Save</button>
                 </div>
               </div>
-              @for( uuidVal <- uuid ){
-                <input type="hidden" value="@uuidVal" name="uuid" id="uuid">
-              }
+              <input type="hidden" value="@form("uuid").value.getOrElse("")" name="uuid" id="uuid">
             </form>
           </div>
 
@@ -226,7 +224,7 @@
 }
 
 @if(!isInvite){
-  @templates.backend("Profile Editor", 'backOffice, scripts)(content)
+  @templates.backend("Profile Editor", 'backOffice)(content)
 } else {
-  @templates.bsBase("New User")(scripts)(content)
+  @templates.bsBase("New User")(Html(""))(content)
 }
