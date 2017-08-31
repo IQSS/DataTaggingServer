@@ -1,9 +1,9 @@
 package actors
 
+import java.io.{File, IOException}
 import java.nio.file.attribute.PosixFilePermission
 import java.nio.file._
 import java.util.UUID
-import java.util.stream.Collectors
 import java.util.zip.ZipInputStream
 import javax.inject.{Inject, Named}
 
@@ -36,7 +36,15 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
       
       if ( Files.exists(modelPath) ) {
         Logger.info(ttl + "Deleting content of old " + modelPath)
-        Files.list(modelPath).iterator().asScala.foreach( delete )
+        try {
+          Files.list(modelPath).iterator().asScala.foreach(delete)
+        }catch{
+          case ioe:IOException => {
+            Logger.info("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"))
+            Logger.info("[Exp] delete old files - " + ioe.getCause)
+            Logger.info("[Exp] delete old files - " + ioe.getMessage)
+          }
+        }
       }
       
       // unzip
@@ -64,7 +72,6 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
   }
   
   private def unzip(zipFile:Path, destination:Path) = {
-    
     val zis = new ZipInputStream(Files.newInputStream(zipFile))
     try {
       Stream.continually(zis.getNextEntry).takeWhile(_ != null).foreach { zipEntry =>
@@ -73,11 +80,17 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
           val extractedFileFolder = extractedFilePath.getParent
           if (! Files.exists(extractedFileFolder) ) {
             Files.createDirectories(extractedFileFolder)
-            val perms=new java.util.HashSet[PosixFilePermission]()
-            for ( p <- PosixFilePermission.values() ) {
-              perms.add(p)
+            if ( !isWindows ){
+              val perms=new java.util.HashSet[PosixFilePermission]()
+              for ( p <- PosixFilePermission.values() ) {
+                perms.add(p)
+              }
+              Files.setPosixFilePermissions(extractedFileFolder, perms)
+            } else{
+              extractedFileFolder.toFile.setExecutable(true, false)
+              extractedFileFolder.toFile.setReadable(true, false)
+              extractedFileFolder.toFile.setWritable(true, false)
             }
-            Files.setPosixFilePermissions(extractedFileFolder, perms)
           }
       
           val outStream = Files.newOutputStream(extractedFilePath)
@@ -89,7 +102,17 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
           }
         }
       }
-      
+    } catch{
+      case uoe: UnsupportedOperationException => Logger.info("[UPP] UnsupportedOperationException from setPosixFilePermissions")
+      case ioe: IOException => {
+        Logger.info("[Exp] IOException - " + ioe.getMessage)
+        Logger.info("[Exp] IOException - " + ioe.getStackTrace.mkString("\n"))
+      }
+      case e:Exception => {
+        Logger.info("[Exp] Unzip - General Exception")
+        Logger.info("[Exp] - " + e.getMessage)
+        Logger.info("[Exp Trace] " + e.getStackTrace.mkString("\n"))
+      }
     } finally {
       zis.close()
     }
@@ -104,13 +127,11 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
     val content:Set[Path] = Files.list(path).iterator().asScala
                                  .filter(!Files.isHidden(_)).toSet
     if ( content.forall(Files.isDirectory(_)) ) {
-  
       // Prevent file name collisions
       content.foreach( topLevelFolder => {
         val newTLF = topLevelFolder.resolveSibling(UUID.randomUUID.toString)
         Files.move( topLevelFolder, newTLF )}
       )
-      
       // spill content
       Files.list(path).iterator().asScala
           .filter(Files.isDirectory(_))
@@ -131,5 +152,10 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
     }
     Files.delete(path)
   }
-  
+
+  private def isWindows = {
+    val os = System.getProperty("os.name")
+    os.toUpperCase.contains("WINDOWS")
+  }
+
 }

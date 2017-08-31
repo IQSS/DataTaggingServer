@@ -118,7 +118,7 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
     val msgs = mutable.Buffer[ValidationMessage]()
     
     val policyModelMdPath = modelPath.resolve(PolicyModelDataParser.DEFAULT_FILENAME)
-    
+
     if ( ! Files.exists(policyModelMdPath) ) {
       msgs += new ValidationMessage(ValidationMessage.Level.ERROR, "Missing '%s' metadata file.".format(PolicyModelDataParser.DEFAULT_FILENAME))
       
