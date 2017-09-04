@@ -1,25 +1,25 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.values._
-@( aValue: edu.harvard.iq.datatags.model.values.TagValue,
+@( aValue: AbstractValue,
    loc:Option[Localization]
 )
 @atomicValue( value:AtomicValue ) = {
   <div class="value value-simple">
-      @slotTypeTitle(value.getType, loc)
+      @slotTypeTitle(value.getSlot, loc)
       @valueAtom(value, loc)
   </div>
 }
 
 @todoValue( value:ToDoValue ) = {
   <div class="value value-todo">
-    <span class="typeName">@value.getType.getName</span>
+    <span class="typeName">@value.getSlot.getName</span>
     <span class="valueAtom">TODO</span>
   </div>
 }
 
 @aggregateValue( value:AggregateValue ) = {
   <div class="value value-aggregate">
-    <span class="typeName">@value.getType.getName</span>
+    <span class="typeName">@value.getSlot.getName</span>
     @if( value.getValues.isEmpty ) {
         <span class="valueAtom">empty</span>
     } else {
@@ -32,23 +32,23 @@
 
 @compoundValue( value:CompoundValue ) = {
   <div class="value value-compound">
-    <div class="typeName">@value.getType.getName</div>
+    <div class="typeName">@value.getSlot.getName</div>
       <ul>
-        @for( tp <- value.getNonEmptySubSlotTypes ){
+        @for( tp <- value.getNonEmptySubSlots ){
           <li>@renderValue( value.get(tp) )</li>
         }
       </ul>
   </div>
 }
 
-@anyValue( value:TagValue ) = {
+@anyValue( value:AbstractValue ) = {
  <div class="value value-compound">
-    <span class="typeName">@value.getType.getName</span>
+    <span class="typeName">@value.getSlot.getName</span>
     <span class="valueAtom">@value.toString</span>
   </div>  
 }
 
-@renderValue( value:TagValue ) = {
+@renderValue( value:AbstractValue ) = {
     @value match {
         case v:AtomicValue => {@atomicValue(v)}
         case v:AggregateValue => {@aggregateValue(v)}

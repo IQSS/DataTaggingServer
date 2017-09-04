@@ -198,7 +198,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
         val answer = Answer.get( answerReq.text )
         val ansRec = AnswerRecord( currentAskNode(session.kit, session.engineState), answer )
         val runRes = advanceEngine( session.kit, session.engineState, answer )
-
+        
         // save state and decide where to go from here
         cache.set( session.key, session.updatedWith( ansRec, runRes.traversed, runRes.state))
         runRes.state.getStatus match {
@@ -238,7 +238,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
   def accept( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc) { implicit request =>
     val session = request.userSession
     val tags = session.tags
-    val codeOpt = Option(tags.getType.getTypeNamed("Code")).map(tags.get)
+    val codeOpt = Option(tags.getSlot.getSubSlot("Code")).map(tags.get)
     Ok( views.html.interview.accepted(session.kit, tags, codeOpt,
                                         session.requestedInterview, session.answerHistory, session.localization) )
   }
@@ -274,7 +274,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
 
     rte.applySnapshot( state )
     rte.consume( ans )
-	
+	  
+    Logger.info( "Current value: " + rte.getCurrentValue )
+    
     EngineRunResult( rte.createSnapshot, l.traversedNodes, l.exception )
 
   }

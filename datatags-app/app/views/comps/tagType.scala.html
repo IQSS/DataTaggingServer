@@ -1,6 +1,7 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@import edu.harvard.iq.datatags.model.types._
-@( tagType: edu.harvard.iq.datatags.model.types.SlotType, loc:Option[Localization])
+@import edu.harvard.iq.datatags.model.slots.AbstractSlot
+@import edu.harvard.iq.datatags.model.slots._
+@( tagType:AbstractSlot, loc:Option[Localization])
 
 
 @simpleType( tp: AtomicSlot ) = {
@@ -29,7 +30,7 @@
  <div class="tagtype tagtype-compound">
     @slotTypeTitle(tp, loc)
     <div class="typeValues">
-      @for( ft <- tp.getFieldTypes ) {
+      @for( ft <- tp.getSubSlots ) {
         @renderType( ft )
       }
     </div>
@@ -45,7 +46,7 @@
   </div>
 }
 
-@renderType( ft:SlotType ) = {
+@renderType( ft:AbstractSlot) = {
   @ft match {
     case t:AtomicSlot => { @simpleType(t) }
     case t:AggregateSlot => { @aggregateType(t) }

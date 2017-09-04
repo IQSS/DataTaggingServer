@@ -2,7 +2,7 @@ package models
 
 import edu.harvard.iq.datatags.model.PolicyModel
 import edu.harvard.iq.datatags.model.graphs.nodes._
-import edu.harvard.iq.datatags.model.types.CompoundSlot
+import edu.harvard.iq.datatags.model.slots.CompoundSlot
 import edu.harvard.iq.datatags.runtime._
 import edu.harvard.iq.datatags.model.graphs._
 import edu.harvard.iq.datatags.model.graphs.DecisionGraph
@@ -32,7 +32,7 @@ class Serialization private( val answerMap: Map[Answer, String],
     val l = rte.setListener( new TaggingEngineListener )
     val buffer = collection.mutable.Buffer[AnswerRecord]()
     rte.setModel( userSession.kit.model   )
-    rte.setCurrentTags( userSession.kit.model.getSpaceRoot.createInstance )
+    rte.setCurrentValue( userSession.kit.model.getSpaceRoot.createInstance )
 
     // Deserialize and feed the answers to rte
     rte.start()

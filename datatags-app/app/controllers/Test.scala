@@ -2,8 +2,8 @@ package controllers
 
 import javax.inject.Inject
 
-import edu.harvard.iq.datatags.model.types._
-import edu.harvard.iq.datatags.model.values.TagValue
+import edu.harvard.iq.datatags.model.slots._
+import edu.harvard.iq.datatags.model.values.AbstractValue
 import models.{KitKey, PolicyModelKits, VersionedPolicyModel}
 import persistence.PolicyModelsDAO
 import play.api.mvc._
@@ -55,7 +55,7 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models
     }
   }
 
-  def generateInstance(tt:SlotType):TagValue = {
+  def generateInstance(tt:AbstractSlot):AbstractValue = {
     tt match {
       case as:AtomicSlot => as.values.first()
       case t:ToDoSlot => t.getValue
@@ -72,9 +72,9 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models
       }
       case cs:CompoundSlot => {
         val ins = cs.createInstance()
-        for ( tt <- cs.getFieldTypes ) {
+        for ( tt <- cs.getSubSlots) {
           if ( Random.nextBoolean() ) {
-            ins.set( generateInstance(tt) )
+            ins.put( generateInstance(tt) )
           }
         }
         ins

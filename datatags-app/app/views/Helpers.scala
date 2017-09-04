@@ -19,7 +19,7 @@ import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import controllers.LoggedInAction
 import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
-import edu.harvard.iq.datatags.model.values.TagValue
+import edu.harvard.iq.datatags.model.values.AbstractValue
 import models.{CommentingStatus, PublicationStatus}
 import play.api.data.{Field, FormError}
 import play.api.mvc.Request
@@ -156,7 +156,7 @@ object Helpers {
       else "<p>%s</p>".format(line))
       
       val reformatted = formatted.tail.foldLeft(List(List(formatted.head)))((l, s) => {
-        if (l.last.head(1) == s(1)) {
+        if (l.last.head.charAt(1) == s(1)) {
           l.dropRight(1) :+ (l.last :+ s)
         } else {
           l :+ List(s)

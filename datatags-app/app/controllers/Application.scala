@@ -9,6 +9,8 @@ import models._
 import persistence.{PolicyModelsDAO, SettingsDAO}
 import play.api.{Configuration, Logger, routing}
 
+import scala.concurrent.Future
+
 
 class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
                             conf:Configuration, cc:ControllerComponents,
@@ -28,7 +30,8 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
   
   def publicModelCatalog = Action.async { implicit req =>
     models.listAllVersionedModels.map( mdls =>
-      Ok( views.html.modelCatalog(mdls) )
+      if ( LoggedInAction.userPresent(req) ) Redirect(routes.PolicyKitManagementCtrl.showVpmList)
+      else Ok( views.html.modelCatalog(mdls) )
     )
   }
   
@@ -44,17 +47,24 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
   }
 
   def showVersionedPolicyModel(id:String) = Action.async { implicit req =>
-    for {
-      model <- models.getVersionedModel(id)
-      versions <- models.listVersionsFor(id).map( seq => seq.filter(_.publicationStatus==PublicationStatus.Published) )
+    if ( LoggedInAction.userPresent(req) ) {
+      Future(Redirect(routes.PolicyKitManagementCtrl.showVpmPage(id)))
+    
+    } else {
       
-    } yield {
-      model match {
-        case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
-        case Some(vpm) => Ok(
-          views.html.publicVersionedPolicyModelViewer(vpm, versions.map(v => kits.get(KitKey.of(v))).filter(_.nonEmpty).map(_.get)))
+      for {
+        model <- models.getVersionedModel(id)
+        versions <- models.listVersionsFor(id).map( seq => seq.filter(_.publicationStatus==PublicationStatus.Published) )
+        
+      } yield {
+        model match {
+          case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
+          case Some(vpm) => Ok(
+            views.html.publicVersionedPolicyModelViewer(vpm, versions.map(v => kits.get(KitKey.of(v))).filter(_.nonEmpty).map(_.get)))
+        }
       }
     }
+    
   }
 
   def javascriptRoutes = cached("jsRoutes") {

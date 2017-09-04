@@ -1,6 +1,6 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import java.util.function
-@(tp:edu.harvard.iq.datatags.model.types.SlotType, loc:Option[Localization], explanation:String="")
+@(tp:edu.harvard.iq.datatags.model.slots.AbstractSlot, loc:Option[Localization], explanation:String="")
 <div class="typeName">
     @if( tp.getNote!=null && tp.getNote.nonEmpty ) {
       @defining(loc.flatMap(l=>Helpers.o2o(l.getSlotText(tp))) ){ locOpt =>
