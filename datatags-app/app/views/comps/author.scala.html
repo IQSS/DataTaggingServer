@@ -2,9 +2,9 @@
 @(a:AuthorData)
 
 @person( p:PersonAuthorData ) = {
-  <em>@p.getName</em> @if(p.getAffiliation!=null && p.getAffiliation.nonEmpty){ @p.getAffiliation }
-  @if(p.getEmail!=null && p.getEmail.nonEmpty){ <a href="mailto:@p.getEmail">@p.getEmail</a> }
-  @if(p.getOrcid!=null && p.getOrcid.nonEmpty){ ORCiD: @p.getOrcid }
+  @p.getName@if(p.getAffiliation!=null && p.getAffiliation.nonEmpty){ <em>@p.getAffiliation</em> }<br>
+  @if(p.getEmail!=null && p.getEmail.nonEmpty){ <small><a href="mailto:@p.getEmail">@p.getEmail</a></small> }
+  @if(p.getOrcid!=null && p.getOrcid.nonEmpty){ <small>ORCiD: <a href="http://orcid.org/@p.getOrcid">@p.getOrcid</a></small> }
 }
 
 @group( g:GroupAuthorData ) = {

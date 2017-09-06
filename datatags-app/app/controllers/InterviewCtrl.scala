@@ -275,8 +275,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
     rte.applySnapshot( state )
     rte.consume( ans )
 	  
-    Logger.info( "Current value: " + rte.getCurrentValue )
-    
     EngineRunResult( rte.createSnapshot, l.traversedNodes, l.exception )
 
   }
