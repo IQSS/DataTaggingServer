@@ -40,7 +40,10 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
     if ( Files.exists(destPath) ) {
       val content = Files.readAllBytes(destPath)
       val suffix = path.split("\\.")
-      Ok( content ).withHeaders( ("Mime-type", MIME_TYPES.getOrElse(suffix.last.toLowerCase, "application/octet-stream")) )
+      Ok( content ).withHeaders(
+        ("Content-Disposition", "inline"),
+        ("Mime-type", MIME_TYPES.getOrElse(suffix.last.toLowerCase, "application/octet-stream"))
+      )
     } else {
       NotFound("Visualization " + path + " not found.")
     }

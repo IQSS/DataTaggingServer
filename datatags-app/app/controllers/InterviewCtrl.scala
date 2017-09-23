@@ -72,10 +72,11 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
       if (linkSessionStringOpt.isEmpty) return false;
       val linkSessionString = linkSessionStringOpt.get
       val allowedKitKey = KitKey.parse(linkSessionString)
-      return allowedKitKey == KitKey.of(pmv)
+      allowedKitKey == KitKey.of(pmv)
       
     } else {
-      return false
+      false
+      
     }
     
   }
