@@ -31,7 +31,7 @@ case class LoggedInAction(cache:SyncCacheApi, cc:ControllerComponents) extends A
         }
       }
     }.getOrElse{
-      Logger.warn("Blocked attempt to access a LoggesInAction with no user involved." )
+      Logger.warn("Blocked attempt to access a LoggedInAction with no user involved." )
       Future.successful( Redirect(routes.UsersCtrl.showLogin()) )
     }
   }

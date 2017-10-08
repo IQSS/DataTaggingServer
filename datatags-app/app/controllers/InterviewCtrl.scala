@@ -8,9 +8,10 @@ import edu.harvard.iq.datatags.runtime._
 import edu.harvard.iq.datatags.model.graphs.nodes._
 import models._
 import _root_.util.Jsonizer
-import java.text.SimpleDateFormat
 import javax.inject.Inject
 
+import com.ibm.icu.text.SimpleDateFormat
+import edu.harvard.iq.datatags.externaltexts.MarkupString
 import edu.harvard.iq.datatags.model.graphs.Answer
 import persistence.PolicyModelsDAO
 import play.api.Logger
@@ -82,6 +83,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
   }
 
   def startInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None ) = InterviewSessionAction(cache, cc) { implicit req =>
+    import util.JavaOptionals.toRichOptional
     val kitId = KitKey(modelId, versionNum)
     kits.get(kitId) match {
       case Some(kit) => {
@@ -89,23 +91,21 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
           case None       => if ( kit.model.getLocalizations.size==1 ) kits.localization(kitId, kit.model.getLocalizations.iterator().next()) else None
           case Some(name) => kits.localization(kitId,name)
         }
-        val readmeOpt = l10n.flatMap( loc => {
-          val brfm = loc.getBestReadmeFormat
-          if (brfm.isPresent) {
-            Some(loc.getReadme(brfm.get))
-          } else {
-            None
-          }
-        })
-      
+        val readmeOpt:Option[MarkupString] = l10n.map( loc =>
+          loc.getLocalizedModelData.getBestReadmeFormat.toOption.map(loc.getLocalizedModelData.getReadme(_))
+        ).getOrElse(kit.model.getMetadata.getBestReadmeFormat.toOption.map(kit.model.getMetadata.getReadme(_)))
+        
         if ( l10n isDefined ) {
           val updated = req.userSession.copy(localization = l10n)
           cache.set(req.userSession.key, updated)
         }
         
         // if there's a readme present, we show it first. Else, we start the interview.
-        readmeOpt.map( readMe => Ok(views.html.interview.showReadme(kit, readMe, l10n.get)) )
-          .getOrElse({
+        readmeOpt.map( readMe => Ok(views.html.interview.showReadme(kit, readMe,
+                                                                     l10n.map(_.getLocalizedModelData.getTitle).getOrElse(kit.model.getMetadata.getTitle),
+                                                                     l10n.map(_.getLocalizedModelData.getSubTitle).getOrElse(kit.model.getMetadata.getSubTitle),
+                                                                     l10n))
+        ).getOrElse({
             // No readme, perform the first decision graph traversal.
             val rte = new RuntimeEngine
             rte.setModel(kit.model)
@@ -122,6 +122,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
               req.userSession.localization))
           })
       }
+      
       case None => NotFound("Model with id %s not found.".format(kitId))
     }
   }

@@ -1,6 +1,6 @@
 @import edu.harvard.iq.datatags.externaltexts.MarkupString
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@( qKit:PolicyModelVersionKit, readme:MarkupString, loc:Localization )(implicit req:Request[_])
+@( qKit:PolicyModelVersionKit, readme:MarkupString, title:String, subTitle:String, loc:Option[Localization] )(implicit req:Request[_])
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -9,14 +9,14 @@
 
 @import views.Helpers
 
-@templates.bsNavBar( qKit.model.getMetadata.getTitle + ": README", 'tag, scripts) {
+@templates.bsNavBar(qKit.model.getMetadata.getTitle + ": README", 'tag, scripts) {
 
 <div class="row">
   <div class="col-md-12">
     <div>
-      <strong>@loc.getLocalizedModelData.getTitle</strong>
-      @if( Helpers.hasContent(loc.getLocalizedModelData.getSubTitle) ) {
-         @loc.getLocalizedModelData.getSubTitle
+      <strong>@title</strong>
+      @if( Helpers.hasContent(subTitle) ) {
+         @subTitle
       } &gt; README
     </div>
   </div>
@@ -26,7 +26,7 @@
     <div class="mdRender">
       @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
         <div class="pull-right">
-        @comps.comments("cmntReadme", qKit.dbData.parentId, qKit.dbData.version, Some(loc.getLanguage), "meta", "readme")
+        @comps.comments("cmntReadme", qKit.dbData.parentId, qKit.dbData.version, loc.map(_.getLanguage), "meta", "readme")
         </div>}
       @Helpers.render(readme)
     </div>
@@ -37,10 +37,10 @@
       <h3>
         @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
           <div class="pull-right">
-          @comps.comments("cmntPS", qKit.dbData.parentId, qKit.dbData.version, Some(loc.getLanguage), "meta", "policy-space")
+          @comps.comments("cmntPS", qKit.dbData.parentId, qKit.dbData.version, loc.map(_.getLanguage), "meta", "policy-space")
           </div>}
         Policy Space</h3>
-      @comps.tagType(qKit.model.getSpaceRoot, Some(loc) )
+      @comps.tagType(qKit.model.getSpaceRoot, loc )
     </div>
   </div>
 <div class="row">

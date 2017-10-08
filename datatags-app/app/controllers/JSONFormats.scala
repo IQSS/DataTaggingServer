@@ -15,8 +15,6 @@ object JSONFormats {
   /* Converts Json to CustomizationDTO object and vice versa */
   implicit val customizationDTOFmt:Format[CustomizationDTO] = Json.format[CustomizationDTO]
 
-  implicit val commentFmt:Format[Comment] = Json.format[Comment]
-  
   implicit val timestampFmt = new Format[Timestamp]{
     override def writes(o: Timestamp): JsValue = JsNumber(o.getTime)
     override def reads(json: JsValue): JsResult[Timestamp] = json match {
@@ -26,5 +24,6 @@ object JSONFormats {
   }
   
   implicit val commentDTOFmt:Format[CommentDTO] = Json.format[CommentDTO]
+  implicit val commentFmt:Format[Comment] = Json.format[Comment]
   
 }

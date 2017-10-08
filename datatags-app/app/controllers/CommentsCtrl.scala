@@ -2,6 +2,7 @@ package controllers
 
 import javax.inject.Inject
 
+import edu.harvard.iq.datatags.externaltexts.MarkupString
 import models.{Comment, CommentDTO, KitKey, PolicyModelKits}
 import play.api.libs.json._
 import persistence.CommentsDAO
@@ -10,7 +11,7 @@ import play.api.cache.SyncCacheApi
 import play.api.mvc.{ControllerComponents, InjectedController}
 
 import scala.concurrent.Future
-
+import _root_.util.JavaOptionals.toRichOptional
 
 class CommentsCtrl @Inject()(comments:CommentsDAO, kits:PolicyModelKits,
                              cache:SyncCacheApi, cc:ControllerComponents) extends InjectedController{
@@ -39,19 +40,17 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, kits:PolicyModelKits,
         case Some(comment) => {
           val cmt = comment.trimmed
           val kit = kits.get(KitKey(cmt.versionedPolicyModelID, comment.version))
-          val loc = kit.flatMap( k => cmt.localization.flatMap(ln=>kits.localization(k.id, ln.trim)))
-          
-          val readmeOpt = loc.flatMap( loc => {
-              val brfm = loc.getBestReadmeFormat
-              if (brfm.isPresent) {
-                Some(loc.getReadme(brfm.get))
-              } else {
-                None
-              }
-          })
           kit match {
             case None => NotFound("Cannot find comment " + id)
-            case Some(aKit) => Ok( views.html.backoffice.commentViewer(cmt, aKit, loc, readmeOpt) )
+            case Some(aKit) => {
+              val loc = cmt.localization.flatMap(ln=>kits.localization(aKit.id, ln.trim))
+  
+              val readmeOpt:Option[MarkupString] = loc.map( loc =>
+                loc.getLocalizedModelData.getBestReadmeFormat.toOption.map(loc.getLocalizedModelData.getReadme(_))
+              ).getOrElse(aKit.model.getMetadata.getBestReadmeFormat.toOption.map(aKit.model.getMetadata.getReadme(_)))
+  
+              Ok( views.html.backoffice.commentViewer(cmt, aKit, loc, readmeOpt) )
+            }
           }
           
         }
