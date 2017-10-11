@@ -4,6 +4,7 @@
 @scripts ={
   @if(versions.map(_._2).exists(_.isEmpty)){
     <script language="Javascript">
+      console.log("missing models detected. Will reload window");
       window.setTimeout( function(){ window.location.reload(); }, 3000 );
     </script>
   }

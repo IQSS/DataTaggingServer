@@ -26,7 +26,10 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "3.0.0",
   "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
   "org.mindrot" % "jbcrypt" % "0.3m",
-  "com.typesafe.play" %% "play-iteratees" % "2.6.1"
+  "com.typesafe.play" %% "play-iteratees" % "2.6.1",
+  "com.typesafe.play" %% "play-mailer" % "6.0.0",
+  "com.typesafe.play" %% "play-mailer-guice" % "6.0.0"
+
 )
 
 LessKeys.compress in Assets := true
@@ -37,5 +40,4 @@ TwirlKeys.templateImports += "views.Helpers"
 
 TwirlKeys.templateImports += "scala.collection.JavaConverters._"
 
-libraryDependencies += "com.typesafe.play" %% "play-mailer" % "6.0.0"
-libraryDependencies += "com.typesafe.play" %% "play-mailer-guice" % "6.0.0"
+
