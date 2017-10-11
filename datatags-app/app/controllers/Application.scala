@@ -67,7 +67,6 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
         }
       }
     }
-    
   }
 
   def javascriptRoutes = cached("jsRoutes") {
