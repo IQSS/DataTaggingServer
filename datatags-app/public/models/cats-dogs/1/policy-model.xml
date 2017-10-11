@@ -16,4 +16,9 @@
     <space root="Base">definitions.ts</space>
     <graph>graph.dg</graph>
   </model>
+  <references>
+    <reference doi="do/i/xxy.z.19" url="http://reference.url.com">
+      Important cats and dogs reference.
+    </reference>
+  </references>
 </policy-model>

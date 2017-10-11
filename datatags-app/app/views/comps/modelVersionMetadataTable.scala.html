@@ -12,15 +12,9 @@
         </td>
       </tr>
     }
-    @for( doi <- Option(md.getDoi) ) {
-      <tr>
-        <th>DOI</th>
-        <td><a href="http://dx.doi.org/@doi">@doi</a></td>
-      </tr>
-    }
     @for( version <- Option(md.getVersion) ) {
       <tr>
-        <th>Version</th>
+        <th>Model Version</th>
         <td>@version</td>
       </tr>
     }
@@ -43,12 +37,11 @@
           <ul>
           @for( ref <- md.getReferences ) {
             <li>
-              <h6>
-                @for(url<-Option(ref.getUrl)){
-                  <a href="@url" target="_blank">@url</a>}
-                @for(doi<-Option(ref.getDoi)){ doi:<a href="http://dx.doi.org/@doi" target="_blank">@doi</a>}
-              </h6>
-              @ref.getText
+              @ref.getText @for(doi<-Option(ref.getDoi)){ <small>(doi:<a href="http://dx.doi.org/@doi" target="_blank">@doi</a>)</small>}
+              @for(url<-Option(ref.getUrl)){
+                <br>
+                <a href="@url" target="_blank">@url</a>
+              }
             </li>
           }
           </ul>
