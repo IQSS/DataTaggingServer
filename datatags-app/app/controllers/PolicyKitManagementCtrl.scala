@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import java.util.UUID
 import javax.inject.{Inject, Named}
 
-import actors.ModelUploadProcessingActor.PrepareModel
+import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel}
 import akka.actor.ActorRef
 import models._
 import persistence.{CommentsDAO, PolicyModelsDAO}
@@ -15,6 +15,7 @@ import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, InjectedController}
+import play.shaded.ahc.io.netty.handler.codec.http.multipart.DiskFileUpload
 
 import scala.concurrent.Future
 
@@ -41,7 +42,7 @@ object  PmvFormData {
 class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKits,
                                          cc:ControllerComponents, models:PolicyModelsDAO,
                                          comments:CommentsDAO, config:Configuration,
-                                         @Named("upload-process-actor") uploadPostProcessor:ActorRef ) extends InjectedController {
+                                         @Named("index-process-actor") uploadPostProcessor:ActorRef ) extends InjectedController {
   
   implicit private val ec = cc.executionContext
   private val uploadPath = Paths.get(config.get[String]("taggingServer.model-uploads.folder"))
@@ -231,6 +232,16 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
         
       }
     )
+  }
+
+  def deleteVersion(modelId:String, version:Int) = LoggedInAction(cache,cc).async{ implicit req =>
+      models.getModelVersion(modelId, version).map({
+        case None => NotFound("Link no longer active")
+        case Some(pmv) =>{
+          uploadPostProcessor ! DeleteVersion(pmv)
+          models.deleteVersion(modelId, version)
+          Ok("Deleted version %d".format(version))}
+      })
   }
   
   

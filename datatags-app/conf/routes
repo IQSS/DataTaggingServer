@@ -45,6 +45,7 @@ GET     /admin/vpms/:modelId/versions/:vNum/edit controllers.PolicyKitManagement
 POST    /admin/vpms/:modelId/versions/:vNum      controllers.PolicyKitManagementCtrl.doSaveVersion(modelId, vNum:Int)
 GET     /admin/vpms/          controllers.PolicyKitManagementCtrl.showVpmList
 GET     /admin/vpms/:id       controllers.PolicyKitManagementCtrl.showVpmPage(id)
+DELETE  /admin/vpms/:modelId/versions/:vNum/delete          controllers.PolicyKitManagementCtrl.deleteVersion(modelId, vNum:Int)
 
 GET     /admin/comments/:id   controllers.CommentsCtrl.showComment(id:Long)
 

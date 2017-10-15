@@ -1,9 +1,9 @@
 package actors
-import java.io.OutputStreamWriter
+import java.io.{File, IOException, OutputStreamWriter}
 import java.nio.file.{Files, Path, Paths}
 import javax.inject._
-
-import actors.VisualizationActor.CreateVisualizationFiles
+import scala.collection.JavaConverters._
+import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationFiles}
 import akka.actor.{Actor, Props}
 import edu.harvard.iq.datatags.cli.ProcessOutputDumper
 import edu.harvard.iq.datatags.model.PolicyModel
@@ -16,6 +16,7 @@ import play.api.{Configuration, Logger}
 object VisualizationActor {
   def props = Props[VisualizationActor]
   case class CreateVisualizationFiles(kitVersion:PolicyModelVersionKit)
+  case class DeleteVisualizationFiles(kitVersion:PolicyModelVersionKit)
 
 }
 
@@ -30,12 +31,25 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
   private val pathToFiles = Paths.get(configuration.get[String]("taggingServer.visualize.folder"))
   
   def receive = {
-    case CreateVisualizationFiles(kitVersion:PolicyModelVersionKit) =>
+    case CreateVisualizationFiles(kitVersion:PolicyModelVersionKit) => {
       val folder = ensureVisualizationFolderExists(kitVersion)
-      Seq("pdf", "svg", "png").foreach( ext => {
+      Seq("pdf", "svg", "png").foreach(ext => {
         createDecisionGraphVisualizationFile(kitVersion.model, folder, ext)
         createPolicySpaceVisualizationFile(kitVersion.model, folder, ext)
       })
+    }
+    case DeleteVisualizationFiles(kitVersion:PolicyModelVersionKit) => {
+      val folder = ensureVisualizationFolderExists(kitVersion)
+      try {
+        Files.list(folder).iterator().asScala.foreach(delete)
+      }catch{
+        case ioe:IOException => {
+          Logger.info("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"))
+          Logger.info("[Exp] delete old files - " + ioe.getCause)
+          Logger.info("[Exp] delete old files - " + ioe.getMessage)
+        }
+      }
+    }
   }
   
   def ensureVisualizationFolderExists(kitVersion: PolicyModelVersionKit): Path = {
@@ -107,6 +121,13 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
       dump.await()
       Logger.info("File created at: " +  outputPath)
     }
+  }
+
+  private def delete( path:Path ):Unit = {
+    if ( Files.isDirectory(path) ) {
+      Files.list(path).iterator().asScala.foreach( delete )
+    }
+    Files.delete(path)
   }
   
 }

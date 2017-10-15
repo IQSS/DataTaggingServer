@@ -8,8 +8,8 @@ import java.util.zip.ZipInputStream
 import javax.inject.{Inject, Named}
 
 import scala.collection.JavaConverters._
-import actors.ModelUploadProcessingActor.PrepareModel
-import actors.VisualizationActor.CreateVisualizationFiles
+import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel}
+import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationFiles}
 import akka.actor.{Actor, ActorRef, Props}
 import play.api.{Configuration, Logger}
 import models.{PolicyModelKits, PolicyModelVersion}
@@ -17,6 +17,7 @@ import models.{PolicyModelKits, PolicyModelVersion}
 object ModelUploadProcessingActor {
   def props = Props[ModelUploadProcessingActor]
   case class PrepareModel(filePath:Path, pmv:PolicyModelVersion )
+  case class DeleteVersion(pmv:PolicyModelVersion)
 }
 
 /**
@@ -68,6 +69,23 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
       Logger.info(ttl + "deleting %s".format(path))
       Files.delete(path)
       Logger.info(ttl + " DONE")
+    }
+    case DeleteVersion(pmv) => {
+      val modelPath = modelsFolderPath.resolve(pmv.parentId).resolve(pmv.version.toString)
+      if ( Files.exists(modelPath) ) {
+        Logger.info("Deleting content of old " + modelPath)
+        try {
+          Files.list(modelPath).iterator().asScala.foreach(delete)
+        }catch{
+          case ioe:IOException => {
+            Logger.info("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"))
+            Logger.info("[Exp] delete old files - " + ioe.getCause)
+            Logger.info("[Exp] delete old files - " + ioe.getMessage)
+          }
+        }
+      }
+      val newKit = kits.loadSingleKit(pmv, modelPath)
+      vizActor ! DeleteVisualizationFiles(newKit)
     }
   }
   

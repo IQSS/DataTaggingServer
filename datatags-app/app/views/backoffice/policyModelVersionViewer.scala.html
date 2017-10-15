@@ -11,6 +11,7 @@
             JsUtils.fillAccessLinks();
           })
   </script>
+  <script src="@routes.Assets.at("js/DeleteVersion.js")"></script>
 }
 
 
@@ -28,6 +29,9 @@
           }
           <a class="btn btn-default" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(pmv.parentId, pmv.version)">
             <i class="fa fa-edit"></i> Edit
+          </a>
+          <a class="btn btn-default" onclick="DeleteVersion.deleteVersion('@pmv.parentId', '@pmv.version')">
+            <i class="fa fa-trash-o"></i> Delete
           </a>
         </div>
         @kitOpt.flatMap( k => Option(k.model)).map(_.getMetadata.getTitle ).getOrElse(vpm.id + "/" + pmv.version)
