@@ -74,5 +74,15 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, kits:PolicyModelKits,
       }
     })
   }
+
+  def deleteComment(id:Long) = LoggedInAction(cache, cc).async { implicit req =>
+    comments.get(id).flatMap({
+      case None => Future(NotFound("Cannot find comment " + id))
+      case Some(comment) => {
+        comments.deleteComment(comment).map(dc =>
+        Ok("delete comment"))
+      }
+    })
+  }
   
 }

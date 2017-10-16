@@ -74,6 +74,8 @@ POST    /admin/changePassword    controllers.UsersCtrl.doChangePassword
 # Comments
 POST    /admin/api/comments/             controllers.CommentsCtrl.apiAddComment
 PUT     /admin/api/comments/:id/status   controllers.CommentsCtrl.apiSetCommentStatus(id:Long)
+DELETE  /admin/api/comments/:id/delete   controllers.CommentsCtrl.deleteComment(id:Long)
+
 
 # Map static resources from the /public folder to the /assets URL path
 # GET  /assets/*file           controllers.Assets.at(path="/public", file)

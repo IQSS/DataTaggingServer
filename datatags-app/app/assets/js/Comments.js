@@ -99,10 +99,38 @@ var Comments = (function(){
         });
     }
 
+    function deleteComment( cmtId, modelId, version ){
+        swal({
+            title: "Are you sure?",
+            text: "You will not be able to recover this comment!",
+            type: "warning",
+            showCancelButton: true,
+            confirmButtonClass: "btn-danger",
+            confirmButtonText: "Yes, delete it!",
+            cancelButtonText: "No, cancel!",
+            closeOnConfirm: false,
+            closeOnCancel: false
+        },
+        function(isConfirm) {
+            if (isConfirm) {
+                var call = jsRoutes.controllers.CommentsCtrl.deleteComment(cmtId);
+                $.ajax(call.url, {
+                    type: call.type,
+                    contentType: "application/json; charset=utf-8"
+                }).done(function (data, status, jqXhr) {
+                    window.location = jsRoutes.controllers.PolicyKitManagementCtrl.showVersionPage(modelId, version).url;
+                });
+            } else {
+                swal.close();
+            }
+        });
+    }
+
     return {
         save: save,
         closeForm: closeForm,
         toggleForm: toggleForm,
-        setResolved: setResolved
+        setResolved: setResolved,
+        deleteComment: deleteComment
     };
 })();

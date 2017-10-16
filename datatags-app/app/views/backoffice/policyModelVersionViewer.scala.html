@@ -147,6 +147,7 @@
                   View</a>
                 <button class="btn btn-sm btn-default" onclick="Comments.setResolved(this, '@{"cmtsts"+cmt.id}', @cmt.id, @if(cmt.resolved){false}else{true})">
                   Mark as @if(cmt.resolved){Unresolved}else{Resolved}</button>
+                <button class="btn btn-sm btn-default" onclick="Comments.deleteComment('@cmt.id','@pmv.parentId', '@pmv.version')"><i class="fa fa-trash-o"></i> Delete</button>
               </td>
             </tr>
             <tr>
