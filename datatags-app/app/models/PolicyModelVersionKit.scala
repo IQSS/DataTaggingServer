@@ -104,7 +104,15 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
     allKits.remove(kk)
     allLocalizations.remove(kk)
   }
-  
+
+  def getLatestVersion(modelId:String):Option[PolicyModelVersionKit] = {
+    var ver = 0
+    allKits.foreach(key => {
+      if(key._1.modelId.equals(modelId) && key._1.version > ver ) { ver = key._1.version}
+    })
+    get(KitKey(modelId,ver))
+  }
+
   /**
     * Loads a single kit from the given path. Adds the kit to the kit collection.
     * @param modelPath path to the policy model folder.
@@ -191,8 +199,7 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
       }
     }
   }
-  
-  
+
   /**
     * Load all models from the database. Called once at application startup.
     */
