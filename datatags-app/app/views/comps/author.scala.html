@@ -2,14 +2,24 @@
 @(a:AuthorData)
 
 @person( p:PersonAuthorData ) = {
+@if(p.getUrl!=null && p.getUrl.trim.nonEmpty){
+  <em><a href="@p.getUrl">@p.getName</a></em>
+}else{
+  <em>@p.getName</em>
+}
   @p.getName@if(p.getAffiliation!=null && p.getAffiliation.nonEmpty){ <em>@p.getAffiliation</em> }<br>
   @if(p.getEmail!=null && p.getEmail.nonEmpty){ <small><a href="mailto:@p.getEmail">@p.getEmail</a></small> }
   @if(p.getOrcid!=null && p.getOrcid.nonEmpty){ <small>ORCiD: <a href="http://orcid.org/@p.getOrcid">@p.getOrcid</a></small> }
-  @if(p.getUrl!=null && p.getUrl.nonEmpty){ <small> URL: <a href=@p.getUrl>@p.getUrl</a></small> }
+
 }
 
 @group( g:GroupAuthorData ) = {
-  <em>@g.getName</em>@if( g.getContact!=null && g.getContact.nonEmpty){
+  @if(g.getUrl!=null && g.getUrl.trim.nonEmpty){
+    <em><a href="@g.getUrl">@g.getName</a></em>
+  }else{
+    <em>@g.getName</em>
+  }
+  @if( g.getContact!=null && g.getContact.nonEmpty){
    (contact: @g.getContact)
 }
 }

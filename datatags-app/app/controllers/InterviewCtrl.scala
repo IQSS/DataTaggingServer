@@ -31,6 +31,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
 
   private implicit val ec = cc.executionContext
   
+  def interviewIntroDirect(modelId:String, versionNum:Int) = Action {
+    TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, versionNum).url )
+  }
+  
   def interviewIntro(modelId:String, versionNum:Int) = Action.async { implicit request =>
     for {
       kitOpt <- Future(kits.get(KitKey(modelId,versionNum)))

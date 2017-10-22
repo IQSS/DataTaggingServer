@@ -15,6 +15,9 @@
           <button class="btn btn-default"
                   onclick="Comments.setResolved(this, 'commentStatus', @cmt.id, @if(cmt.resolved){false}else{true})">
                   Mark as @if(cmt.resolved){Unresolved}else{Resolved}</button>
+          <button class="btn btn-danger"
+                  onclick="Comments.deleteComment('@cmt.id', '@qKit.id.modelId', '@qKit.id.version')">
+                  Delete Comment</button>
         </div>
         Comment @comps.commentStatus(cmt, Some("commentStatus"))
       </h3>

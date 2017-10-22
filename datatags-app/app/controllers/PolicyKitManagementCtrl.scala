@@ -244,15 +244,14 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
       })
   }
   
-  def showLatestVersion(modelId:String) = LoggedInAction(cache,cc).async { implicit req =>
-    var kitOpt = kits.getLatestVersion(modelId)
-    kitOpt match {
+  def showLatestVersion(modelId:String) = Action.async { implicit req =>
+    kits.getLatestVersion(modelId) match {
       case None => Future(NotFound("Versioned Policy Model '%s' does not exist.".format(modelId)))
       case Some(kit) => {
         for {
-          vpmOpt <- models.getVersionedModel(modelId)
+          vpmOpt <- models.getVersionedModel(kit.id.modelId)
         } yield {
-          vpmOpt.map(vpm => TemporaryRedirect(routes.PolicyKitManagementCtrl.showVersionPage(modelId, kit.dbData.version).url)).
+          vpmOpt.map( _ => TemporaryRedirect(routes.InterviewCtrl.interviewIntro(modelId, kit.dbData.version).url) ).
             getOrElse(NotFound("Versioned Policy Model '%s' does not exist.".format(modelId)))
         }
       }

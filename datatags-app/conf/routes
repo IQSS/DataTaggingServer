@@ -7,6 +7,8 @@ GET     /                                        controllers.Application.index
 GET     /models/                                 controllers.Application.publicModelCatalog
 GET     /models/tagDownload                      controllers.InterviewCtrl.downloadTags
 GET     /models/:modelId                         controllers.Application.showVersionedPolicyModel(modelId)
+GET     /models/:modelName/latest                controllers.PolicyKitManagementCtrl.showLatestVersion(modelName)
+GET     /models/:modelId/:versionNum/            controllers.InterviewCtrl.interviewIntroDirect(modelId, versionNum:Int)
 GET     /models/:modelId/:versionNum/intro       controllers.InterviewCtrl.interviewIntro(modelId, versionNum:Int)
 GET     /models/:modelId/:versionNum/start       controllers.InterviewCtrl.startInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
 GET     /models/:modelId/:versionNum/postReadme  controllers.InterviewCtrl.startInterviewPostReadme(modelId, versionNum:Int)
@@ -43,34 +45,32 @@ GET     /admin/vpms/:modelId/versions/new/edit   controllers.PolicyKitManagement
 GET     /admin/vpms/:modelId/versions/:vNum      controllers.PolicyKitManagementCtrl.showVersionPage(modelId, vNum:Int)
 GET     /admin/vpms/:modelId/versions/:vNum/edit controllers.PolicyKitManagementCtrl.showEditVersionPage(modelId, vNum:Int)
 POST    /admin/vpms/:modelId/versions/:vNum      controllers.PolicyKitManagementCtrl.doSaveVersion(modelId, vNum:Int)
-GET     /admin/vpms/          controllers.PolicyKitManagementCtrl.showVpmList
-GET     /admin/vpms/:id       controllers.PolicyKitManagementCtrl.showVpmPage(id)
-DELETE  /admin/vpms/:modelId/versions/:vNum/delete          controllers.PolicyKitManagementCtrl.deleteVersion(modelId, vNum:Int)
-GET     /models/:modelName/latest               controllers.PolicyKitManagementCtrl.showLatestVersion(modelName)
-
+GET     /admin/vpms/                                controllers.PolicyKitManagementCtrl.showVpmList
+GET     /admin/vpms/:id                             controllers.PolicyKitManagementCtrl.showVpmPage(id)
+DELETE  /admin/vpms/:modelId/versions/:vNum/delete  controllers.PolicyKitManagementCtrl.deleteVersion(modelId, vNum:Int)
 GET     /admin/comments/:id   controllers.CommentsCtrl.showComment(id:Long)
 
 # Users
-GET     /admin/                  controllers.BackendCtrl.index
-GET     /admin/customization     controllers.BackendCtrl.showCustomization
-GET     /admin/login             controllers.UsersCtrl.showLogin
-POST    /admin/login             controllers.UsersCtrl.doLogin
-POST    /admin/logout            controllers.UsersCtrl.doLogout
-GET     /admin/users/            controllers.UsersCtrl.showUserList
-GET     /admin/users/new         controllers.UsersCtrl.showNewUserPage
-POST    /admin/users/            controllers.UsersCtrl.doSaveNewUser
-GET     /admin/users/:id/edit    controllers.UsersCtrl.showEditUserPage(id)
-POST    /admin/users/:id/edit    controllers.UsersCtrl.doSaveUser(id)
-POST    /admin/api/users/        controllers.UsersCtrl.apiAddUser
-GET     /admin/forgotPassword    controllers.UsersCtrl.showForgotPassword
-POST    /admin/forgotPassword    controllers.UsersCtrl.doForgotPassword
-GET     /admin/resetPassword/:id controllers.UsersCtrl.showResetPassword(id)
-POST    /admin/resetPassword/    controllers.UsersCtrl.doResetPassword
-GET     /admin/inviteUser/        controllers.UsersCtrl.showInviteUser
-POST    /admin/inviteUser/        controllers.UsersCtrl.doInviteUser
+GET     /admin/                      controllers.BackendCtrl.index
+GET     /admin/customization         controllers.BackendCtrl.showCustomization
+GET     /admin/login                 controllers.UsersCtrl.showLogin
+POST    /admin/login                 controllers.UsersCtrl.doLogin
+POST    /admin/logout                controllers.UsersCtrl.doLogout
+GET     /admin/users/                controllers.UsersCtrl.showUserList
+GET     /admin/users/new             controllers.UsersCtrl.showNewUserPage
+POST    /admin/users/                controllers.UsersCtrl.doSaveNewUser
+GET     /admin/users/:id/edit        controllers.UsersCtrl.showEditUserPage(id)
+POST    /admin/users/:id/edit        controllers.UsersCtrl.doSaveUser(id)
+POST    /admin/api/users/            controllers.UsersCtrl.apiAddUser
+GET     /admin/forgotPassword        controllers.UsersCtrl.showForgotPassword
+POST    /admin/forgotPassword        controllers.UsersCtrl.doForgotPassword
+GET     /admin/resetPassword/:id     controllers.UsersCtrl.showResetPassword(id)
+POST    /admin/resetPassword/        controllers.UsersCtrl.doResetPassword
+GET     /admin/inviteUser/           controllers.UsersCtrl.showInviteUser
+POST    /admin/inviteUser/           controllers.UsersCtrl.doInviteUser
 GET     /admin/newUserInvitation/:id controllers.UsersCtrl.showNewUserInvitation(id)
-POST    /admin/newUserInvitation/  controllers.UsersCtrl.doNewUserInvitation
-POST    /admin/changePassword    controllers.UsersCtrl.doChangePassword
+POST    /admin/newUserInvitation/    controllers.UsersCtrl.doNewUserInvitation
+POST    /admin/changePassword        controllers.UsersCtrl.doChangePassword
 
 # Comments
 POST    /admin/api/comments/             controllers.CommentsCtrl.apiAddComment

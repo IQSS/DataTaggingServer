@@ -1,7 +1,14 @@
 @(vpm:VersionedPolicyModel, versions:Seq[PolicyModelVersionKit] )(implicit req:Request[_])
 
+@scripts = {
+  <script language="JavaScript">
+    $(document).ready( function(){
+       JsUtils.addHost("#linkToLatest");
+    });
+  </script>
+}
 
-@templates.bsNavBar(vpm.title, 'frontEnd ) {
+@templates.bsNavBar(vpm.title, 'frontEnd, scripts ) {
 
   <div class="row">
     <div class="col-md-8">
@@ -9,6 +16,9 @@
       <h3>
         @vpm.title
       </h3>
+      <h6>Permalink to Latest version:
+          <a id="linkToLatest" href="@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)">@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)</a>
+      </h6>
       <h6><code>@vpm.id</code></h6>
     </div>
     @if( versions.nonEmpty ) {

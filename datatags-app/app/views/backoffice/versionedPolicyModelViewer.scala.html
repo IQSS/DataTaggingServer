@@ -95,7 +95,7 @@
                 <td>@Helpers.dateTimeFormat(v._1.lastUpdate)</td>
                 <td>
                   <a class="btn btn-default btn-sm" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(v._1.parentId, v._1.version)"><i class="fa fa-edit"></i> Edit</a>
-                  <button class="btn btn-default" onclick="DeleteVersion.deleteVersion('@v._1.parentId', '@v._1.version')">
+                  <button class="btn btn-danger btn-sm" onclick="DeleteVersion.deleteVersion('@v._1.parentId', '@v._1.version')">
                     <i class="fa fa-trash-o"></i> Delete
                   </button>
                   @v._2 match {

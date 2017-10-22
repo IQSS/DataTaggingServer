@@ -6,8 +6,8 @@ var DeleteVersion = (function(){
                 type: "warning",
                 showCancelButton: true,
                 confirmButtonClass: "btn-danger",
-                confirmButtonText: "Yes, delete it!",
-                cancelButtonText: "No, cancel!",
+                confirmButtonText: "Delete Version",
+                cancelButtonText: "Cancel",
                 closeOnConfirm: false,
                 closeOnCancel: false
             },

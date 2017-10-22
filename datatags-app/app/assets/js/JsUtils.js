@@ -12,9 +12,14 @@ var JsUtils = (function(){
         });
     }
 
+    function addHost( id ) {
+        $(id).text( window.location.host + $(id).text() );
+    }
+
     return {
         fillHereSpans: function(){ $("span[data-role='access']").text(window.location.href); },
-        fillAccessLinks: fillAccessLinks
+        fillAccessLinks: fillAccessLinks,
+        addHost:addHost
     };
 })();
 

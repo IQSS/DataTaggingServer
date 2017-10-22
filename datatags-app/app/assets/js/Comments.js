@@ -106,8 +106,8 @@ var Comments = (function(){
             type: "warning",
             showCancelButton: true,
             confirmButtonClass: "btn-danger",
-            confirmButtonText: "Yes, delete it!",
-            cancelButtonText: "No, cancel!",
+            confirmButtonText: "Delete comment",
+            cancelButtonText: "Cancel",
             closeOnConfirm: false,
             closeOnCancel: false
         },

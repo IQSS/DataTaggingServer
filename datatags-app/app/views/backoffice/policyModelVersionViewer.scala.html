@@ -25,12 +25,12 @@
         <div class="pull-right">
           @kitOpt match {
             case None      => {<button type="button" class="btn btn-default" disabled>Processing...</button>}
-            case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary btn-sm" href="@routes.InterviewCtrl.interviewIntro(pmv.parentId, pmv.version)"><i class="fa fa-play"></i> Run</a>}}
+            case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary" href="@routes.InterviewCtrl.interviewIntro(pmv.parentId, pmv.version)"><i class="fa fa-play"></i> Run</a>}}
           }
           <a class="btn btn-default" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(pmv.parentId, pmv.version)">
             <i class="fa fa-edit"></i> Edit
           </a>
-          <a class="btn btn-default" onclick="DeleteVersion.deleteVersion('@pmv.parentId', '@pmv.version')">
+          <a class="btn btn-danger" onclick="DeleteVersion.deleteVersion('@pmv.parentId', '@pmv.version')">
             <i class="fa fa-trash-o"></i> Delete
           </a>
         </div>
