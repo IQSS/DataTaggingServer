@@ -1,8 +1,12 @@
 
 var JsUtils = (function(){
 
+    function getPagePrefix() {
+        return window.location.protocol + "//" + window.location.host;
+    }
+
     function fillAccessLinks() {
-        var prefix = window.location.protocol + "//" + window.location.host;
+        var prefix = getPagePrefix();
         $("a[data-role='accessLink']").each(
             function(){
                 var $this = $(this);
@@ -13,7 +17,7 @@ var JsUtils = (function(){
     }
 
     function addHost( id ) {
-        $(id).text( window.location.host + $(id).text() );
+        $(id).text( getPagePrefix() + $(id).text() );
     }
 
     return {

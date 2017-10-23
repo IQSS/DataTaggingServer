@@ -11,6 +11,7 @@
   <script language="JavaScript">
     $(document).ready( function(){
         JsUtils.fillAccessLinks();
+        JsUtils.addHost("#linkToLatest");
     })
   </script>
   <script src="@routes.Assets.at("js/DeleteVersion.js")"></script>
@@ -28,7 +29,9 @@
       }
         @vpm.title
       </h3>
-      <h6><code>@vpm.id</code></h6>
+      <hp6>Permalink to latest published version:
+        <a id="linkToLatest" target="_blank" href="@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)">@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)</a>
+      </hp6>
     </div>
   </div>
   @for( m <- message ){
