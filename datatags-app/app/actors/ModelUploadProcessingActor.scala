@@ -12,7 +12,8 @@ import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel}
 import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationFiles}
 import akka.actor.{Actor, ActorRef, Props}
 import play.api.{Configuration, Logger}
-import models.{PolicyModelKits, PolicyModelVersion}
+import models.{KitKey, PolicyModelKits, PolicyModelVersion}
+import util.FileUtils.delete
 
 object ModelUploadProcessingActor {
   def props = Props[ModelUploadProcessingActor]
@@ -70,13 +71,17 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
       Files.delete(path)
       Logger.info(ttl + " DONE")
     }
+    
     case DeleteVersion(pmv) => {
+      vizActor ! DeleteVisualizationFiles(KitKey.of(pmv))
       val modelPath = modelsFolderPath.resolve(pmv.parentId).resolve(pmv.version.toString)
       if ( Files.exists(modelPath) ) {
         Logger.info("Deleting content of old " + modelPath)
         try {
           Files.list(modelPath).iterator().asScala.foreach(delete)
-        }catch{
+          delete(modelPath)
+          
+        } catch {
           case ioe:IOException => {
             Logger.info("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"))
             Logger.info("[Exp] delete old files - " + ioe.getCause)
@@ -84,8 +89,6 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
           }
         }
       }
-      val newKit = kits.loadSingleKit(pmv, modelPath)
-      vizActor ! DeleteVisualizationFiles(newKit)
     }
   }
   
@@ -162,13 +165,6 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
     } else {
       false
     }
-  }
-  
-  private def delete( path:Path ):Unit = {
-    if ( Files.isDirectory(path) ) {
-      Files.list(path).iterator().asScala.foreach( delete )
-    }
-    Files.delete(path)
   }
 
   private def isWindows = {

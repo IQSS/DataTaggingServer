@@ -2,13 +2,14 @@ package actors
 import java.io.{File, IOException, OutputStreamWriter}
 import java.nio.file.{Files, Path, Paths}
 import javax.inject._
+
 import scala.collection.JavaConverters._
 import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationFiles}
 import akka.actor.{Actor, Props}
 import edu.harvard.iq.datatags.cli.ProcessOutputDumper
 import edu.harvard.iq.datatags.model.PolicyModel
 import edu.harvard.iq.datatags.visualizers.graphviz.{AbstractGraphvizDecisionGraphVisualizer, GraphvizDecisionGraphClusteredVisualizer, GraphvizDecisionGraphF11Visualizer, GraphvizTagSpacePathsVizualizer}
-import models.PolicyModelVersionKit
+import models.{KitKey, PolicyModelVersionKit}
 import play.api.{Configuration, Logger}
 
 
@@ -16,7 +17,7 @@ import play.api.{Configuration, Logger}
 object VisualizationActor {
   def props = Props[VisualizationActor]
   case class CreateVisualizationFiles(kitVersion:PolicyModelVersionKit)
-  case class DeleteVisualizationFiles(kitVersion:PolicyModelVersionKit)
+  case class DeleteVisualizationFiles(key:KitKey)
 
 }
 
@@ -38,15 +39,17 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
         createPolicySpaceVisualizationFile(kitVersion.model, folder, ext)
       })
     }
-    case DeleteVisualizationFiles(kitVersion:PolicyModelVersionKit) => {
-      val folder = ensureVisualizationFolderExists(kitVersion)
+    case DeleteVisualizationFiles(key:KitKey) => {
+      val folder = key.resolve(pathToFiles)
       try {
+        import util.FileUtils.delete
         Files.list(folder).iterator().asScala.foreach(delete)
-      }catch{
+        delete(folder)
+      } catch {
         case ioe:IOException => {
-          Logger.info("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"))
-          Logger.info("[Exp] delete old files - " + ioe.getCause)
-          Logger.info("[Exp] delete old files - " + ioe.getMessage)
+          Logger.info("[VIZ] delete old files - " + ioe.getStackTrace.mkString("\n"))
+          Logger.info("[VIZ] delete old files - " + ioe.getCause)
+          Logger.info("[VIZ] delete old files - " + ioe.getMessage)
         }
       }
     }
@@ -121,13 +124,6 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
       dump.await()
       Logger.info("File created at: " +  outputPath)
     }
-  }
-
-  private def delete( path:Path ):Unit = {
-    if ( Files.isDirectory(path) ) {
-      Files.list(path).iterator().asScala.foreach( delete )
-    }
-    Files.delete(path)
   }
   
 }
