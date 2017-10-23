@@ -240,21 +240,15 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
         case Some(pmv) =>{
           uploadPostProcessor ! DeleteVersion(pmv)
           models.deleteVersion(modelId, version)
+          kits.removeVersion( KitKey.of(pmv) )
           Ok("Deleted version %d".format(version))}
       })
   }
   
   def showLatestVersion(modelId:String) = Action.async { implicit req =>
-    kits.getLatestVersion(modelId) match {
-      case None => Future(NotFound("Versioned Policy Model '%s' does not exist.".format(modelId)))
-      case Some(kit) => {
-        for {
-          vpmOpt <- models.getVersionedModel(kit.id.modelId)
-        } yield {
-          vpmOpt.map( _ => TemporaryRedirect(routes.InterviewCtrl.interviewIntro(modelId, kit.dbData.version).url) ).
-            getOrElse(NotFound("Versioned Policy Model '%s' does not exist.".format(modelId)))
-        }
-      }
-    }
+    models.latestPublicVersion(modelId).map( {
+      case None => NotFound("No public version of model %s was found".format(modelId))
+      case Some(pmv) => TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, pmv.version).url )
+    })
   }
 }

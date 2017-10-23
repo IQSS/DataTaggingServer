@@ -106,13 +106,25 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
   }
 
   def getLatestVersion(modelId:String):Option[PolicyModelVersionKit] = {
-    var ver = 0
-    allKits.foreach(key => {
-      if(key._1.modelId.equals(modelId) && key._1.version > ver ) { ver = key._1.version}
-    })
-    get(KitKey(modelId,ver))
+    val versions = allKits.filter( _._1.modelId == modelId )
+    if (versions.isEmpty) {
+      None
+    } else {
+      Some(versions.maxBy(_._1.version)._2)
+    }
   }
-
+  
+  def getLatestPublicVersion(modelId:String):Option[PolicyModelVersionKit] = {
+    val versions = allKits.filter( _._1.modelId == modelId )
+                          .filter( _._2.dbData.publicationStatus == PublicationStatus.Published )
+    if (versions.isEmpty) {
+      None
+    } else {
+      Some(versions.maxBy(_._1.version)._2)
+    }
+  }
+  
+  
   /**
     * Loads a single kit from the given path. Adds the kit to the kit collection.
     * @param modelPath path to the policy model folder.

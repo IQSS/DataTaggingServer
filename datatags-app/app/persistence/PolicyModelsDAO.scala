@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import java.util.Date
 import javax.inject.Inject
 
-import models.{PolicyModelVersion, VersionedPolicyModel}
+import models.{PolicyModelVersion, PublicationStatus, VersionedPolicyModel}
 import play.api.{Configuration, Logger}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -70,6 +70,13 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
     db.run {
       PolicyModelVersions.filter( _.modelId===modelId ).map( _.version ).max.result
     }
+  }
+  
+  def latestPublicVersion( modelId:String ):Future[Option[PolicyModelVersion]] = {
+    db.run {
+      PolicyModelVersions.filter( pmvr => pmvr.modelId===modelId &&  pmvr.publicationStatus === PublicationStatus.Published.toString )
+                          .sortBy( _.version.desc ).take(1).result
+    }.map( list => list.headOption )
   }
   
   def getModelVersion(modelId:String, versionNum:Int):Future[Option[PolicyModelVersion]] = {
