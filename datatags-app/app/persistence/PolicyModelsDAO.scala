@@ -9,6 +9,7 @@ import models.{PolicyModelVersion, PublicationStatus, VersionedPolicyModel}
 import play.api.{Configuration, Logger}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
+import util.FileUtils
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,7 +22,9 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
   
   private val VersionedPolicyModels = TableQuery[VersionedPolicyModelTable]
   private val PolicyModelVersions = TableQuery[PolicyModelVersionTable]
+  private val Comments = TableQuery[CommentTable]
   private val modelStorage = Paths.get(conf.get[String]("taggingServer.models.folder"))
+  private val visualizationStorage = Paths.get(conf.get[String]("taggingServer.visualize.folder"))
   
   def add( vpm:VersionedPolicyModel ):Future[VersionedPolicyModel] = {
     val nc = vpm.copy(created = new Timestamp(System.currentTimeMillis()))
@@ -49,14 +52,16 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
     }
   }
   
-  def deleteVersionedPolicyModel( id:String ):Future[Boolean] = {
+  def deleteVersionedPolicyModel( id:String ):Future[Unit] = {
     db.run {
-      VersionedPolicyModels.filter( _.id === id ).delete
-    } map ( i => {
-      if ( i > 0 ) {
-        Files.deleteIfExists(modelStorage.resolve(id))
-      }
-      i>0
+      DBIO.seq(
+        Comments.filter( _.versionPolicyModelID === id ).delete,
+        PolicyModelVersions.filter( _.modelId === id ).delete,
+        VersionedPolicyModels.filter( _.id === id ).delete
+      ).transactionally
+    }.map( _ => {
+      FileUtils.delete(modelStorage.resolve(id))
+      FileUtils.delete(visualizationStorage.resolve(id))
     })
   }
   

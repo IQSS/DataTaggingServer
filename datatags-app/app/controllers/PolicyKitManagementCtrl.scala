@@ -135,10 +135,14 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   }
   
   def apiDoDeleteVpm( id:String ) = LoggedInAction(cache,cc).async {
-    models.deleteVersionedPolicyModel(id).map( deleted =>
-      if ( deleted ) Ok(Json.obj("result"->true)).flashing("message"->("Model " + id + " deleted"))
-                else NotFound(Json.obj("result"->false))
-    )
+    models.getVersionedModel(id).flatMap( opt => opt match {
+      case None => Future(NotFound(Json.obj("result"->false)))
+      case Some(_) => {
+        
+        models.deleteVersionedPolicyModel(id).map( _ => Ok(Json.obj("result"->true)).flashing("message"->("Model " + id + " deleted")) )
+      }
+    })
+    
   }
   
   def doSaveNewVersion(modelId:String) = LoggedInAction(cache,cc)(parse.multipartFormData).async{ implicit req =>
