@@ -201,4 +201,12 @@ object Helpers {
     fmt.format(d)
   }
   
+  def nonEmpty( v:String )(f:(String=>Html)):Html = {
+    if ( v != null && v.trim.nonEmpty ) {
+      f(v.trim)
+    } else {
+      Html("")
+    }
+  }
+  
 }

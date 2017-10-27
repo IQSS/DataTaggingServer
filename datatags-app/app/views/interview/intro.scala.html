@@ -31,7 +31,17 @@
           <div class="text-center">
             <div class="row">
               <div class="col-xs--12">
-                @if( qKit.model.getLocalizations.size>1 ) {
+
+                @if( qKit.model.getLocalizations.size>2 ) {
+                  <ul class="localizations">
+                  @for( locName <- qKit.model.getLocalizations ) {
+                    <li>
+                      <a href="@routes.InterviewCtrl.startInterview(qKit.id.modelId, qKit.id.version, Some(locName))"
+                    class="btn btn-primary">Begin Questionnaire (@locName)</a>
+                    </li>
+                  }
+                  </ul>
+                } else if(qKit.model.getLocalizations.size>1 ) {
                   @for( locName <- qKit.model.getLocalizations ) {
                     <a href="@routes.InterviewCtrl.startInterview(qKit.id.modelId, qKit.id.version, Some(locName))"
                      class="btn btn-primary btn-lg">Begin Questionnaire (@locName)</a>

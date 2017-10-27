@@ -96,7 +96,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
           case Some(name) => kits.localization(kitId,name)
         }
         val readmeOpt:Option[MarkupString] = l10n.map( loc =>
-          loc.getLocalizedModelData.getBestReadmeFormat.toOption.map(loc.getLocalizedModelData.getReadme(_))
+          loc.getLocalizedModelData).map(mdl => mdl.getBestReadmeFormat.toOption.map(mdl.getReadme)
         ).getOrElse(kit.model.getMetadata.getBestReadmeFormat.toOption.map(kit.model.getMetadata.getReadme(_)))
         
         if ( l10n isDefined ) {
