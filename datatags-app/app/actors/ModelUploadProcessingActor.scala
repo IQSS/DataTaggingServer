@@ -8,17 +8,19 @@ import java.util.zip.ZipInputStream
 import javax.inject.{Inject, Named}
 
 import scala.collection.JavaConverters._
-import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel}
+import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel, RecreateVisualizationFiles}
 import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationFiles}
 import akka.actor.{Actor, ActorRef, Props}
 import play.api.{Configuration, Logger}
-import models.{KitKey, PolicyModelKits, PolicyModelVersion}
+import models._
 import util.FileUtils.delete
 
 object ModelUploadProcessingActor {
   def props = Props[ModelUploadProcessingActor]
   case class PrepareModel(filePath:Path, pmv:PolicyModelVersion )
   case class DeleteVersion(pmv:PolicyModelVersion)
+  case class RecreateVisualizationFiles(kitVersion:PolicyModelVersionKit)
+
 }
 
 /**
@@ -90,6 +92,8 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
         }
       }
     }
+
+    case RecreateVisualizationFiles(kitVersion:PolicyModelVersionKit) => vizActor ! CreateVisualizationFiles(kitVersion)
   }
   
   private def unzip(zipFile:Path, destination:Path) = {

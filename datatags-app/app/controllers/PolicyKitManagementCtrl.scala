@@ -5,7 +5,7 @@ import java.sql.Timestamp
 import java.util.UUID
 import javax.inject.{Inject, Named}
 
-import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel}
+import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel, RecreateVisualizationFiles}
 import akka.actor.ActorRef
 import models._
 import persistence.{CommentsDAO, PolicyModelsDAO}
@@ -254,5 +254,11 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
       case None => NotFound("No public version of model %s was found".format(modelId))
       case Some(pmv) => TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, pmv.version).url )
     })
+  }
+
+  def RecreateViz = Action.async { implicit req =>
+//    models.listAllVersionedModels.map(list => list.foreach(vpm => kits.get(KitKey(vpm.title, vpm.id)).map(kit => uploadPostProcessor ! RecreateVisualizationFiles(kit))))
+    kits.getAllKitKeys().foreach(kitKey => kits.get(kitKey).map(kit => uploadPostProcessor ! RecreateVisualizationFiles(kit)))
+    Future(Ok("Reacreate all visualization files"))
   }
 }

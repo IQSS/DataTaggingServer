@@ -59,13 +59,13 @@ class PolicyModelVersionKit(val id:KitKey,
   
   val canRun:Boolean = serializer!=null
   
-  def availableVisualizations:Visualizations = {
+  def availableVisualizations(name:String):Visualizations = {
     if ( Files.exists(visualizationsPath) ) {
       val groups = Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala
-        .groupBy( _.getFileName.toString.toLowerCase.split("\\.",2)(0) )
+        .groupBy( _.getFileName.toString.toLowerCase.split("\\.",2)(0) ).filter(_._1.startsWith(name))
       Visualizations(
-        groups.get(PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set()),
-        groups.get(PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set())
+        groups.get(name + "~" + PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set()),
+        groups.get(name + "~" + PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set())
       )
     } else Visualizations(Set(),Set())
   }
@@ -123,6 +123,8 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
       Some(versions.maxBy(_._1.version)._2)
     }
   }
+
+  def getAllKitKeys():collection.Set[KitKey] = allKits.keySet
   
   
   /**
@@ -166,8 +168,7 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
     }
   
     // create the return value
-    val vizPath = rootVisualizationsPath.resolve(pmv.parentId).resolve(pmv.version.toString)
-    val retVal = new PolicyModelVersionKit(KitKey.of(pmv), model, pmv, vizPath)
+    val retVal = new PolicyModelVersionKit(KitKey.of(pmv), model, pmv, rootVisualizationsPath)
     msgs.foreach( retVal.add )
     
     allKits(retVal.id) = retVal

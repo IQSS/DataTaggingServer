@@ -33,10 +33,10 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
   
   def receive = {
     case CreateVisualizationFiles(kitVersion:PolicyModelVersionKit) => {
-      val folder = ensureVisualizationFolderExists(kitVersion)
+      val folder = Files.createDirectories(pathToFiles)
       Seq("pdf", "svg", "png").foreach(ext => {
-        createDecisionGraphVisualizationFile(kitVersion.model, folder, ext)
-        createPolicySpaceVisualizationFile(kitVersion.model, folder, ext)
+        createDecisionGraphVisualizationFile(kitVersion.model, folder, ext, kitVersion.id)
+        createPolicySpaceVisualizationFile(kitVersion.model, folder, ext, kitVersion.id)
       })
     }
     case DeleteVisualizationFiles(key:KitKey) => {
@@ -53,17 +53,15 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
         }
       }
     }
+//    case RecreateVisualizationFiles () => {
+//
+//    }
   }
   
-  def ensureVisualizationFolderExists(kitVersion: PolicyModelVersionKit): Path = {
-    val basePath=kitVersion.id.resolve(pathToFiles)
-    Files.createDirectories(basePath)
-    basePath
-  }
-  
-  def createDecisionGraphVisualizationFile(model:PolicyModel, folder:Path, fileExtension:String): Unit ={
-    
-    val outputPath = folder.resolve( PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME + "." + fileExtension)
+  def createDecisionGraphVisualizationFile(model:PolicyModel, folder:Path, fileExtension:String, id:KitKey): Unit ={
+
+    val fileName = id.modelId + "~" + id.version + "~" + PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME
+    val outputPath = folder.resolve( fileName + "." + fileExtension)
     
     if ( Files.exists(outputPath)) {
       Logger.info("[VIZ] deleting old file %s".format(outputPath))
@@ -98,10 +96,11 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
     }
   }
   
-  def createPolicySpaceVisualizationFile(model:PolicyModel, folder:Path, fileExtension:String): Unit ={
-    
-    val outputPath = folder.resolve( PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME + "." + fileExtension)
-    
+  def createPolicySpaceVisualizationFile(model:PolicyModel, folder:Path, fileExtension:String, id:KitKey): Unit ={
+
+    val fileName = id.modelId + "~" + id.version + "~" + PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME
+    val outputPath = folder.resolve( fileName + "." + fileExtension)
+
     val pb = new ProcessBuilder(pathToDot.toString, "-T" + fileExtension)
     val viz = new GraphvizTagSpacePathsVizualizer(model.getSpaceRoot)
     
