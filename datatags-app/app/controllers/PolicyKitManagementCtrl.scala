@@ -256,9 +256,14 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
     })
   }
 
-  def RecreateViz = Action.async { implicit req =>
-//    models.listAllVersionedModels.map(list => list.foreach(vpm => kits.get(KitKey(vpm.title, vpm.id)).map(kit => uploadPostProcessor ! RecreateVisualizationFiles(kit))))
-    kits.getAllKitKeys().foreach(kitKey => kits.get(kitKey).map(kit => uploadPostProcessor ! RecreateVisualizationFiles(kit)))
-    Future(Ok("Reacreate all visualization files"))
+  def recreateViz = Action.async { implicit req =>
+    Logger.info( s"remote address: ${req.connection.remoteAddress}")
+    if ( req.connection.remoteAddress.isLoopbackAddress ) {
+      kits.getAllKitKeys().flatMap(kits.get).foreach(uploadPostProcessor ! RecreateVisualizationFiles(_))
+      Future(Ok("Recreating all visualization files"))
+      
+    } else {
+      Future( Unauthorized("This endpoint available from localhost only") )
+    }
   }
 }

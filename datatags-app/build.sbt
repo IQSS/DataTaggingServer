@@ -2,11 +2,11 @@ name := """PolicyModelsWebApp"""
 
 version := "1.0-SNAPSHOT"
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 
 organization := "edu.harvard.iq"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.11.11"
 
 routesGenerator := InjectedRoutesGenerator
 
@@ -20,22 +20,26 @@ libraryDependencies ++= Seq(
   guice,
   openId,
   "org.scalatestplus" % "play_2.11" % "1.2.0" % "test",
-  "com.typesafe.play" %% "play-json" % "2.6.0",
+  "com.typesafe.play" %% "play-json" % "2.6.7",
   "com.vladsch.flexmark" % "flexmark-all" % "0.20.0",
   "org.postgresql" % "postgresql" % "42.0.0",
-  "com.typesafe.play" %% "play-slick" % "3.0.0",
-  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.0",
+  "com.typesafe.play" %% "play-slick" % "3.0.1",
+  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.1",
   "org.mindrot" % "jbcrypt" % "0.3m",
   "com.typesafe.play" %% "play-iteratees" % "2.6.1",
   "com.typesafe.play" %% "play-mailer" % "6.0.0",
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.0"
-
 )
+
+TwirlKeys.templateImports ++= Seq("views.Helpers",
+                                  "scala.collection.JavaConverters._")
 
 LessKeys.compress in Assets := true
 
 includeFilter in (Assets, LessKeys.less) := "*.less"
 
-TwirlKeys.templateImports += "views.Helpers"
+pipelineStages := Seq(rjs, uglify, digest, gzip)
 
-TwirlKeys.templateImports += "scala.collection.JavaConverters._"
+// Prevent documentation creation.
+doc in Compile <<= target.map(_ / "none")
+
