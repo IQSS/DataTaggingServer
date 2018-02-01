@@ -51,7 +51,7 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models
   def showModel(id:String) = Action.async{ req =>
     models.getVersionedModel(id).map{
       case Some(mdl) => Ok( Seq(mdl.id, mdl.title, mdl.created, mdl.note).mkString("\n") )
-      case None => NotFound("Can't find model with id " + id)
+      case None => NotFound("Can't find model")
     }
   }
 

@@ -45,7 +45,7 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
         ("Mime-type", MIME_TYPES.getOrElse(suffix.last.toLowerCase, "application/octet-stream"))
       )
     } else {
-      NotFound("Visualization " + path + " not found.")
+      NotFound("Visualization not found.")
     }
   }
 
@@ -61,7 +61,7 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
         
       } yield {
         model match {
-          case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
+          case None => NotFound("Versioned Policy Modeldoes not exist.")
           case Some(vpm) => Ok(
             views.html.publicVersionedPolicyModelViewer(vpm, versions.map(v => kits.get(KitKey.of(v))).filter(_.nonEmpty).map(_.get)))
         }

@@ -1,5 +1,6 @@
 package controllers
 
+import java.nio.file.attribute.PosixFilePermissions
 import java.nio.file.{Files, Paths}
 import java.sql.Timestamp
 import java.util.UUID
@@ -15,7 +16,6 @@ import play.api.data.Forms._
 import play.api.data._
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, InjectedController}
-import play.shaded.ahc.io.netty.handler.codec.http.multipart.DiskFileUpload
 
 import scala.concurrent.Future
 
@@ -72,7 +72,7 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
       versions <- models.listVersionsFor(id)
     } yield {
       model match {
-        case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
+        case None => NotFound("Versioned Policy Model does not exist.")
         case Some(vpm) => Ok(
           views.html.backoffice.versionedPolicyModelViewer(vpm, versions.map( v => (v, kits.get(KitKey.of(v))) ),
                                                 true, req.flash.get("message")) )
@@ -86,7 +86,7 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   
   def showEditVpmPage(id:String)= LoggedInAction(cache,cc).async { req =>
     models.getVersionedModel(id).map({
-      case None => NotFound("Versioned Policy Model '%s' does not exist.".format(id))
+      case None => NotFound("Versioned Policy Model does not exist.")
       case Some(vpm) => Ok( views.html.backoffice.versionedPolicyModelEditor(vpmForm.fill(new VpmFormData(vpm)), false) )
     })
   }
@@ -172,7 +172,7 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   
   def showNewVersionPage(modelId:String) = LoggedInAction(cache,cc).async{ implicit req =>
     models.getVersionedModel(modelId).map({
-      case None => NotFound("Can't find model with id '%s'".format(modelId))
+      case None => NotFound("Can't find model")
       case Some(_) => Ok( views.html.backoffice.policyModelVersionEditor(
         modelForm.fill(PmvFormData(PublicationStatus.Private.toString, CommentingStatus.Everyone.toString, "")),
         modelId,
@@ -194,7 +194,7 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   
   def showEditVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>
     models.getModelVersion(modelId, vNum).map({
-      case None => NotFound("Cannot find model version %s/%d".format(modelId, vNum))
+      case None => NotFound("Cannot find model version")
       case Some(v) => Ok(views.html.backoffice.policyModelVersionEditor(
         modelForm.fill( PmvFormData.from(v) ),
         modelId,
@@ -204,12 +204,12 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   }
   
   def doSaveVersion(modelId:String, vNum:Int) = LoggedInAction(cache,cc)(parse.multipartFormData).async{ implicit req =>
-    Logger.info("Saving version %s/%d".format(modelId, vNum))
+    Logger.info("Saving version")
     modelForm.bindFromRequest.fold(
       formWithErrors => Future(BadRequest(views.html.backoffice.policyModelVersionEditor(formWithErrors, modelId, Some(vNum)))),
       pfd => {
         models.getModelVersion( modelId, vNum ).flatMap({
-          case None => Future(NotFound("Model version '%s/%d' does not exist".format(modelId, vNum)))
+          case None => Future(NotFound("Model version does not exist"))
           case Some(pmv) => {
             val modelVersion = PolicyModelVersion(vNum, modelId, new Timestamp(System.currentTimeMillis()),
               PublicationStatus.withName(pfd.publicationStatus), CommentingStatus.withName(pfd.commentingStatus),
@@ -218,14 +218,14 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
             req.body.file("zippedModel").foreach( file => {
               // validate the file is non-empty
               if ( Files.size(file.ref.path) > 0 ) {
-                Logger.info("%s/%d: new file uploaded.".format(modelId, vNum))
+                Logger.info("new file uploaded.")
                 val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
                 file.ref.moveTo( destFile, replace=false )
                 kits.removeVersion( KitKey.of(modelVersion) )
                 uploadPostProcessor ! PrepareModel(destFile, modelVersion)
                 
               } else {
-                Logger.info("%s/%d: no new file uploaded.".format(modelId, vNum))
+                Logger.info("no new file uploaded.")
               }
             })
             models.updateVersion(modelVersion).map( mv =>
@@ -251,7 +251,7 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   
   def showLatestVersion(modelId:String) = Action.async { implicit req =>
     models.latestPublicVersion(modelId).map( {
-      case None => NotFound("No public version of model %s was found".format(modelId))
+      case None => NotFound("No public version was found")
       case Some(pmv) => TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, pmv.version).url )
     })
   }
@@ -261,4 +261,5 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
     kits.getAllKitKeys().foreach(kitKey => kits.get(kitKey).map(kit => uploadPostProcessor ! RecreateVisualizationFiles(kit)))
     Future(Ok("Reacreate all visualization files"))
   }
+
 }

@@ -51,12 +51,12 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
                 addingToSession( InterviewSessionAction.KEY -> userSession.key )
               
             } else {
-              NotFound("Model with id %s/%d not found.".format(modelId, versionNum)) // really that's a NotAuthorized, but that would give away the fact that the version exists.
+              NotFound("Model not found.") // really that's a NotAuthorized, but that would give away the fact that the version exists.
             }
             
-          }).getOrElse(NotFound("ModelVersion with id %s/%d not found.".format(modelId, versionNum)))
+          }).getOrElse(NotFound("ModelVersion not found."))
         }
-        case None => NotFound("Model with id %s/%d not found.".format(modelId, versionNum))
+        case None => NotFound("Model not found.")
       }
     }
    }
