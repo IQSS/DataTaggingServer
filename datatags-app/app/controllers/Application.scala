@@ -37,6 +37,7 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
   
   def visualizationFile(path:String) = Action{ req =>
     val destPath = visualizationsPath.resolve(path)
+    
     if ( Files.exists(destPath) ) {
       val content = Files.readAllBytes(destPath)
       val suffix = path.split("\\.")

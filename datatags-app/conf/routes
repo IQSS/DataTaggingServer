@@ -18,8 +18,8 @@ GET     /models/:modelId/:versionNum/accept      controllers.InterviewCtrl.accep
 GET     /models/:modelId/:versionNum/reject      controllers.InterviewCtrl.reject(modelId, versionNum:Int)
 POST    /models/:modelId/:versionNum/revisit/    controllers.InterviewCtrl.revisit(modelId, versionNum:Int)
 
-GET  /visualizations/recreate                    controllers.PolicyKitManagementCtrl.RecreateViz
-GET  /visualizations/:name   controllers.Application.visualizationFile(name)
+GET    /visualizations/:name                       controllers.Application.visualizationFile(name)
+GET    /admin/visualizations/recreate                    controllers.PolicyKitManagementCtrl.recreateViz
 
 # Link to access a model with no login
 GET  /access/models/:accessLink                  controllers.InterviewCtrl.accessByLink(accessLink)
