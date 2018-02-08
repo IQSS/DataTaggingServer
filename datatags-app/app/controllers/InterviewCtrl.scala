@@ -127,7 +127,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
           })
       }
       
-      case None => NotFound("Model with id %s not found.".format(kitId))
+      case None => NotFound("Model not found.")
     }
   }
 
@@ -174,7 +174,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
           session.answerHistory,
           session.localization) )
       }
-      case None => NotFound("Model with id %s not found.".format(kitId.toString))
+      case None => NotFound("Model not found.")
     }
   }
 

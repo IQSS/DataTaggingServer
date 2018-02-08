@@ -1,6 +1,5 @@
 package controllers
 
-import java.nio.file.attribute.PosixFilePermissions
 import java.nio.file.{Files, Paths}
 import java.sql.Timestamp
 import java.util.UUID

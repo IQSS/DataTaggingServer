@@ -30,7 +30,7 @@ class PolicyModelsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigPr
     val nc = vpm.copy(created = new Timestamp(System.currentTimeMillis()))
     db.run {
       VersionedPolicyModels += nc
-    }.map( _ =>{
+    }.map( _ => {
       Files.createDirectory(modelStorage.resolve(nc.id))
       nc
     })

@@ -7,7 +7,12 @@
           } );
   </script>
 }
-@templates.bsBase("Log in", scripts){
+
+@extraHead = {
+  <meta name="robots" content="noindex, nofollow">
+}
+
+@templates.bsBase("Log in", scripts, extraHead ){
 
 }{
   <div class="row">

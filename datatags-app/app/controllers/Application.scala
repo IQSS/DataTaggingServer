@@ -62,7 +62,7 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
         
       } yield {
         model match {
-          case None => NotFound("Versioned Policy Modeldoes not exist.")
+          case None => NotFound("Policy Model does not exist.")
           case Some(vpm) => Ok(
             views.html.publicVersionedPolicyModelViewer(vpm, versions.map(v => kits.get(KitKey.of(v))).filter(_.nonEmpty).map(_.get)))
         }
