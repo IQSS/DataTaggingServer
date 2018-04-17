@@ -131,21 +131,7 @@ object Helpers {
   }
   
   
-  def isWordLowerEnglish(input: String) = {
-    val isPunctuation = input.endsWith("?") || input.endsWith("!") || input.endsWith(".")
-    val isLastLowerLetter = input.charAt(input.length - 1).isLetter && !input.charAt(input.length - 1).isUpper
-    
-    var isLower = true
-    for (i <- 0 to input.length - 2) {
-      if (!input.charAt(i).isLetter || input.charAt(i).isUpper) {
-        isLower = false
-      }
-    }
-    if (!isLastLowerLetter && !isPunctuation) {
-      isLower = false
-    }
-    isLower
-  }
+  def isWordLowerEnglish(input: String):Boolean = input.filter( _.isLetter ).forall( _.isLower )
   
   def bulletPoint(paragraph: String) = {
     var complete = paragraph

@@ -128,9 +128,12 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   }
   
   def showVpmList = LoggedInAction(cache,cc).async{ implicit req =>
-    models.listAllVersionedModels.map( models=> {
-      Ok(views.html.backoffice.versionedPolicyModelList(models, req.flash.get("message")))
-    })
+    for {
+      models <- models.listAllVersionedModels
+    } yield {
+      Ok(views.html.backoffice.versionedPolicyModelList(models.sortBy(_.title), req.flash.get("message")))
+    }
+    
   }
   
   def apiDoDeleteVpm( id:String ) = LoggedInAction(cache,cc).async {
