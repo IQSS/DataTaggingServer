@@ -29,9 +29,9 @@
       }
         @vpm.title
       </h3>
-      <hp6>Permalink to latest published version:
-        <a id="linkToLatest" target="_blank" href="@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)">@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)</a>
-      </hp6>
+      <h6>Permalink to latest published version:
+      </h6>
+      <a class="publicLink" id="linkToLatest" target="_blank" href="@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)">@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)</a>
     </div>
   </div>
   @for( m <- message ){
@@ -92,7 +92,8 @@
                   @comps.commentingStatus(v._1.commentingStatus)
                   @comps.publicationStatus(v._1.publicationStatus)
                   @if( v._1.publicationStatus == PublicationStatus.LinkOnly ) {
-                    <br><code><a href="" data-role="accessLink" data-link="@v._1.accessLink"></a></code>
+                    <br>
+                    <a class="publicLink"  href="" data-role="accessLink" data-link="@v._1.accessLink"></a>
                   }
                 </td>
                 <td>@Helpers.dateTimeFormat(v._1.lastUpdate)</td>

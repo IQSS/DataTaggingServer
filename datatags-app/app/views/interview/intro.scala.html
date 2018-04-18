@@ -65,7 +65,7 @@
         @comps.kitMessageList(qKit.messages)
         </ul>
       }
-      @defining( qKit.availableVisualizations(qKit.id.modelId + "~" + qKit.id.version) ) { avz =>
+      @defining( qKit.availableVisualizations() ) { avz =>
         @if( avz.hasData){
           <h3>Visualizations</h3>
           <div class="row">

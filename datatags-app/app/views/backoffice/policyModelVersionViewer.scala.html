@@ -61,7 +61,8 @@
             <td>
               @comps.publicationStatus(pmv.publicationStatus)
               @if( pmv.publicationStatus == PublicationStatus.LinkOnly ) {
-                <br><code><a href="" data-role="accessLink" data-link="@pmv.accessLink"></a></code>
+                <br>
+                <a class="publicLink" href="" data-role="accessLink" data-link="@pmv.accessLink"></a>
               }
             </td>
           </tr>

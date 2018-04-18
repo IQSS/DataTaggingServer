@@ -22,7 +22,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class KitKey( modelId:String, version:Int ){
   def resolve(p:Path):Path = p.resolve(modelId).resolve(version.toString)
-  def encode = modelId + "\t" + version
+  def encode: String = modelId + "\t" + version
 }
 
 object KitKey {
@@ -59,15 +59,23 @@ class PolicyModelVersionKit(val id:KitKey,
   
   val canRun:Boolean = serializer!=null
   
-  def availableVisualizations(name:String):Visualizations = {
+  def availableVisualizations():Visualizations = {
     if ( Files.exists(visualizationsPath) ) {
+      val modelPrefix = id.modelId + "~" + id.version + "~"
       val groups = Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala
-        .groupBy( _.getFileName.toString.toLowerCase.split("\\.",2)(0) ).filter(_._1.startsWith(name))
-      Visualizations(
-        groups.get(name + "~" + PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set()),
-        groups.get(name + "~" + PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set())
+        .groupBy( _.getFileName.toString.toLowerCase.split("\\.",2)(0) ).filter(_._1.startsWith(modelPrefix))
+      val res = Visualizations(
+        groups.get( modelPrefix + PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set()),
+        groups.get( modelPrefix + PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set())
       )
-    } else Visualizations(Set(),Set())
+      if ( res.decisionGraph.isEmpty || res.policySpace.isEmpty ) {
+        Logger.warn( "Can't find visualizations for model %s. Visualizations folder:%s".format(id, visualizationsPath.toAbsolutePath))
+      }
+      res
+    } else {
+      Logger.warn( "Can't find visualizations for model %s. Visualizations folder:%s".format(id, visualizationsPath.toAbsolutePath))
+      Visualizations(Set(),Set())
+    }
   }
   
   override def toString:String = "[PolicyModelVersionKit id:%s model:%s]".format(
@@ -94,6 +102,10 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
   
   if ( rootVisualizationsPath==null ) {
     Logger.error("Cannot get base visualization path from the config.")
+  }
+  
+  if ( ! Files.exists(rootVisualizationsPath) ) {
+    Logger.error("Base visualization path does not exist (%s)".format(rootVisualizationsPath.toAbsolutePath) )
   }
   
   loadAllModels()
@@ -217,8 +229,7 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
     * Load all models from the database. Called once at application startup.
     */
   private def loadAllModels() = {
-    val allModels = models.listAllVersionedModels
-    allModels.map( modelList => {
+    models.listAllVersionedModels.map( modelList => {
       modelList.par.foreach( vpm => {
        models.listVersionsFor(vpm.id)
                .foreach( versions=>versions.par.foreach(v=>

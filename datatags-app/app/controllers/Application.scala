@@ -31,7 +31,7 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
   def publicModelCatalog = Action.async { implicit req =>
     models.listAllVersionedModels.map( mdls =>
       if ( LoggedInAction.userPresent(req) ) Redirect(routes.PolicyKitManagementCtrl.showVpmList)
-      else Ok( views.html.modelCatalog(mdls) )
+      else Ok( views.html.modelCatalog(mdls.sortBy(_.title)) )
     )
   }
   
@@ -40,11 +40,10 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
     
     if ( Files.exists(destPath) ) {
       val content = Files.readAllBytes(destPath)
-      val suffix = path.split("\\.")
+      val suffix = path.split("\\.").last.toLowerCase()
       Ok( content ).withHeaders(
-        ("Content-Disposition", "inline"),
-        ("Mime-type", MIME_TYPES.getOrElse(suffix.last.toLowerCase, "application/octet-stream"))
-      )
+        ("Content-Disposition", "inline; filename=\"Visualization.pdf\"")
+      ).as(MIME_TYPES.getOrElse(suffix, "application/octet-stream"))
     } else {
       NotFound("Visualization not found.")
     }

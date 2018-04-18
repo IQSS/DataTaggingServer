@@ -12,14 +12,14 @@
 
 @todoValue( value:ToDoValue ) = {
   <div class="value value-todo">
-    <span class="typeName">@value.getSlot.getName</span>
+    @slotTypeTitle(value.getSlot, loc)
     <span class="valueAtom">TODO</span>
   </div>
 }
 
 @aggregateValue( value:AggregateValue ) = {
   <div class="value value-aggregate">
-    <span class="typeName">@value.getSlot.getName</span>
+    @slotTypeTitle(value.getSlot, loc)
     @if( value.getValues.isEmpty ) {
         <span class="valueAtom">empty</span>
     } else {
@@ -32,18 +32,18 @@
 
 @compoundValue( value:CompoundValue ) = {
   <div class="value value-compound">
-    <div class="typeName">@value.getSlot.getName</div>
-      <ul>
-        @for( tp <- value.getNonEmptySubSlots ){
-          <li>@renderValue( value.get(tp) )</li>
-        }
-      </ul>
+    @slotTypeTitle(value.getSlot, loc)
+    <ul>
+      @for( tp <- value.getNonEmptySubSlots ){
+        <li>@renderValue( value.get(tp) )</li>
+      }
+    </ul>
   </div>
 }
 
 @anyValue( value:AbstractValue ) = {
  <div class="value value-compound">
-    <span class="typeName">@value.getSlot.getName</span>
+   @slotTypeTitle(value.getSlot, loc)
     <span class="valueAtom">@value.toString</span>
   </div>  
 }
