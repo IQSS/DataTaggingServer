@@ -37,7 +37,7 @@
           <ul>
           @for( ref <- md.getReferences ) {
             <li>
-              @ref.getText @for(doi<-Option(ref.getDoi)){ <small>(doi:<a href="http://dx.doi.org/@doi" target="_blank">@doi</a>)</small>}
+              @ref.getText @for(doi<-Option(ref.getDoi)){ <small>(doi:<a href="https://doi.org/@doi" target="_blank">@doi</a>)</small>}
               @for(url<-Option(ref.getUrl)){
                 <br>
                 <a href="@url" target="_blank">@url</a>
