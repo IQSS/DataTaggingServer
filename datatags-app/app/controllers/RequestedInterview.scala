@@ -13,7 +13,14 @@ import _root_.util.Jsonizer
 import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
-
+/**
+  * This controller deals with the creation, execution, and result posting of requested interviews
+  * @param cache
+  * @param ws
+  * @param kits
+  * @param ec
+  * @param cc
+  */
 class RequestedInterview @Inject() (cache:SyncCacheApi, ws:WSClient,
                                     kits:PolicyModelKits, ec:ExecutionContext, cc:ControllerComponents) extends InjectedController {
 

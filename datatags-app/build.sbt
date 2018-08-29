@@ -43,3 +43,4 @@ pipelineStages := Seq(rjs, uglify, digest, gzip)
 // Prevent documentation creation.
 doc in Compile <<= target.map(_ / "none")
 
+javaOptions ++= Seq("--illegal-access=allow")

@@ -4,8 +4,9 @@ import play.api._
 import java.nio.file._
 import java.util.Objects
 import java.util.stream.Collectors
-import javax.inject.{Inject, Singleton}
 
+import edu.harvard.iq.datatags.PolicyModelsInfo
+import javax.inject.{Inject, Singleton}
 import edu.harvard.iq.datatags.externaltexts.{Localization, LocalizationLoader}
 import edu.harvard.iq.datatags.io.{PolicyModelDataParser, PolicyModelLoadingException}
 import edu.harvard.iq.datatags.model.PolicyModel
@@ -99,6 +100,8 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
   
   private val allKits: TrieMap[KitKey,PolicyModelVersionKit] = TrieMap()
   private val allLocalizations: TrieMap[KitKey, mutable.Map[String,Localization]] = TrieMap()
+  
+  Logger.info("Using PolicyModels library " + PolicyModelsInfo.getVersionString )
   
   if ( rootVisualizationsPath==null ) {
     Logger.error("Cannot get base visualization path from the config.")
