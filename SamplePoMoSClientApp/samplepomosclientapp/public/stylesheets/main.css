@@ -1,0 +1,38 @@
+label {
+    display: inline-block;
+    width: 150px;
+}
+
+small {
+    display: block;
+    color: #777;
+    margin-left: 150px;
+    margin-top: .2em;
+}
+
+textarea {
+    vertical-align: top;
+    width: 300px;
+}
+
+input {
+    width: 300px;
+}
+
+#queryArea {
+    float: right;
+    width: 40%;
+    border: 1px solid #888;
+    background-color: #DDD;
+    border-radius: 5px;
+    margin: 0 0 0 1em;
+    padding: 1em;
+}
+
+pre {
+    background-color: #EEE;
+    padding: .3em;
+    -webkit-box-shadow: inset 0px 0px .2em #FFF;
+    -moz-box-shadow: inset 0px 0px .2em #FFF;
+    box-shadow: inset 0px 0px .2em #FFF;
+}

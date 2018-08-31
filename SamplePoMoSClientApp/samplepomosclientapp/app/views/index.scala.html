@@ -1,0 +1,76 @@
+@(form:Form[InterviewRequestData])
+
+@main("Sample PoMoS Client App") {
+  <h1>Sample PolicyModel Server Client</h1>
+  <p>
+    This is a sample application that requests an interview from a PolicyModels server, and displays the interview result.
+    For this to work, you'll need a PolicyModels Server running, and an IP address that server can send the results back to.
+  </p>
+  <hr>
+  <div id="queryArea">
+    This area will be updated as you input data into the fields on the left.<br>
+    Endpoint URL:
+    <pre><code id="endpointUrl"></code></pre>
+
+    JSON to <code>POST</code>:
+    <pre><code id="payload">
+      {
+      hello: world
+      }
+    </code></pre>
+  </div>
+  <form action="" method="POST">
+    <fieldset>
+      <legend>Inter-app Communication</legend>
+
+      <label for="fldServerAddress">PolicyModels Server</label>
+      <input type="text" name="serverAddress" id="fldServerAddress" value="http://localhost:9000">
+      <small>Address of the PolicyModels server (URL)</small>
+      <br>
+
+      <label for="fldCallbackURL">Return URL</label>
+      <input type="text" name="callbackURL" id="fldCallbackURL" autocomplete="off">
+      <small>
+        The URL where the PolicyModels Server will <code>POST</code> the results to.
+        It is possible to add parameters to this URL address so that the requesting server
+        can associate returned interview results with its internal state.
+      </small>
+      <br>
+
+
+      <label for="fldModelId">Model ID</label>
+      <input type="text" name="modelId" id="fldModelId">
+      <small>Id of the model the user will interview with. A URL-friendly string.</small>
+      <br>
+
+      <label for="fldModelVersion">Model Version</label>
+      <input type="number" name="modelVersion" id="fldModelVersion">
+      <small>The version number of the model we want the user to interview with.</small>
+      <br>
+    </fieldset>
+
+    <fieldset>
+      <legend>Interview Customization</legend>
+      <label for="fldTitle">Interview Title</label>
+      <input type="text" name="title" width="80" id="fldTitle" value="Invited Interview">
+      <small>Title to show the user when they arrive at the interview</small>
+      <br>
+
+      <label for="fldMessage">Interview Message</label>
+      <textarea name="message" id="fldMessage" cols="30" rows="3">Welcome to an invited interview. Once you finish it, the results will be returned to the system that sent you here.</textarea>
+      <small>Message to show the user when they arrive at the interview</small>
+      <br>
+
+      <label for="fldReturnButtonTitle">Return Button Title</label>
+      <input type="text" name="returnButtonTitle" id="fldReturnButtonTitle" value="All done! Click the button below to report the results and go back.">
+      <small>Title to show <em>above</em> the "return" button at the end of the interview</small>
+      <br>
+
+      <label for="fldReturnButtonText">Return Button Text</label>
+      <input type="text" name="returnButtonText" id="fldReturnButtonText" value="Back to SampleApp">
+      <small>Title to show <em>on</em> the "return" button at the end of the interview</small>
+    </fieldset>
+
+    <button type="submit">Request Interview</button>
+  </form>
+}
