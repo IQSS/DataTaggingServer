@@ -25,10 +25,10 @@ GET    /admin/visualizations/recreate            controllers.PolicyKitManagement
 GET  /access/models/:accessLink                  controllers.InterviewCtrl.accessByLink(accessLink)
 
 # Requested Interviews
-POST	/api/1/interviewRequest/:modelId/:versionNum  controllers.API.requestInterview(modelId, versionNum:Int)
-GET		/requestedInterview/:uniqueLinkId             controllers.RequestedInterview.start(uniqueLinkId: String)
-POST	/postBackTo/:uniqueLinkId				            controllers.RequestedInterview.postBackTo(uniqueLinkId: String)
-POST 	/unacceptableDataset/:uniqueLinkId/:reason	controllers.RequestedInterview.unacceptableDataset(uniqueLinkId: String, reason: String)
+POST	/api/1/interviewRequest/:modelId/:versionNum  controllers.RequestedInterviewCtrl.apiRequestInterview(modelId, versionNum:Int)
+GET		/requestedInterview/:uniqueLinkId             controllers.RequestedInterviewCtrl.start(uniqueLinkId: String)
+POST	/postBackTo/:uniqueLinkId				            controllers.RequestedInterviewCtrl.postBackTo(uniqueLinkId: String)
+POST 	/unacceptableDataset/:uniqueLinkId/:reason	controllers.RequestedInterviewCtrl.unacceptableDataset(uniqueLinkId: String, reason: String)
 POST 	/tempTestServer							                controllers.Test.tempTestServer
 
 # Back-office

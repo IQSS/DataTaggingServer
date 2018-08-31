@@ -2,9 +2,6 @@
   "callbackURL": "http://localhost:3000/backaddress?sessionId=123456",
   "title": "Requested Interview title",
   "message": "Hello user redirected from a service! Let's start the interview.",
-  "returnButtonTitle": "Back to original app",
-  "kitId": {
-    "modelId":"cats-dogs",
-    "version":1
-  }
+  "returnButtonTitle": "Text to appear above the back-to-system button",
+  "returnButtonText": "Text to appean on the back-to-system button"
 }

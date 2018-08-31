@@ -28,11 +28,11 @@
   </div>
 
   @requestedInterview match {
-    case Some(interview) => {
+    case Some(reqInt) => {
       <div class="center-block" style="text-align: center">
-        <p> Click the button below to return to your data repository with the reason your dataset can not be accepted. </p>
-        <form action="@routes.RequestedInterview.unacceptableDataset(interview.key, node.getReason)" method="POST">
-          <button class="btn btn-primary" type="submit">Back to Data Repository</button>
+        <p>@reqInt.returnButtonTitle</p>
+        <form action="@routes.RequestedInterview.unacceptableDataset(reqInt.key, node.getReason)" method="POST">
+          <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
         </form>
       </div>
     }

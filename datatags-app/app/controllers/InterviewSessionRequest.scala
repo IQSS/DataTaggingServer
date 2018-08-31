@@ -8,8 +8,8 @@ import models._
 import play.api.cache.SyncCacheApi
 
 /**
-A request with a userSession. If none exists, it goes to a default page
-*/
+ * A request with a userSession. If none exists, it goes to a default page
+ */
 class InterviewSessionRequest[A](val userSession: InterviewSession, request: Request[A]) extends WrappedRequest[A](request)
 
 object InterviewSessionAction {
@@ -18,7 +18,17 @@ object InterviewSessionAction {
 
 case class InterviewSessionAction(cache:SyncCacheApi, cc:ControllerComponents) extends ActionBuilder[InterviewSessionRequest, AnyContent] {
   private implicit val ec = cc.executionContext
-
+  
+  /**
+    * Getting the interview uuid from the http session, then getting the actual interview data from the
+    * local cache, then invoking the block. Or, if the uuid or the session do not exist, redirect to
+    * global index page.
+    *
+    * @param request
+    * @param requestHandler
+    * @tparam A
+    * @return
+    */
   def invokeBlock[A](request: Request[A], requestHandler: (InterviewSessionRequest[A]) => Future[Result]) = {
     request.session.get(InterviewSessionAction.KEY).map { uuid =>
       cache.get[InterviewSession](uuid) match {

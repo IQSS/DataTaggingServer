@@ -60,31 +60,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
       }
     }
    }
-  
-  /**
-    * Logged in users can view any model. Anyone can view a published model. People with the correct link
-    * can view only what their link allows.
-    * @param r request asking for the model version
-    * @param pmv model version to be views
-    * @return can the request view the model
-    */
-  private def canView( r:Request[_], pmv:PolicyModelVersion ):Boolean = {
-    if ( LoggedInAction.userPresent(r) ) return true
-    if ( pmv.publicationStatus == PublicationStatus.Published ) return true
-    
-    if ( pmv.publicationStatus == PublicationStatus.LinkOnly ) {
-      val linkSessionStringOpt = r.session.get(InterviewCtrl.INVITED_INTERVIEW_KEY)
-      if (linkSessionStringOpt.isEmpty) return false;
-      val linkSessionString = linkSessionStringOpt.get
-      val allowedKitKey = KitKey.parse(linkSessionString)
-      allowedKitKey == KitKey.of(pmv)
-      
-    } else {
-      false
-      
-    }
-    
-  }
 
   def startInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None ) = InterviewSessionAction(cache, cc) { implicit req =>
     import util.JavaOptionals.toRichOptional
@@ -323,5 +298,27 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
   def currentAskNode(kit:PolicyModelVersionKit, engineState: RuntimeEngineState ) = {
     kit.model.getDecisionGraph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
   }
-
+  
+  
+  /**
+    * Logged in users can view any model. Anyone can view a published model. People with the correct link
+    * can view only what their link allows.
+    * @param r request asking for the model version
+    * @param pmv model version to be views
+    * @return can the request view the model
+    */
+  private def canView( r:Request[_], pmv:PolicyModelVersion ):Boolean = {
+    if ( LoggedInAction.userPresent(r) ) return true
+    if ( pmv.publicationStatus == PublicationStatus.Published ) return true
+    
+    if ( pmv.publicationStatus == PublicationStatus.LinkOnly ) {
+      val linkSessionStringOpt = r.session.get(InterviewCtrl.INVITED_INTERVIEW_KEY)
+      if (linkSessionStringOpt.isEmpty) return false;
+      val linkSessionString = linkSessionStringOpt.get
+      val allowedKitKey = KitKey.parse(linkSessionString)
+      allowedKitKey == KitKey.of(pmv)
+    } else {
+      false
+    }
+  }
 }

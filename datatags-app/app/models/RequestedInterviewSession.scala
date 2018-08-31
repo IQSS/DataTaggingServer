@@ -20,4 +20,6 @@ case class RequestedInterviewSession(
 case class RequestedInterviewData(callbackURL: String,
                                   title: String,
                                   message: Option[String],
-                                  returnButtonTitle:String)
+                                  returnButtonTitle:String,
+                                  returnButtonText:String
+                                 )
