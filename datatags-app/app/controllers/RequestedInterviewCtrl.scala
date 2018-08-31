@@ -34,11 +34,11 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient,
           errors => BadRequest(Json.obj("status" -> "error", "message" -> JsError.toJson(errors))),
           interviewData => {
             val requestedInterviewSession = RequestedInterviewSession(interviewData.callbackURL, interviewData.title,
-              interviewData.message, interviewData.returnButtonTitle, kitKey)
+              interviewData.message, interviewData.returnButtonTitle, interviewData.returnButtonText, kitKey)
             cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
             Logger.info( "Stored requested interview " + requestedInterviewSession.key)
             // send json response with interview link
-            Redirect(routes.RequestedInterview.start(requestedInterviewSession.key))
+            Redirect(routes.RequestedInterviewCtrl.start(requestedInterviewSession.key))
           }
         )
       }

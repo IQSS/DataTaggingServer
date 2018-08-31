@@ -64,7 +64,7 @@
       case Some(reqInt) => {
           <div class="center-block" style="text-align: center">
             <p>@reqInt.returnButtonTitle</p>
-              <form action="@routes.RequestedInterview.postBackTo(reqInt.key)" method="POST">
+              <form action="@routes.RequestedInterviewCtrl.postBackTo(reqInt.key)" method="POST">
                 <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
               </form>
           </div>

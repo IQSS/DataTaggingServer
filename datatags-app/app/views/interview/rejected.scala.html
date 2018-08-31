@@ -31,7 +31,7 @@
     case Some(reqInt) => {
       <div class="center-block" style="text-align: center">
         <p>@reqInt.returnButtonTitle</p>
-        <form action="@routes.RequestedInterview.unacceptableDataset(reqInt.key, node.getReason)" method="POST">
+        <form action="@routes.RequestedInterviewCtrl.unacceptableDataset(reqInt.key, node.getReason)" method="POST">
           <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
         </form>
       </div>
