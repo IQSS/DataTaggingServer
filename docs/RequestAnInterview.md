@@ -1,5 +1,23 @@
 # How to Request an Interview and Get the Results Back
 
+PolicyModels Server can accept interview requests via API, and return the interview results. This allows other applications to use PolicyModels as part of their flow, without dealing with the overhead of loading and presenting an interview.
+
+A [reference implementation](/SamplePoMoSClient) implementing this flow is available in this repo.
+
+## Setup
+
+* An application `ClientApp` needs a policy model filled. This may be for an determining a DataTag, properties of a legal situation, or any other case.
+* `ClientApp` has b-directional communicate with a PolicyModels server `PoMoS`.
+* `ClientApp` is aware of a specific policy model version that `PoMoS` serves. That version has to by public on `PoMoS`. This is required since `ClientApp` will probably have some well-defined semantics for each value in each slot (e.g. `Encrypt` in slot `Network` means *transfer file only over HTTPS*). Thus, `ClientApp` needs to know exactly the policy space the result will be in.
+
+## Interview Request/Result Process
+
+The process it presented in the sequence diagram below. For those who want more details, here's a textual description of the process after the diagram.
+
+![Interview Request/Response Process](InterviewRequest.png)
+
+
+### Textual Flow
 1. prepare the interview data, as in the file `InterviewRequest.json`.
 2. `POST` the json to `api/1/interviewRequest/model-id/version-id`, capture the `201 Created` response data. Note that `model-id` is a string, and `version-id` is an integer.
 

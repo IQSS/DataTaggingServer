@@ -1,0 +1,47 @@
+@startuml
+autonumber "<font color=gray>"
+actor User as us
+participant ClientApp as ca
+participant PoMoS as pm
+
+... User is using ClientApp ...
+
+us -> ca : data
+activate ca
+note right of ca
+  ClientApp decides to
+  consult a PolicyModels
+  server
+end note
+
+ca -> pm : POST data
+activate pm
+note right of pm
+  posted data include
+  a URL to post the
+  results back to
+end note
+ca <- pm : 201 Created <font color=blue>URL1
+deactivate pm
+us <- ca : show/redirect-to <font color=blue>URL1
+deactivate ca
+|||
+us -> pm : GET <font color=blue>URL1
+loop
+  us <- pm : question
+  us -> pm : answer
+end loop
+us <- pm : result
+us -> pm : "Back to ClientApp"
+activate pm
+pm -> ca : POST result
+activate ca
+pm <- ca : 201 Created <font color=red>URL2
+deactivate ca
+us <- pm : Redirect <font color=red>URL2
+deactivate pm
+|||
+us -> ca : GET <font color=red>URL2
+us <- ca : response
+... ClientApp and User continue ...
+@enduml
