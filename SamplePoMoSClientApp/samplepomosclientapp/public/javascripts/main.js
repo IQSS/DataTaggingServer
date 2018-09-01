@@ -40,4 +40,4 @@ function updateJson() {
 
 updateEndpointUrl();
 updateJson();
-document.querySelector("#fldCallbackURL").value = String(window.location) + "/postback/123DEF";
+document.querySelector("#fldCallbackURL").value = String(window.location) + "postback/123DEF";

@@ -37,8 +37,8 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient,
               interviewData.message, interviewData.returnButtonTitle, interviewData.returnButtonText, kitKey)
             cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
             Logger.info( "Stored requested interview " + requestedInterviewSession.key)
-            // send json response with interview link
-            Redirect(routes.RequestedInterviewCtrl.start(requestedInterviewSession.key))
+            // send response with interview URL
+            Created(routes.RequestedInterviewCtrl.start(requestedInterviewSession.key).url)
           }
         )
       }
@@ -71,17 +71,24 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient,
       val finalValue = request.userSession.tags.accept(Jsonizer)
       val json = Json.obj( "status"->"accept", "values"->finalValue )
       val callbackURL = request.userSession.requestedInterview.get.callbackURL
-      Logger.info(callbackURL)
-      ws.url(callbackURL).post(Json.toJson(json)).map { response =>
-        Redirect((response.json \ "data" \ "message").as[String])
+      Logger.info("posting results back to '%s'".format(callbackURL))
+      ws.url(callbackURL).post(Json.toJson(json)).map{ response =>
+        Logger.info( "Response status: " + response.status )
+        response.status match {
+          case 201 => Redirect(response.body)
+          case _ => InternalServerError("Bad response from originating server:" + response.body + "\n\n("+response.status+")")
+        }
       }
   }
 
   def unacceptableDataset(uniqueLinkId: String, reason: String) = InterviewSessionAction(cache, cc).async { implicit request =>
       val callbackURL = request.userSession.requestedInterview.get.callbackURL
       val json = Json.obj( "status"->"reject", "reason"->reason )
-      ws.url(callbackURL).post(Json.toJson(reason)).map { response =>
-        Redirect((response.json \ "data" \ "message").as[String])
+      ws.url(callbackURL).post(Json.toJson(json)).map { response =>
+        response.status match {
+          case 201 => Redirect(response.body)
+          case _ => InternalServerError("Bad response from originating server:" + response.body + "\n\n("+response.status+")")
+        }
       }
   }
 

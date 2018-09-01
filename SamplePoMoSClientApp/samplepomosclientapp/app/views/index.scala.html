@@ -1,5 +1,17 @@
 @(form:Form[InterviewRequestData])
 
+@errs(fName:String)={
+@if( form(fName).errors.nonEmpty ){
+  <ul class="errors">
+  @for( e <- form(fName).errors ){
+    <li>@e.messages.mkString(", ")</li>
+  }
+  </ul>
+}
+}
+
+@fval(fName:String, defVal:String)={@form(fName).value.getOrElse(defVal).trim}
+
 @main("Sample PoMoS Client App") {
   <h1>Sample PolicyModel Server Client</h1>
   <p>
@@ -7,6 +19,13 @@
     For this to work, you'll need a PolicyModels Server running, and an IP address that server can send the results back to.
   </p>
   <hr>
+  @if( form.hasGlobalErrors ) {
+    <ul class="errors">
+    @for( err <- form.globalErrors ) {
+      <li>@err.messages.mkString(", ")<li>
+      }
+    </ul>
+  }
   <div id="queryArea">
     This area will be updated as you input data into the fields on the left.<br>
     Endpoint URL:
@@ -24,53 +43,61 @@
       <legend>Inter-app Communication</legend>
 
       <label for="fldServerAddress">PolicyModels Server</label>
-      <input type="text" name="serverAddress" id="fldServerAddress" value="http://localhost:9000">
+      <input type="text" name="serverAddress" id="fldServerAddress" value="@fval("serverAddress","http://localhost:9000")">
       <small>Address of the PolicyModels server (URL)</small>
+      @errs("serverAddress")
       <br>
 
       <label for="fldCallbackURL">Return URL</label>
-      <input type="text" name="callbackURL" id="fldCallbackURL" autocomplete="off">
+      <input type="text" name="callbackURL" id="fldCallbackURL" autocomplete="off" value="">
       <small>
         The URL where the PolicyModels Server will <code>POST</code> the results to.
         It is possible to add parameters to this URL address so that the requesting server
         can associate returned interview results with its internal state.
       </small>
+      @errs("callbackURL")
       <br>
 
 
       <label for="fldModelId">Model ID</label>
-      <input type="text" name="modelId" id="fldModelId">
+      <input type="text" name="modelId" id="fldModelId" value="@fval("modelId","")">
       <small>Id of the model the user will interview with. A URL-friendly string.</small>
+      @errs("modelId")
       <br>
 
       <label for="fldModelVersion">Model Version</label>
-      <input type="number" name="modelVersion" id="fldModelVersion">
+      <input type="number" name="modelVersion" id="fldModelVersion" value="@fval("modelVersion","")">
       <small>The version number of the model we want the user to interview with.</small>
+      @errs("modelVersion")
       <br>
     </fieldset>
 
     <fieldset>
       <legend>Interview Customization</legend>
       <label for="fldTitle">Interview Title</label>
-      <input type="text" name="title" width="80" id="fldTitle" value="Invited Interview">
+      <input type="text" name="title" width="80" id="fldTitle" value="@fval("fldTitle","Invited Interview")">
       <small>Title to show the user when they arrive at the interview</small>
+      @errs("fldTitle")
       <br>
 
       <label for="fldMessage">Interview Message</label>
-      <textarea name="message" id="fldMessage" cols="30" rows="3">Welcome to an invited interview. Once you finish it, the results will be returned to the system that sent you here.</textarea>
+      <textarea name="message" id="fldMessage" cols="30" rows="3">@fval("fldMessage","Welcome to an invited interview. Once you finish it, the results will be returned to the system that sent you here.")</textarea>
       <small>Message to show the user when they arrive at the interview</small>
+      @errs("fldMessage")
       <br>
 
       <label for="fldReturnButtonTitle">Return Button Title</label>
-      <input type="text" name="returnButtonTitle" id="fldReturnButtonTitle" value="All done! Click the button below to report the results and go back.">
+      <input type="text" name="returnButtonTitle" id="fldReturnButtonTitle" value="@fval("returnButtonTitle","All done! Click the button below to report the results and go back.")">
       <small>Title to show <em>above</em> the "return" button at the end of the interview</small>
+      @errs("returnButtonTitle")
       <br>
 
       <label for="fldReturnButtonText">Return Button Text</label>
-      <input type="text" name="returnButtonText" id="fldReturnButtonText" value="Back to SampleApp">
+      <input type="text" name="returnButtonText" id="fldReturnButtonText" value="@fval("returnButtonText","Back to SampleApp")">
       <small>Title to show <em>on</em> the "return" button at the end of the interview</small>
+      @errs("returnButtonText")
     </fieldset>
 
-    <button type="submit">Request Interview</button>
+    <button type="submit" class="bigButton">Request Interview</button>
   </form>
 }

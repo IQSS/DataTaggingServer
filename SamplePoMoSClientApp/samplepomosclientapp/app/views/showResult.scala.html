@@ -1,0 +1,12 @@
+@import play.api.libs.json.JsValue
+@import play.api.libs.json.Json
+@(res:JsValue)
+
+@main("Result") {
+<h1>Interview result</h1>
+<pre><code>
+@Json.prettyPrint(res)
+</code></pre>
+<hr>
+<a href="@routes.HomeController.index()">Request another interview</a>
+}

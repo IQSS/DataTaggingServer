@@ -1,0 +1,8 @@
+@(url:String)
+
+@main("Interview Ready"){
+  <h1>Interview Ready</h1>
+  The requested interview is available at <a href="@url">@url</a>.
+  <br>
+  <a href="@routes.HomeController.index()">Request another interview</a>
+}

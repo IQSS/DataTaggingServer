@@ -36,3 +36,27 @@ pre {
     -moz-box-shadow: inset 0px 0px .2em #FFF;
     box-shadow: inset 0px 0px .2em #FFF;
 }
+
+ul.errors {
+    margin-top:0;
+    padding: 4px;
+    background-color: #FCC;
+    color: #F00;
+    list-style: none;
+}
+
+.bigButton {
+    font-size: 2em;
+    padding: .5em;
+    border: 2px solid black;
+    margin: 5px;
+}
+
+.bigButton:hover {
+    background-color: yellow;
+}
+
+.bigButton:active {
+    background-color: blue;
+    color: white;
+}
