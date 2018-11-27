@@ -1,0 +1,93 @@
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
+@import edu.harvard.iq.datatags.model.graphs.nodes.CallNode
+@import edu.harvard.iq.datatags.model.graphs.nodes.SectionNode
+@import edu.harvard.iq.datatags.model.graphs.nodes.ConsiderNode
+@import edu.harvard.iq.datatags.model.graphs.nodes.EndNode
+@import edu.harvard.iq.datatags.model.graphs.nodes.ThroughNode
+@import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
+@import edu.harvard.iq.datatags.model.graphs.nodes.Node
+@import collection.mutable.Set
+
+@(pmvKit: PolicyModelVersionKit,
+loc:Option[Localization]
+)(implicit req:Request[_])
+
+@visitAskNode( nd:AskNode, baseLevel:Boolean, visited:Set[String] ) = {
+  <div class="question">
+    <a name="@nd.getId"><code>@nd.getId</code></a>
+    @comps.questionPanel(nd, pmvKit, loc, Seq(), false, false)
+
+    @for( a <- nd.getAnswers ) {
+      @visitNode( nd.getNodeFor(a), baseLevel, visited )
+    }
+
+  </div>
+}
+
+@visitCallNode( cn:CallNode, baseLevel:Boolean, visited:Set[String] ) = {
+  @visitNode(cn.getCalleeNode, false, visited)
+  @visitNode(cn.getNextNode, baseLevel, visited)
+}
+
+@visitSectionNode( nd:SectionNode, baseLevel:Boolean, visited:Set[String] ) = {
+  <div>
+    <div class="section">
+      <h4>Section: @nd.getTitle</h4>
+      @visitNode(nd.getStartNode, baseLevel, visited)
+    </div>
+    @if(baseLevel) {
+      @visitNode(nd.getNextNode, baseLevel, visited)
+    }
+  </div>
+}
+
+@visitConsiderNode( c:ConsiderNode, baseLevel:Boolean, visited:Set[String] ) = {
+    @for( a <- c.getAnswers ) {
+      @visitNode( c.getNodeFor(a), baseLevel, visited )
+    }
+    @if( c.getElseNode != null ) {
+      @visitNode(c.getElseNode, baseLevel, visited)
+    }
+}
+
+@visitThroughNode( tn:ThroughNode, baseLevel:Boolean, visited:Set[String] ) = {
+  @visitNode( tn.getNextNode, baseLevel, visited )
+}
+
+@visitNode( nd:Node, baseLevel:Boolean, visited:Set[String] ) = {
+  @if( !visited.contains(nd.getId) ){
+    @{visited.add(nd.getId);""}
+    @nd match {
+      case a:AskNode => {@visitAskNode(a, baseLevel, visited)}
+      case b:SectionNode => {@visitSectionNode(b, baseLevel, visited)}
+      case c:ConsiderNode => {@visitConsiderNode(c, baseLevel, visited)}
+      case ca:CallNode => {@visitCallNode(ca, baseLevel, visited)}
+      case t:ThroughNode => {@visitThroughNode(t, baseLevel, visited)}
+      case n:EndNode => {}
+      case n:RejectNode => {}
+  }}
+}
+
+
+@templates.bsNavBar("Interview questions: " + pmvKit.model.getMetadata.getVersion, 'tag ) {
+  <div class="row">
+    <div class="col-md-12">
+      <a href="@routes.InterviewCtrl.interviewIntro(pmvKit.id.modelId, pmvKit.id.version)"><i class="fa fa-arrow-left"></i> Back</a>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <h1>
+        All Interview Questions
+      </h1>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="allQuestions">
+        @visitNode( pmvKit.model.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
+      </div>
+    </div>
+  </div>
+}

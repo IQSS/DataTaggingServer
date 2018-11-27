@@ -36,7 +36,7 @@
   @helper.form( action=routes.InterviewCtrl.answer(pmvKit.id.modelId, pmvKit.id.version, questionNode.getId), 'id->"answerForm" ) {
     @for( ans <- questionNode.getAnswers ) {
       <button type="button" class="btn btn-default" @if(interactive){
-      onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"} >
+      onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{disabled} >
       @loc.map( l=>l.localizeAnswer(ans.getAnswerText)).getOrElse(Helpers.makeUpper(ans.getAnswerText))</button>
     }
     @if( interactive ) {

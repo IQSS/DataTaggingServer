@@ -61,6 +61,17 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits,
     }
    }
 
+  def viewAllQuestions(modelId:String, versionNum:Int, localizationName:Option[String]) = Action { implicit req =>
+    val kitId = KitKey(modelId, versionNum)
+    kits.get(kitId) match {
+      case Some(pmvk) => {
+        val loc = localizationName.flatMap(lName => kits.localization(kitId, lName))
+        Ok(views.html.interview.allQuestions(pmvk, loc))
+      }
+      case None => NotFound("Model not found")
+    }
+  }
+  
   def startInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None ) = InterviewSessionAction(cache, cc) { implicit req =>
     import util.JavaOptionals.toRichOptional
     val kitId = KitKey(modelId, versionNum)

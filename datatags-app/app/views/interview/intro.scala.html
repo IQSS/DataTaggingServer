@@ -65,11 +65,12 @@
         @comps.kitMessageList(qKit.messages)
         </ul>
       }
+
+      <h3>Questionnaire Overviews</h3>
       @defining( qKit.availableVisualizations() ) { avz =>
-        @if( avz.hasData){
-          <h3>Visualizations</h3>
-          <div class="row">
-            <div class="col-md-6">
+        <div class="row">
+          @if( avz.hasData){
+            <div class="col-md-4">
               @if( avz.decisionGraph.nonEmpty ) {
                 <strong>Decision Graph:</strong>
                 <ul class="visualizationList">
@@ -79,7 +80,7 @@
                 </ul>
               }
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               @if( avz.policySpace.nonEmpty ) {
                 <strong>Policy Space:</strong>
                 <ul class="visualizationList">
@@ -89,8 +90,23 @@
                 </ul>
               }
             </div>
-          </div>
-        }
+          }
+          @if( qKit.canRun ) {
+            <div class="col-md-4">
+              <strong>Questions:</strong>
+              <ul class="visualizationList">
+              @if(qKit.model.getLocalizations.size > 1) {
+                @for(locName <- qKit.model.getLocalizations) {
+                  <li><a href="@routes.InterviewCtrl.viewAllQuestions(qKit.id.modelId, qKit.id.version, Some(locName))">@locName</a></li>
+                }
+              } else {
+                <li class="onlyChild"><a href="@routes.InterviewCtrl.viewAllQuestions(qKit.id.modelId, qKit.id.version, qKit.model.getLocalizations.headOption)">
+                  List</a></li>
+              }
+              </ul>
+            </div>
+          }
+        </div>
       }
       <h3>Metadata</h3>
       @comps.modelVersionMetadataTable(qKit.model.getMetadata)
