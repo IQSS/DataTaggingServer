@@ -22,8 +22,8 @@
   <div class="row">
     <div class="col-md-12">
       <h3>@if(enableEdits){
-        <div class="pull-right">
-          <a class="btn btn-default" href="@routes.PolicyKitManagementCtrl.showEditVpmPage(vpm.id)">
+        <div class="float-right">
+          <a class="btn btn-secondary" href="@routes.PolicyKitManagementCtrl.showEditVpmPage(vpm.id)">
             <i class="fa fa-edit"></i> Edit</a>
         </div>
       }
@@ -54,8 +54,8 @@
   <div class="row">
     <div class="col-md-12">
       <h4>
-        <div class="pull-right">
-          <a class="btn btn-default" href="@routes.PolicyKitManagementCtrl.showNewVersionPage(vpm.id)">
+        <div class="float-right">
+          <a class="btn btn-secondary" href="@routes.PolicyKitManagementCtrl.showNewVersionPage(vpm.id)">
             <i class="fa fa-plus-circle"></i> Add New Version</a>
         </div>
         Versions
@@ -84,8 +84,8 @@
                   @v._2.map( k=>if(k.model!=null) {k.model.getMetadata.getTitle} else{"Model not loaded"}).getOrElse("Model Missing")
                 </a>
                   @for( kit <- v._2 ) {
-                    @if(kit.messages.nonEmpty){<span class="label label-warning"><i class="fa fa-warning"></i></span>}
-                    @if(! kit.canRun){<span class="label label-danger"><i class="fa fa-times-circle"></i> model error</span>
+                    @if(kit.messages.nonEmpty){<span class="badge label-warning"><i class="fa fa-warning"></i></span>}
+                    @if(! kit.canRun){<span class="badge label-danger"><i class="fa fa-times-circle"></i> model error</span>
                   }
                 </td>
                 <td>
@@ -98,12 +98,12 @@
                 </td>
                 <td>@Helpers.dateTimeFormat(v._1.lastUpdate)</td>
                 <td>
-                  <a class="btn btn-default btn-sm" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(v._1.parentId, v._1.version)"><i class="fa fa-edit"></i> Edit</a>
+                  <a class="btn btn-secondary btn-sm" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(v._1.parentId, v._1.version)"><i class="fa fa-edit"></i> Edit</a>
                   <button class="btn btn-danger btn-sm" onclick="DeleteVersion.deleteVersion('@v._1.parentId', '@v._1.version')">
                     <i class="fa fa-trash-o"></i> Delete
                   </button>
                   @v._2 match {
-                    case None      => {<button type="button" class="btn btn-default" disabled>Processing...</button>}
+                    case None      => {<button type="button" class="btn btn-secondary" disabled>Processing...</button>}
                     case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary btn-sm" href="@routes.InterviewCtrl.interviewIntro(v._1.parentId, v._1.version)"><i class="fa fa-play"></i> Run</a>}}
                   }
                 </td>

@@ -25,7 +25,7 @@
   <div class="col-md-12">
     <div class="mdRender">
       @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
-        <div class="pull-right">
+        <div class="float-right">
         @comps.comments("cmntReadme", qKit.dbData.parentId, qKit.dbData.version, loc.map(_.getLanguage), "meta", "readme")
         </div>}
       @Helpers.render(readme)
@@ -36,7 +36,7 @@
     <div class="col-md-12">
       <h3>
         @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
-          <div class="pull-right">
+          <div class="float-right">
           @comps.comments("cmntPS", qKit.dbData.parentId, qKit.dbData.version, loc.map(_.getLanguage), "meta", "policy-space")
           </div>}
         Policy Space</h3>

@@ -16,11 +16,11 @@
   </div>
   <div class="row">
     <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading">
-          <h3 class="panel-title">Answer History</h3>
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Answer History</h3>
         </div>
-        <div class="panel-body">
+        <div class="card-body">
         @comps.answerHistory(answerHistory, pmvKit.id, false, pmvKit.serializer, loc)
         </div>
       </div>
@@ -29,7 +29,7 @@
 
   @requestedInterview match {
     case Some(reqInt) => {
-      <div class="center-block" style="text-align: center">
+      <div class="mx-auto" style="text-align: center">
         <p>@reqInt.returnButtonTitle</p>
         <form action="@routes.RequestedInterviewCtrl.unacceptableDataset(reqInt.key, node.getReason)" method="POST">
           <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
@@ -37,7 +37,7 @@
       </div>
     }
     case None => {
-      <div class="col-md-2 col-md-offset-5">
+      <div class="col-md-2 offset-5">
         <a href="@routes.InterviewCtrl.interviewIntro(pmvKit.id.modelId, pmvKit.id.version)" class="btn btn-primary">Start Again</a>
       </div>
     }

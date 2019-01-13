@@ -32,11 +32,11 @@
 </div>
 <div class="row">
   <div class="col-md-6">
-      <div class="panel panel-default">
-          <div class="panel-heading">
-              <h3 class="panel-title">Answer Feed</h3>
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title">Answer Feed</h3>
           </div>
-          <div class="panel-body">
+          <div class="card-body">
               @if( answerHistory.nonEmpty ) {
                   @comps.answerHistory(answerHistory, pmvKit.id, reverse=true, pmvKit.serializer, loc)
               } else {
@@ -48,11 +48,11 @@
       </div>
   </div>
   <div class="col-md-6">
-      <div class="panel panel-default">
-          <div class="panel-heading">
-              <h3 class="panel-title">Current Tags</h3>
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title">Current Tags</h3>
           </div>
-          <div class="panel-body">
+          <div class="card-body">
               <ul class="list-unstyled">
                   @if( dataTags.getNonEmptySubSlots.isEmpty ) {
                       <div class="well well-sm text-center">
@@ -68,12 +68,12 @@
 </div>
 <div class="row">
   <div class="col-md-12">
-      <div class="panel panel-default">
-          <div class="panel-heading">
-              <h3 class="panel-title">Engine Trace</h3>
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title">Engine Trace</h3>
               <small>Useful for debugging the interview</small>
           </div>
-          <div class="panel-body">
+          <div class="card-body">
               <div class="engine-trace-container">
                   <table class="engine-trace">
                       <thead>

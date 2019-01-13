@@ -158,7 +158,7 @@ object Helpers {
   
   def o2o[T]( in:Optional[T]):Option[T] = if ( in.isPresent ) Some(in.get) else None
   
-  def fieldStatus(f:Field):String = if(f.hasErrors) "has-error" else ""
+  def fieldStatus(f:Field):String = if(f.hasErrors) "has-danger" else ""
   
   def jsEscape(s:String) = s.replaceAll("\"", "\\\"")
   

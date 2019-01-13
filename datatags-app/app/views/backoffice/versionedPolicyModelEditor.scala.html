@@ -10,17 +10,17 @@
   <div class="row">
     <div class="col-md-12">
       <h3>Versioned Policy Model Editor</h3>
-      <div class="help-block">
+      <div class="form-text text-muted">
         Use this page to create and edit <em>versioned policy models (VPMs)</em>. VPMs serve as a container with a fixed URL for different versions of a policy model.
       </div>
     </div>
   </div>
   <div class="row">
     <div class="col-md-12">
-      <form class="form-horizontal" action="@if(isNew){@routes.PolicyKitManagementCtrl.doSaveNewVpm}else{@routes.PolicyKitManagementCtrl.doSaveVpm(form("id").value.get)}" method="POST">
+      <form action="@if(isNew){@routes.PolicyKitManagementCtrl.doSaveNewVpm}else{@routes.PolicyKitManagementCtrl.doSaveVpm(form("id").value.get)}" method="POST">
         <input type="hidden" name="shouldBeNew" value="@form("shouldBeNew").value.getOrElse("0")">
-        <div class="form-group@Helpers.fieldStatus(form("id"))">
-          <label for="idInput" class="col-sm-2 control-label">Id</label>
+        <div class="form-group @Helpers.fieldStatus(form("id"))">
+          <label for="idInput" class="col-sm-2 col-form-label">Id</label>
           <div class="col-sm-10">
             <input type="text" class="form-control" id="idInput" name="id" value="@form("id").value.getOrElse("")"
                    placeholder="id string" @if( (!form("id").hasErrors) && form("id").value.isDefined){readonly}>
@@ -36,8 +36,8 @@
           </div>
         </div>
 
-        <div class="form-group@Helpers.fieldStatus(form("title"))">
-          <label for="titleInput" class="col-sm-2 control-label">Title</label>
+        <div class="form-group @Helpers.fieldStatus(form("title"))">
+          <label for="titleInput" class="col-sm-2 col-form-label">Title</label>
           <div class="col-sm-10">
             <input type="text" name="title" class="form-control" id="titleInput" value="@form("title").value.getOrElse("")" placeholder="Title">
             @if(form("title").hasErrors){
@@ -48,8 +48,8 @@
           </div>
         </div>
 
-        <div class="form-group@Helpers.fieldStatus(form("note"))">
-          <label for="noteInput" class="col-sm-2 control-label">Note</label>
+        <div class="form-group @Helpers.fieldStatus(form("note"))">
+          <label for="noteInput" class="col-sm-2 col-form-label">Note</label>
           <div class="col-sm-10">
             <textarea id="noteInput" name="note" class="form-control" rows="5">@form("note").value.getOrElse("")</textarea>
           </div>
@@ -59,11 +59,11 @@
           <div class="col-md-12 text-right">
             <hr>
             @if( ! isNew ) {
-              <div class="pull-left">
+              <div class="float-left">
                 <button type="button" onclick='VpmEditor.confirmDelete("@Helpers.jsEscape(form("title").value.get)","@form("id").value.get")' class="btn btn-danger"><i class="fa fa-trash-o"></i> Delete Model</button>
               </div>
             }
-            <a href="@routes.PolicyKitManagementCtrl.showVpmList" class="btn btn-default">Cancel</a>
+            <a href="@routes.PolicyKitManagementCtrl.showVpmList" class="btn btn-secondary">Cancel</a>
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </div>

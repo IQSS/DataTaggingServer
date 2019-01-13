@@ -6,7 +6,7 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 
 organization := "edu.harvard.iq"
 
-scalaVersion := "2.11.11"
+scalaVersion := "2.12.6"
 
 routesGenerator := InjectedRoutesGenerator
 
@@ -19,16 +19,18 @@ libraryDependencies ++= Seq(
   ws,
   guice,
   openId,
-  "org.scalatestplus" % "play_2.11" % "1.2.0" % "test",
-  "com.typesafe.play" %% "play-json" % "2.6.7",
-  "com.vladsch.flexmark" % "flexmark-all" % "0.20.0",
+//  "org.scalatestplus" % "scalatestplus-play" % "3.1.2" % "test",
+  "org.webjars" % "bootstrap" % "4.2.1",
+  "com.typesafe.play" %% "play-json" % "2.6.10",
+  "com.vladsch.flexmark" % "flexmark-all" % "0.40.0",
   "org.postgresql" % "postgresql" % "42.0.0",
-  "com.typesafe.play" %% "play-slick" % "3.0.1",
-  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.1",
+  "org.webjars" % "popper.js" % "1.14.6",
+  "com.typesafe.play" %% "play-slick" % "3.0.3",
+  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.3",
   "org.mindrot" % "jbcrypt" % "0.3m",
   "com.typesafe.play" %% "play-iteratees" % "2.6.1",
-  "com.typesafe.play" %% "play-mailer" % "6.0.0",
-  "com.typesafe.play" %% "play-mailer-guice" % "6.0.0"
+  "com.typesafe.play" %% "play-mailer" % "6.0.1",
+  "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
 )
 
 TwirlKeys.templateImports ++= Seq("views.Helpers",

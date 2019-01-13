@@ -1,5 +1,5 @@
 @(cs:CommentingStatus.Value)
 @cs match {
-  case CommentingStatus.Closed             => {<span class="label label-default">comments closed</span>}
-  case CommentingStatus.Everyone           => {<span class="label label-success">comments open</span>}
+  case CommentingStatus.Closed             => {<span class="badge label-default">comments closed</span>}
+  case CommentingStatus.Everyone           => {<span class="badge label-success">comments open</span>}
 }

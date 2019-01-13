@@ -47,8 +47,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
   private val validUserId = "^[-._a-zA-Z0-9]+$".r
   
   val userForm = Form(mapping(
-      "username" -> text(minLength = 1, maxLength = 64)
-        .verifying( "Illegal characters found. Use letters, numbers, and -_. only.", s=>validUserId.findFirstIn(s).isDefined),
+      "username" -> text(minLength = 1, maxLength = 64).verifying( "Illegal characters found. Use letters, numbers, and -_. only.", s=>validUserId.findFirstIn(s).isDefined),
       "name"     -> nonEmptyText,
       "email"    -> optional(email),
       "orcid"    -> optional(text),

@@ -20,18 +20,18 @@
       <div class="col-md-12">
         <ul class="nav nav-tabs">
           @if(activeFirst) {
-            <li class="tab-pane active"><a data-toggle="tab" href="#userEditor">Edit User</a></li>
+            <li class="nav-item tab-pane active"><a class="nav-link" data-toggle="tab" href="#userEditor">Edit User</a></li>
             @if(isNew) {
-              <li class="tab-pane disabled"><a data-toggle="tab" href="#changePassword">Change Password</a></li>
+              <li class="nav-item tab-pane disabled"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
             } else {
-              <li class="tab-pane"><a data-toggle="tab" href="#changePassword">Change Password</a></li>
+              <li class="nav-item tab-pane"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
             }
           }else{
-            <li class="tab-pane"><a data-toggle="tab" href="#userEditor">Edit User</a></li>
+            <li class="nav-item tab-pane"><a class="nav-link" data-toggle="tab" href="#userEditor">Edit User</a></li>
             @if(isNew) {
-              <li class="tab-pane disabled active"><a data-toggle="tab" href="#changePassword">Change Password</a></li>
+              <li class="nav-item tab-pane disabled active"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
             } else {
-              <li class="tab-pane active"><a data-toggle="tab" href="#changePassword">Change Password</a></li>
+              <li class="nav-item tab-pane active"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
             }
           }
 
@@ -43,7 +43,7 @@
           }else{
             <div class="tab-pane" id="userEditor">
           }
-              <form class="form-horizontal mt-1" action="@destination.url" method="POST">
+              <form class="mt-1" action="@destination.url" method="POST">
               @if( form.hasGlobalErrors ){
                 <ul>
                 @for( ge <- form.globalErrors ){
@@ -56,8 +56,8 @@
                 @form("uuid").errors.map(Helpers.messageToEng).mkString("<br>")
                 </div>
               }
-              <div class="form-group@Helpers.fieldStatus(form("username"))">
-                <label for="idInput" class="col-sm-2 control-label">Username</label>
+              <div class="form-group @Helpers.fieldStatus(form("username"))">
+                <label for="idInput" class="col-sm-2 col-form-label">Username</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="usernameInput" name="username" value="@form("username").value.getOrElse("")"
                   placeholder="username" @if(!isNew){readonly}>
@@ -70,8 +70,8 @@
               </div>
 
               @if(isNew){
-                <div class="form-group@Helpers.fieldStatus(form("password1"))">
-                  <label for="password1Input" class="col-sm-2 control-label">Password</label>
+                <div class="form-group @Helpers.fieldStatus(form("password1"))">
+                  <label for="password1Input" class="col-sm-2 col-form-label">Password</label>
                   <div class="col-sm-10">
                     <input type="password" class="form-control" id="password1Input" name="password1" value="@form("password1").value.getOrElse("")"
                     placeholder="Password">
@@ -82,8 +82,8 @@
                     }
                   </div>
                 </div>
-                <div class="form-group@Helpers.fieldStatus(form("password2"))">
-                  <label for="password2Input" class="col-sm-2 control-label">Password (again)</label>
+                <div class="form-group @Helpers.fieldStatus(form("password2"))">
+                  <label for="password2Input" class="col-sm-2 col-form-label">Password (again)</label>
                   <div class="col-sm-10">
                     <input type="password" class="form-control" id="password2Input" name="password2" value="@form("password2").value.getOrElse("")"
                     placeholder="Password">
@@ -96,8 +96,8 @@
                 </div>
               }
 
-              <div class="form-group@Helpers.fieldStatus(form("name"))">
-                <label for="nameInput" class="col-sm-2 control-label">Name</label>
+              <div class="form-group @Helpers.fieldStatus(form("name"))">
+                <label for="nameInput" class="col-sm-2 col-form-label">Name</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="nameInput" name="name" value="@form("name").value.getOrElse("")" placeholder="Human name">
                   @if(form("name").hasErrors){
@@ -108,8 +108,8 @@
                 </div>
               </div>
 
-              <div class="form-group@Helpers.fieldStatus(form("email"))">
-                <label for="emailInput" class="col-sm-2 control-label">Email Address</label>
+              <div class="form-group @Helpers.fieldStatus(form("email"))">
+                <label for="emailInput" class="col-sm-2 col-form-label">Email Address</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="emailInput" name="email" value="@form("email").value.getOrElse("")"
                   placeholder="Email address">
@@ -124,8 +124,8 @@
                 </div>
               </div>
 
-              <div class="form-group@Helpers.fieldStatus(form("orcid"))">
-                <label for="orcidInput" class="col-sm-2 control-label">ORCiD</label>
+              <div class="form-group @Helpers.fieldStatus(form("orcid"))">
+                <label for="orcidInput" class="col-sm-2 col-form-label">ORCiD</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="orcidInput" name="orcid" value="@form("orcid").value.getOrElse("")"
                   placeholder="ORCiD (a number in the ORCiD system, identifying the user).">
@@ -137,8 +137,8 @@
                 </div>
               </div>
 
-              <div class="form-group@Helpers.fieldStatus(form("url"))">
-                <label for="urlInput" class="col-sm-2 control-label">Website</label>
+              <div class="form-group @Helpers.fieldStatus(form("url"))">
+                <label for="urlInput" class="col-sm-2 col-form-label">Website</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="urlInput" name="url" value="@form("url").value.getOrElse("")"
                   placeholder="Users's website, or other online profile page">
@@ -153,7 +153,7 @@
               <div class="form-group">
                 <div class="col-md-12 text-right">
                   <hr>
-                  <a href="/" class="btn btn-default">Cancel</a>
+                  <a href="/" class="btn btn-secondary">Cancel</a>
                   <button type="submit" class="btn btn-primary">Save</button>
                 </div>
               </div>
@@ -167,9 +167,9 @@
             <div class="tab-pane active" id="changePassword">
             }
             <div class="col-md-12 mt-1">
-              <form class="form-horizontal" action="@routes.UsersCtrl.doChangePassword()" method="POST">
+              <form action="@routes.UsersCtrl.doChangePassword()" method="POST">
                 <div class="form-group">
-                  <label for="password1Input" class="col-sm-2 control-label">Previous Password</label>
+                  <label for="password1Input" class="col-sm-2 col-form-label">Previous Password</label>
                   <div class="col-sm-10">
                     <input type="password" class="form-control" id="previousPassword" name="previousPassword" value=""
                     placeholder="Password">
@@ -181,7 +181,7 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label for="password1Input" class="col-sm-2 control-label">New Password</label>
+                  <label for="password1Input" class="col-sm-2 col-form-label">New Password</label>
                   <div class="col-sm-10">
                     <input type="password" class="form-control" id="password1Input" name="password1" value=""
                     placeholder="Password">
@@ -193,7 +193,7 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <label for="password2Input" class="col-sm-2 control-label">New Password (again)</label>
+                  <label for="password2Input" class="col-sm-2 col-form-label">New Password (again)</label>
                   <div class="col-sm-10">
                     <input type="password" class="form-control" id="password2Input" name="password2" value=""
                     placeholder="Password">
@@ -208,7 +208,7 @@
                 <div class="form-group">
                   <div class="col-md-8">
                     <div class="text-right">
-                      <a class="btn btn-default" href="/">Cancel</a>
+                      <a class="btn btn-secondary" href="/">Cancel</a>
                       <button type="submit" class="btn btn-primary"><i class="fa fa-send"></i> change</button>
                     </div>
                   </div>

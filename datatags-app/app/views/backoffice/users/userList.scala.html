@@ -3,9 +3,9 @@
   <div class="row">
     <div class="col-md-12">
       <h1>
-        <div class="pull-right">
-          <a href="@routes.UsersCtrl.showNewUserPage" class="btn btn-large btn-default"><i class="fa fa-plus-circle"></i> Add</a>
-          <a href="@routes.UsersCtrl.showInviteUser" class="btn btn-large btn-default"><i class="fa fa-send"></i> Invite User</a>
+        <div class="float-right">
+          <a href="@routes.UsersCtrl.showNewUserPage" class="btn btn-large btn-secondary"><i class="fa fa-plus-circle"></i> Add</a>
+          <a href="@routes.UsersCtrl.showInviteUser" class="btn btn-large btn-secondary"><i class="fa fa-send"></i> Invite User</a>
         </div>
         Users
       </h1>
@@ -34,7 +34,7 @@
                 <td>
                   @u.name
                   @if( u.username == curUser.username ) {
-                    <a class="btn btn-sm btn-default" href="@routes.UsersCtrl.showEditUserPage(u.username)"><i class="fa fa-edit"></i>
+                    <a class="btn btn-sm btn-secondary" href="@routes.UsersCtrl.showEditUserPage(u.username)"><i class="fa fa-edit"></i>
                       Edit</a>
                   }
                 </td>

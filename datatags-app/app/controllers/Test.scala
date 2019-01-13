@@ -13,7 +13,7 @@ import play.api._
 import scala.collection.JavaConversions._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
-import scala.concurrent.ExecutionContext.Implicits.global
+//import scala.concurrent.ExecutionContext.Implicits.global
 
 class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models:PolicyModelsDAO) extends InjectedController {
 

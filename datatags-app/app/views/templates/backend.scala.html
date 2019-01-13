@@ -7,50 +7,41 @@
 }
 
 @bsBase(title, scripts, headPart) {
-<nav class="navbar navbar-default navbar-fixed-top">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="/">
-        @*<img src="@routes.Assets.at("images/DataTags-Logo-mid.png")" alt="DataTags logo"/>*@
-        PolicyModels
-      </a>
-    </div>
+<nav class="navbar navbar-expand-lg navbar-light fixed-top bg-light">
+  <a class="navbar-brand" href="/">PolicyModels</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
 
-    <!-- Collect the nav links, forms, and other content for toggling -->
-    <div class="collapse navbar-collapse" id="navbar-collapse">
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+    <ul class="nav navbar-nav mr-auto">
+      <li class="nav-item">
+        <a class="nav-link" href="@routes.BackendCtrl.index()">Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="@routes.PolicyKitManagementCtrl.showVpmList()">Models</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="@routes.UsersCtrl.showUserList()">Users</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="@routes.BackendCtrl.showCustomization()">Customize</a>
+      </li>
+    </ul>
 
+    <div class="nav ml-auto">
       <ul class="nav navbar-nav">
-        <li>
-          <a href="@routes.BackendCtrl.index()">Dashboard</a>
-        </li>
-        <li>
-          <a href="@routes.PolicyKitManagementCtrl.showVpmList()">Models</a>
-        </li>
-        <li>
-          <a href="@routes.UsersCtrl.showUserList()">Users</a>
-        </li>
-        <li>
-          <a href="@routes.BackendCtrl.showCustomization()">Customize</a>
+        <li class="nav-item"><a class="nav-link" data-toggle="tooltip" data-placement="bottom" href="http://datatags.org" target="_blank" title="Project's home"><i class="fa fa-home"></i></a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tooltip" data-placement="bottom" href="https://github.com/IQSS/DataTags/" title="We're open source! Visit us at GitHub" target="_blank"><i class="fa fa-github-alt"></i></a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tooltip" data-placement="bottom" href="http://iq.harvard.edu" title="Institute of Quantitative Social Science" target="_blank">IQSS</a></li>
+        <li class="nav-item">
+          <form class="form-inline" method="POST" action="@routes.UsersCtrl.doLogout">
+            <button type="submit" class="btn btn-sm btn-warning"><i class="fa fa-sign-out"> Logout</i></button>
+          </form>
         </li>
       </ul>
-
-      <ul class="nav navbar-nav navbar-right">
-        <li><a data-toggle="tooltip" data-placement="bottom" href="http://datatags.org" target="_blank" title="Project's home"><i class="fa fa-home"></i></a></li>
-        <li><a data-toggle="tooltip" data-placement="bottom" href="https://github.com/IQSS/DataTags/" title="We're open source! Visit us at GitHub" target="_blank"><i class="fa fa-github-alt"></i></a></li>
-        <li><a data-toggle="tooltip" data-placement="bottom" href="http://iq.harvard.edu" title="Institute of Quantitative Social Science" target="_blank">IQSS</a></li>
-      </ul>
-      <form class="navbar-form navbar-right" method="POST" action="@routes.UsersCtrl.doLogout">
-        <button type="submit" class="btn btn-sm btn-warning"><i class="fa fa-sign-out"> Logout</i></button>
-      </form>
-
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
+    </div>
+  </div>
 </nav>
 } {
 	@content

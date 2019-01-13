@@ -22,12 +22,12 @@
         <i class="fa fa-arrow-left"></i> @vpm.title
       </a>
       <h3>
-        <div class="pull-right">
+        <div class="float-right">
           @kitOpt match {
-            case None      => {<button type="button" class="btn btn-default" disabled>Processing...</button>}
+            case None      => {<button type="button" class="btn btn-secondary" disabled>Processing...</button>}
             case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary" href="@routes.InterviewCtrl.interviewIntro(pmv.parentId, pmv.version)"><i class="fa fa-play"></i> Run</a>}}
           }
-          <a class="btn btn-default" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(pmv.parentId, pmv.version)">
+          <a class="btn btn-secondary" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(pmv.parentId, pmv.version)">
             <i class="fa fa-edit"></i> Edit
           </a>
           <a class="btn btn-danger" onclick="DeleteVersion.deleteVersion('@pmv.parentId', '@pmv.version')">
@@ -144,11 +144,11 @@
               <td>@Helpers.dateTimeFormat(cmt.time)</td>
               <td>@comps.commentStatus(cmt, Some("cmtsts"+cmt.id))</td>
               <td>
-                <a class="btn btn-sm btn-default" href="@routes.CommentsCtrl.showComment(cmt.id)"><i class="fa fa-eye"></i>
+                <a class="btn btn-sm btn-secondary" href="@routes.CommentsCtrl.showComment(cmt.id)"><i class="fa fa-eye"></i>
                   View</a>
-                <button class="btn btn-sm btn-default" onclick="Comments.setResolved(this, '@{"cmtsts"+cmt.id}', @cmt.id, @if(cmt.resolved){false}else{true})">
+                <button class="btn btn-sm btn-secondary" onclick="Comments.setResolved(this, '@{"cmtsts"+cmt.id}', @cmt.id, @if(cmt.resolved){false}else{true})">
                   Mark as @if(cmt.resolved){Unresolved}else{Resolved}</button>
-                <button class="btn btn-sm btn-default" onclick="Comments.deleteComment('@cmt.id','@pmv.parentId', '@pmv.version')"><i class="fa fa-trash-o"></i> Delete</button>
+                <button class="btn btn-sm btn-secondary" onclick="Comments.deleteComment('@cmt.id','@pmv.parentId', '@pmv.version')"><i class="fa fa-trash-o"></i> Delete</button>
               </td>
             </tr>
             <tr>

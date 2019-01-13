@@ -20,11 +20,11 @@
         @*<strong>This is a demonstration of the DataTags framework, and the tags on this page are provided for informational purposes only.</strong>*@
           @*If you seek to share a dataset containing confidential information, you should consult the institutional review board of your organization.*@
       @*</div>*@
-      <div class="panel panel-success">
-          <div class="panel-heading">
-              <h3 class="panel-title">Interview Completed - Final Results</h3>
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title">Interview Completed - Final Results</h3>
           </div>
-          <div class="panel-body">
+          <div class="card-body">
               <div class="text-center">
                   @for( tag <- codeTag ) {
                       <span class="lead">Your dataset is tagged as</span>
@@ -52,17 +52,17 @@
   </div>
   <div class="row">
     <div class="col-md-12">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">Answer History</h3>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Answer History</h3>
           </div>
-          <div class="panel-body">
+          <div class="card-body">
             @comps.answerHistory(answerHistory, qKit.id, false, qKit.serializer, loc)
           </div>
   </div></div></div>
   @requestedInterview match {
       case Some(reqInt) => {
-          <div class="center-block" style="text-align: center">
+          <div class="mx-auto" style="text-align: center">
             <p>@reqInt.returnButtonTitle</p>
               <form action="@routes.RequestedInterviewCtrl.postBackTo(reqInt.key)" method="POST">
                 <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
@@ -70,7 +70,7 @@
           </div>
       }
       case None => {
-          <div class="center-block" style="text-align: center">
+          <div class="mx-auto" style="text-align: center">
             <a href="@routes.InterviewCtrl.interviewIntro(qKit.id.modelId, qKit.id.version)" class="btn btn-primary">Start Again</a>
           </div>
       }

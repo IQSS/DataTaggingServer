@@ -3,16 +3,16 @@
 @import Helpers.{o2o, renderMarkdown}
 @(node:RejectNode, pmvKit:PolicyModelVersionKit, loc:Option[Localization],
         answerHistory:Seq[AnswerRecord], enableComments:Boolean)
-<div class="panel panel-danger">
-  <div class="panel-heading">
-    <h3 class="panel-title clearfix">
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title clearfix">
       @if( enableComments ) {
-        <div class="pull-right">
+        <div class="float-right">
         @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, loc.map(_.getLanguage), "node", node.getId)
         </div>}
       Rejection</h3>
   </div>
-  <div class="panel-body">
+  <div class="card-body">
   @loc.flatMap( l=>o2o(l.getNodeText(node.getId)).map(renderMarkdown) ).getOrElse( Html(node.getReason))
   </div>
 </div>

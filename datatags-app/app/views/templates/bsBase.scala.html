@@ -10,9 +10,9 @@
     <title>@title</title>
 
     <!-- Bootstrap -->
-    <link href="/assets/css/bootstrap.min.css" rel="stylesheet">
     <!--link href="/assets/css/bootstrap-theme.min.css" rel="stylesheet"-->
     <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/assets/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -52,11 +52,12 @@
     </div>
   </footer>   
     <script src="@routes.Assets.at("js/jquery.min.js")"></script>
-    <script src="@routes.Assets.at("js/bootstrap.min.js")"></script>
+    <script src="@routes.Assets.at("lib/popper.js/umd/popper.js")"></script>
+    <script src="@routes.Assets.at("lib/bootstrap/js/bootstrap.min.js")"></script>
     <script src="@routes.Assets.at("vnd/swal/sweetalert.min.js")"></script>
     <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
-    <script src="@routes.Assets.at("js/JsUtils.js")"></script>
-    <script src="@routes.Assets.at("js/Comments.js")"></script>
+    <script src="@routes.Assets.versioned("js/JsUtils.js")"></script>
+    <script src="@routes.Assets.versioned("js/Comments.js")"></script>
     @scripts
   <script type="text/javascript">
     $(document).ready( function(){ 
