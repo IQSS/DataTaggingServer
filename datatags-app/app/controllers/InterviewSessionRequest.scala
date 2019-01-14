@@ -39,7 +39,7 @@ case class InterviewSessionAction(cache:SyncCacheApi, cc:ControllerComponents) e
         }
       }
     }.getOrElse{
-      Logger.warn("Request does not have a uuid" )
+      Logger.warn("Request does not have an interview uuid" )
       Future.successful( Redirect(routes.Application.index()) )
     }
   }

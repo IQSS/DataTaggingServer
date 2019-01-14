@@ -3,26 +3,16 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <!--[if lt IE 9]>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
     <title>@title</title>
 
-    <!-- Bootstrap -->
-    <!--link href="/assets/css/bootstrap-theme.min.css" rel="stylesheet"-->
-    <link href="/assets/css/font-awesome.min.css" rel="stylesheet">
-    <link href="/assets/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    <link href="@routes.Assets.at("/css/font-awesome.min.css")" rel="stylesheet">
+    <link href="@routes.Assets.at("/lib/bootstrap/css/bootstrap.min.css")" rel="stylesheet">
     <link rel="stylesheet" href="@routes.Assets.at("vnd/swal/sweetalert.css")">
     <link rel="stylesheet" href="@routes.Assets.at("css/main.min.css")">
 	  <link rel="stylesheet" href="@routes.Assets.at("css/tags.min.css")">
-    <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+    <link rel="icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
 	   @extraHead
     @*@comps.analytics()*@
   </head>
@@ -40,14 +30,14 @@
       <br>
       <br>
       <ul class="list-inline">
-        <li>PolicyModels/DataTags project: <a href="http://datatags.org">datatags.org</a>.<br>
+        <li class="list-inline-item">PolicyModels/DataTags project: <a href="http://datatags.org">datatags.org</a>.<br>
             &copy; 2017 by the President and Fellows of Harvard College.</li>
-        <li><a data-toggle="tooltip" data-placement="top" title="National Science Foundation" href="http://nsf.gov" target="_blank"><img src="/assets/images/nsf-logo-small.png" alt="NSF logo" /></a></li>
-        <li><a data-toggle="tooltip" data-placement="top" title="The Dataverse Project" href="http://thedata.org" target="_blank"><img src="/assets/images/dvn-logo-small.png" alt="Dataverse logo" /></a></li>
-        <li><a data-toggle="tooltip" data-placement="top" title="Data Privacy Lab, IQSS at Harvard University" href="http://dataprivacylab.org/" target="_blank"><img src="/assets/images/dpl-logo-small.png" alt="Data Privacy Lab logo" /></a></li>
+        <li class="list-inline-item"><a data-toggle="tooltip" data-placement="top" title="National Science Foundation" href="http://nsf.gov" target="_blank"><img src="/assets/images/nsf-logo-small.png" alt="NSF logo" /></a></li>
+        <li class="list-inline-item"><a data-toggle="tooltip" data-placement="top" title="The Dataverse Project" href="http://thedata.org" target="_blank"><img src="/assets/images/dvn-logo-small.png" alt="Dataverse logo" /></a></li>
+        <li class="list-inline-item"><a data-toggle="tooltip" data-placement="top" title="Data Privacy Lab, IQSS at Harvard University" href="http://dataprivacylab.org/" target="_blank"><img src="/assets/images/dpl-logo-small.png" alt="Data Privacy Lab logo" /></a></li>
         @*<li><a data-toggle="tooltip" data-placement="top" title="Berkman Center for Internet and Society at Harvard University" href="http://cyber.law.harvard.edu/" target="_blank"><img src="/assets/images/berkman-logo-small.png" alt="Berkman Center logo" /></a></li>*@
-        <li><a data-toggle="tooltip" data-placement="top" title="Privacy Tools for Sharing Research Data, at Harvard School of Engineering and Applied Sciences" href="http://privacytools.seas.harvard.edu" target="_blank"><img src="/assets/images/seas-logo-small.png" alt="Harvard SEAS logo" /></a></li>
-        <li><a data-toggle="tooltip" data-placement="top" title="The Institute for Quantitative Social Science at Harvard University" href="http://iq.harvard.edu" target="_blank"><img src="/assets/images/iqss-logo-small.png" alt="IQSS logo" /></a></li>
+        <li class="list-inline-item"><a data-toggle="tooltip" data-placement="top" title="Privacy Tools for Sharing Research Data, at Harvard School of Engineering and Applied Sciences" href="http://privacytools.seas.harvard.edu" target="_blank"><img src="/assets/images/seas-logo-small.png" alt="Harvard SEAS logo" /></a></li>
+        <li class="list-inline-item"><a data-toggle="tooltip" data-placement="top" title="The Institute for Quantitative Social Science at Harvard University" href="http://iq.harvard.edu" target="_blank"><img src="/assets/images/iqss-logo-small.png" alt="IQSS logo" /></a></li>
       </ul>
     </div>
   </footer>   
