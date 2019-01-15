@@ -40,9 +40,8 @@ LessKeys.compress in Assets := true
 
 includeFilter in (Assets, LessKeys.less) := "*.less"
 
-pipelineStages := Seq(rjs, uglify, digest, gzip)
+//pipelineStages := Seq(rjs, uglify, digest, gzip)
+pipelineStages := Seq(uglify, digest, gzip)
 
-// Prevent documentation creation.
-doc in Compile <<= target.map(_ / "none")
 
-javaOptions ++= Seq("--illegal-access=allow")
+//javaOptions ++= Seq("--illegal-access=allow")
