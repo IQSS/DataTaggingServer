@@ -9,37 +9,38 @@
 )(implicit req:Request[_])
 
 @templates.bsNavBar("Dataset Rejected", 'tag) {
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       @comps.rejectPanel(node, pmvKit, loc, answerHistory, pmvKit.dbData.commentingStatus != CommentingStatus.Closed)
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       <div class="card">
         <div class="card-header">
-          <h3 class="card-title">Answer History</h3>
+          Answer History
         </div>
         <div class="card-body">
-        @comps.answerHistory(answerHistory, pmvKit.id, false, pmvKit.serializer, loc)
+          @comps.answerHistory(answerHistory, pmvKit.id, false, pmvKit.serializer, loc)
         </div>
       </div>
     </div>
   </div>
 
-  @requestedInterview match {
-    case Some(reqInt) => {
-      <div class="mx-auto" style="text-align: center">
-        <p>@reqInt.returnButtonTitle</p>
-        <form action="@routes.RequestedInterviewCtrl.unacceptableDataset(reqInt.key, node.getReason)" method="POST">
-          <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
-        </form>
-      </div>
-    }
-    case None => {
-      <div class="col-md-2 offset-5">
-        <a href="@routes.InterviewCtrl.interviewIntro(pmvKit.id.modelId, pmvKit.id.version)" class="btn btn-primary">Start Again</a>
-      </div>
-    }
-  }
+  <div class="row my-2">
+    <div class="col text-center">
+
+      @requestedInterview match {
+        case Some(reqInt) => {
+          <p>@reqInt.returnButtonTitle</p>
+          <form action="@routes.RequestedInterviewCtrl.unacceptableDataset(reqInt.key, node.getReason)" method="POST">
+            <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
+          </form>
+        }
+        case None => {
+          <a href="@routes.InterviewCtrl.interviewIntro(pmvKit.id.modelId, pmvKit.id.version)" class="btn btn-primary">Start Again</a>
+        }
+      }
+    </div>
+  </div>
 }

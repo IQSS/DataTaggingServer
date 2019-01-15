@@ -16,7 +16,7 @@
 
 @templates.bsNavBar( "Question", 'tag, scripts) {
   <div class="row">
-    <div class="col-md-12">
+    <div class="col">
       <a href="@routes.InterviewCtrl.startInterview(pmvKit.id.modelId, pmvKit.id.version, loc.map(_.getLanguage))">
         <i class="fa fa-arrow-left"></i> Intro
       </a>
@@ -24,17 +24,17 @@
     </div>
   </div>
   <div class="row">
-  <div class="col-md-12">
-   @comps.questionPanel(
-     questionNode, pmvKit, loc, answerHistory, pmvKit.dbData.commentingStatus != CommentingStatus.Closed, interactive=true
-   )
+    <div class="col">
+     @comps.questionPanel(
+       questionNode, pmvKit, loc, answerHistory, pmvKit.dbData.commentingStatus != CommentingStatus.Closed, interactive=true, showId = false
+     )
+    </div>
   </div>
-</div>
 <div class="row">
-  <div class="col-md-6">
-      <div class="card">
-          <div class="card-header">
-              <h3 class="card-title">Answer Feed</h3>
+  <div class="col-md">
+      <div class="card m-2">
+          <div class="card-header bg-info text-white">
+              Answer Feed
           </div>
           <div class="card-body">
               @if( answerHistory.nonEmpty ) {
@@ -47,10 +47,10 @@
           </div>
       </div>
   </div>
-  <div class="col-md-6">
-      <div class="card">
-          <div class="card-header">
-              <h3 class="card-title">Current Tags</h3>
+  <div class="col-md">
+      <div class="card m-2">
+          <div class="card-header bg-info text-white">
+              Current Tags
           </div>
           <div class="card-body">
               <ul class="list-unstyled">
@@ -67,11 +67,11 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-md-12">
-      <div class="card">
-          <div class="card-header">
-              <h3 class="card-title">Engine Trace</h3>
-              <small>Useful for debugging the interview</small>
+  <div class="col">
+      <div class="card m-2">
+          <div class="card-header text-muted">
+              Engine Trace
+              <small>Useful for debugging an interview, but not very useful otherwise</small>
           </div>
           <div class="card-body">
               <div class="engine-trace-container">

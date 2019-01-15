@@ -4,7 +4,7 @@ body {
 }
 
 h1, h2, h3 {
-  color: @dataTagsBlue;
+  //background-color: @dataTagsBlue;
   text-shadow: 0 1px 1px rgba(0,0,0,0.25);
 }
 
@@ -18,6 +18,18 @@ h1, h2, h3 {
 
 .page-header {
   text-align: center;
+}
+
+.startButtonsCtnr {
+  text-align: center;
+  padding: @borderRadiusStd;
+  border-radius: @borderRadiusStd;
+  background-color: rgba(0,0,0,.1);
+  box-shadow: 0 4px 8px rgba(0,0,0,.5) inset;
+
+  .btn {
+    box-shadow: 0 4px 8px rgba(0,0,0,.5);
+  }
 }
 
 // Adjustments for HTML coming from rendered markdown
@@ -318,21 +330,8 @@ footer {
 
 .allQuestions {
 
-  .question {
-    position: relative;
-
-    code {
-      position: absolute;
-      right: 3em;
-      top: -.5em;
-      width: auto;
-      height: auto;
-      border: 1px solid #555;
-      padding: .5em;
-    }
-  }
-
   .section {
+    border-radius: 0.5em;
     border: rgba(0,0,0,.5);
     background-color: rgba(0,0,0,.1);
     padding: 1em;
@@ -450,7 +449,6 @@ div.help {
 
   .commentFormDiv {
     position: absolute;
-    top: 1.25em;
     right: 0;
     width: 300px;
     height: auto;

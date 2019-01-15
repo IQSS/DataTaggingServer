@@ -4,8 +4,8 @@
   <script type="text/javascript" src="@routes.Assets.at("js/InterviewIntro.js")"></script>
 }
 @templates.bsNavBar("Interview Start Page", 'tag, scripts) {
-  <div class="row">
-    <div class="col-md-8 offset-2">
+  <div class="row my-2">
+    <div class="col">
       <a href="@routes.Application.showVersionedPolicyModel(qKit.id.modelId)"><i class="fa fa-list"></i> Model Versions</a>
       <h3>
         @qKit.model.getMetadata.getTitle
@@ -16,43 +16,36 @@
     </div>
   </div>
   @for( iwm <- interviewWelcomeMessage ) {
-    <div class="row">
-      <div class="col-md-8 offset-2">
+    <div class="row my-2">
+      <div class="col">
         <div class="requestedInterview-welcomeMessage">
           @iwm
         </div>
       </div>
     </div>
   }
-  <div class="row">
-    <div class="col-md-8 offset-2">
+  <div class="row my-2">
+    <div class="col">
       @if( qKit.canRun ) {
-        <div class="well well-lg">
-          <div class="text-center">
-            <div class="row">
-              <div class="col-12">
-
-                @if( qKit.model.getLocalizations.size>2 ) {
-                  <ul class="localizations">
-                  @for( locName <- qKit.model.getLocalizations ) {
-                    <li>
-                      <a href="@routes.InterviewCtrl.startInterview(qKit.id.modelId, qKit.id.version, Some(locName))"
-                    class="btn btn-primary">Begin Questionnaire (@locName)</a>
-                    </li>
-                  }
-                  </ul>
-                } else if(qKit.model.getLocalizations.size>1 ) {
-                  @for( locName <- qKit.model.getLocalizations ) {
-                    <a href="@routes.InterviewCtrl.startInterview(qKit.id.modelId, qKit.id.version, Some(locName))"
-                     class="btn btn-primary btn-lg">Begin Questionnaire (@locName)</a>
-                  }
-                } else {
-                  <a href="@routes.InterviewCtrl.startInterview(qKit.id.modelId, qKit.id.version)"
-                  class="btn btn-primary btn-lg">Begin Questionnaire</a>
-                }
-              </div>
-            </div>
-          </div>
+        <div class="startButtonsCtnr">
+          @if( qKit.model.getLocalizations.size>2 ) {
+            <ul class="localizations">
+            @for( locName <- qKit.model.getLocalizations ) {
+              <li>
+                <a href="@routes.InterviewCtrl.startInterview(qKit.id.modelId, qKit.id.version, Some(locName))"
+              class="btn btn-primary">Begin Questionnaire (@locName)</a>
+              </li>
+            }
+            </ul>
+          } else if(qKit.model.getLocalizations.size>1 ) {
+            @for( locName <- qKit.model.getLocalizations ) {
+              <a href="@routes.InterviewCtrl.startInterview(qKit.id.modelId, qKit.id.version, Some(locName))"
+               class="btn btn-primary btn-lg">Begin Questionnaire (@locName)</a>
+            }
+          } else {
+            <a href="@routes.InterviewCtrl.startInterview(qKit.id.modelId, qKit.id.version)"
+            class="btn btn-primary btn-lg">Begin Questionnaire</a>
+          }
         </div>
       }else{
         <div class="alert alert-danger">
@@ -66,7 +59,7 @@
         </ul>
       }
 
-      <h3>Questionnaire Overviews</h3>
+      <h3 class="my-2">Questionnaire Overviews</h3>
       @defining( qKit.availableVisualizations() ) { avz =>
         <div class="row">
           @if( avz.hasData){
@@ -108,10 +101,10 @@
           }
         </div>
       }
-      <h3>Metadata</h3>
+      <h3 class="my-2">Metadata</h3>
       @comps.modelVersionMetadataTable(qKit.model.getMetadata)
 
-      <h3>
+      <h3 class="my-2">
         @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
         <div class="float-right">
           @comps.comments("cmnt", qKit.dbData.parentId, qKit.dbData.version, None, "meta", "policy-space")

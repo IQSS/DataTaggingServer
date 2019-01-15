@@ -14,67 +14,66 @@
 }
 
 @templates.bsNavBar("Dataset Accepted", 'ask, scripts) {
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       @*<div class="alert alert-warning" role="alert">*@
-        @*<strong>This is a demonstration of the DataTags framework, and the tags on this page are provided for informational purposes only.</strong>*@
-          @*If you seek to share a dataset containing confidential information, you should consult the institutional review board of your organization.*@
+      @*<strong>This is a demonstration of the DataTags framework, and the tags on this page are provided for informational purposes only.</strong>*@
+      @*If you seek to share a dataset containing confidential information, you should consult the institutional review board of your organization.*@
       @*</div>*@
       <div class="card">
-          <div class="card-header">
-              <h3 class="card-title">Interview Completed - Final Results</h3>
-          </div>
-          <div class="card-body">
-              <div class="text-center">
-                  @for( tag <- codeTag ) {
-                      <span class="lead">Your dataset is tagged as</span>
-                      @defining(tag.asInstanceOf[AtomicValue]) { value =>
-                          @if( value.getNote==null ) {
-                              <div class="tag tag-@value.getName.toLowerCase()">@value.getName</div>
-                          } else {
-                              <div class="tag tag-@value.getName.toLowerCase()">@value.getName.capitalize </div><div class="tag-info">@value.getNote</div>
-                          }
-                      }
-                  }
-              </div>
-              <!-- <h3>Full Tags</h3> -->
-              @comps.tagValue(dataTags, loc)
+        <div class="card-header bg-success text-white">
+          Interview Completed - Final Results
+        </div>
+        <div class="card-body">
+          @for(tag <- codeTag) {
+            <div class="text-center">
+              <span class="lead">Your dataset is tagged as</span>
+              @defining(tag.asInstanceOf[AtomicValue]) { value =>
+                @if(value.getNote == null) {
+                  <div class="tag tag-@value.getName.toLowerCase()">@value.getName</div>
+                } else {
+                  <div class="tag tag-@value.getName.toLowerCase()">@value.getName.capitalize </div>
+                  <div class="tag-info">@value.getNote</div>
+                }
+              }
+            </div>
+          }
+          @comps.tagValue(dataTags, loc)
 
-              <div class="text-right">
-                <br />
-                <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
-                  <i class="fa fa-download"></i>&nbsp;Download Policy as JSON
-                </a>
-              </div>
+          <div class="text-center mt-2">
+            <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
+              <i class="fa fa-download"></i>&nbsp;Download Policy as JSON
+            </a>
           </div>
+        </div>
       </div>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Answer History</h3>
-          </div>
-          <div class="card-body">
-            @comps.answerHistory(answerHistory, qKit.id, false, qKit.serializer, loc)
-          </div>
-  </div></div></div>
-  @requestedInterview match {
-      case Some(reqInt) => {
-          <div class="mx-auto" style="text-align: center">
-            <p>@reqInt.returnButtonTitle</p>
-              <form action="@routes.RequestedInterviewCtrl.postBackTo(reqInt.key)" method="POST">
-                <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
-              </form>
-          </div>
+  <div class="row my-2">
+    <div class="col">
+      <div class="card">
+        <div class="card-header bg-info text-white">
+          Answer History
+        </div>
+        <div class="card-body">
+        @comps.answerHistory(answerHistory, qKit.id, false, qKit.serializer, loc)
+        </div>
+      </div></div></div>
+  <div class="row my-2">
+    <div class="col text-center">
+      @requestedInterview match {
+        case Some(reqInt) => {
+          <p>@reqInt.returnButtonTitle</p>
+          <form action="@routes.RequestedInterviewCtrl.postBackTo(reqInt.key)" method="POST">
+            <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
+          </form>
+        }
+        case None => {
+          <a href="@routes.InterviewCtrl.interviewIntro(qKit.id.modelId, qKit.id.version)" class="btn btn-primary">Start Again</a>
+        }
       }
-      case None => {
-          <div class="mx-auto" style="text-align: center">
-            <a href="@routes.InterviewCtrl.interviewIntro(qKit.id.modelId, qKit.id.version)" class="btn btn-primary">Start Again</a>
-          </div>
-      }
-    }
+    </div>
+  </div>
 }
 
 

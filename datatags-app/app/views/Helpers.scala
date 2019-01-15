@@ -47,6 +47,15 @@ object Helpers {
   
   def hasContent( so:Option[String]) = so.nonEmpty && so.get.trim.nonEmpty
   
+  def askNodeToMarkdown(n:AskNode) = {
+    import scala.collection.JavaConversions._
+    if ( n.getTermNames.isEmpty ) n.getText
+    else {
+      (Seq(n.getText, "##### Terms") ++
+        n.getTermOrder.toSeq.map( term => "* " + "*"+term+"*: " + n.getTermText(term))).mkString("\n\n")
+    }
+  }
+  
   def render(markupString: MarkupString):Html = {
     markupString.getFormat match {
       case MarkupFormat.Markdown => renderMarkdown(markupString.getContent)
