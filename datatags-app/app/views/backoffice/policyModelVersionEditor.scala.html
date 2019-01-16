@@ -8,18 +8,18 @@
 
 @templates.backend("Versioned Policy Model Editor", 'backOffice, scripts ) {
 
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       <h3>Policy Model Version Editor</h3>
-      <div class="form-text text-muted">
+      <small class="form-text text-muted">
         Use this page to @if(versionNumber.isDefined){edit}else{create} a single version of policy model.
-      </div>
+      </small>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       <form enctype="multipart/form-data" action="@versionNumber.map(n=>routes.PolicyKitManagementCtrl.doSaveVersion(modelId, n)).getOrElse(routes.PolicyKitManagementCtrl.doSaveNewVersion(modelId))" method="POST">
-        <div class="form-group">
+        <div class="form-group row">
           <label for="publicationStatusSelect" class="col-sm-2 col-form-label">Who can view</label>
           <div class="col-sm-10">
             <select class="form-control" name="publicationStatus" id="publicationStatusSelect">
@@ -27,13 +27,13 @@
                 <option value="@v.toString" @if(form("publicationStatus").value.get==v.toString){selected}>@Helpers.publicationStatus2Str(v)</option>
               }
             </select>
-            <span class="helper-block">
+            <small class="form-text text-muted">
               The model's publication status decides which users can view it: Logged in users, those who have a special link, or everyone.
-            </span>
+            </small>
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group row">
           <label for="commentingStatusSelect" class="col-sm-2 col-form-label">Who can comment</label>
           <div class="col-sm-10">
             <select class="form-control" name="commentingStatus" id="commentingStatusSelect">
@@ -41,38 +41,36 @@
               <option value="@v.toString" @if(form("commentingStatus").value.get==v.toString){selected}>@Helpers.commentingStatus2Str(v)</option>
             }
             </select>
-            <span class="helper-block">
+            <small class="form-text text-muted">
               The model's commenting status decides which users can comment on it: Logged in users, those who have a special link, or no users.
-            </span>
+            </small>
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group row">
           <label for="zippedModel" class="col-sm-2 col-form-label">File</label>
           <div class="col-sm-10">
             <input type="file" name="zippedModel" id="zippedModel">
-            <span class="helper-block">
+            <small class="form-text text-muted">
               This file should be a .zip archive containing a policy model directory. <em>This field is mandatory.</em>
-            </span>
+            </small>
           </div>
         </div>
 
-        <div class="form-group">
+        <div class="form-group row">
           <label for="noteInput" class="col-sm-2 col-form-label">Note</label>
           <div class="col-sm-10">
             <textarea id="noteInput" name="note" class="form-control" rows="5">@form("note").value.getOrElse("")</textarea>
           </div>
         </div>
 
-        <div class="form-group">
-          <div class="col-md-12 text-right">
+        <div class="form-group row">
+          <div class="col text-right">
             <hr>
             <a href="@routes.PolicyKitManagementCtrl.showVpmPage(modelId)" class="btn btn-secondary">Cancel</a>
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </div>
-
-
       </form>
     </div>
   </div>

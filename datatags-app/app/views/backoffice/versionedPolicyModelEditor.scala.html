@@ -7,19 +7,20 @@
 
 @templates.backend("Versioned Policy Model Editor", 'backOffice, scripts ) {
 
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       <h3>Versioned Policy Model Editor</h3>
       <div class="form-text text-muted">
         Use this page to create and edit <em>versioned policy models (VPMs)</em>. VPMs serve as a container with a fixed URL for different versions of a policy model.
       </div>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       <form action="@if(isNew){@routes.PolicyKitManagementCtrl.doSaveNewVpm}else{@routes.PolicyKitManagementCtrl.doSaveVpm(form("id").value.get)}" method="POST">
         <input type="hidden" name="shouldBeNew" value="@form("shouldBeNew").value.getOrElse("0")">
-        <div class="form-group @Helpers.fieldStatus(form("id"))">
+
+        <div class="form-group row @Helpers.fieldStatus(form("id"))">
           <label for="idInput" class="col-sm-2 col-form-label">Id</label>
           <div class="col-sm-10">
             <input type="text" class="form-control" id="idInput" name="id" value="@form("id").value.getOrElse("")"
@@ -29,14 +30,14 @@
                 @form("id").errors.map(e=>if(e.message=="error.minLength") "Field cannot be empty" else e.message).mkString("<br>")
               </div>
             }
-            <span class="helper-block">
+            <small class="form-text text-muted">
               The VPM's id will be part of its URL: <code>server/models/<b>id</b>/version</code>. Thus, it must be unique,
                 and cannot contain spaces or special characters, only letters, numbers and the characters "-_.". It cannot be empty, either.
-            </span>
+            </small>
           </div>
         </div>
 
-        <div class="form-group @Helpers.fieldStatus(form("title"))">
+        <div class="form-group row @Helpers.fieldStatus(form("title"))">
           <label for="titleInput" class="col-sm-2 col-form-label">Title</label>
           <div class="col-sm-10">
             <input type="text" name="title" class="form-control" id="titleInput" value="@form("title").value.getOrElse("")" placeholder="Title">
@@ -48,15 +49,15 @@
           </div>
         </div>
 
-        <div class="form-group @Helpers.fieldStatus(form("note"))">
+        <div class="form-group row @Helpers.fieldStatus(form("note"))">
           <label for="noteInput" class="col-sm-2 col-form-label">Note</label>
           <div class="col-sm-10">
             <textarea id="noteInput" name="note" class="form-control" rows="5">@form("note").value.getOrElse("")</textarea>
           </div>
         </div>
 
-        <div class="form-group">
-          <div class="col-md-12 text-right">
+        <div class="form-group row">
+          <div class="col text-right">
             <hr>
             @if( ! isNew ) {
               <div class="float-left">

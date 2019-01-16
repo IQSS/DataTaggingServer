@@ -78,7 +78,7 @@
     <div class="col-md-6">
       <strong>Note</strong>
       @if( Helpers.hasContent(pmv.note) ) {
-        <div class="well">@pmv.note</div>
+        <div class="card bg-info border-info"><div class="card-body">@pmv.note</div></div>
       } else {
         <div class="noData">This version has no note.</div>
       }
@@ -86,8 +86,8 @@
   </div>
 
   @for( kit <- kitOpt ) {
-    <div class="row">
-      <div class="col-md-12">
+    <div class="row my-2">
+      <div class="col">
         <h4>Model Data</h4>
         <div class="help">
         This part shows data about the policy model itself. It cannot be edited in this site; a new model .zip file has to be uploaded
@@ -96,7 +96,7 @@
       </div>
     </div>
 
-    <div class="row">
+    <div class="row my-2">
       <div class="col-md-6">
         <h5>Metadata</h5>
         @if( kit.model!=null ) {
@@ -112,8 +112,8 @@
     </div>
   }
 
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       @defining( comments.count(!_.resolved)) { unresolved =>
         <h4>Comments @if(unresolved>0){<span class="badge">@unresolved</span>}</h4>
       }

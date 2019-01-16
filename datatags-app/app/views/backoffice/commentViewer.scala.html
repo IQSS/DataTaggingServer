@@ -5,8 +5,8 @@
 @(cmt:Comment, qKit:PolicyModelVersionKit, locOpt:Option[Localization], readmeOpt:Option[MarkupString])
 
 @templates.backend("Version Viewer", 'backOffice ) {
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       <a href="@routes.PolicyKitManagementCtrl.showVersionPage(qKit.id.modelId, qKit.id.version)">
         <i class="fa fa-arrow-left"></i> @{Option(qKit.model).map(_.getMetadata.getTitle ).getOrElse(qKit.id.modelId + "/" + qKit.id.version)}
       </a>
@@ -33,8 +33,8 @@
     </div>
   </div>
 
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       <h4>Comment Context</h4>
       <div class="commentSubjectCtnr">
         @if(cmt.targetType.trim == "meta"){

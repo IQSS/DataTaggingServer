@@ -1,23 +1,15 @@
 @(form:Form[UserFormData], destination:Call, isNew:Boolean, isInvite:Boolean, activeFirst:Boolean=true)
 
-@*@scripts = {*@
-  @*<script >*@
-          @*$(document).ready( function(){*@
-            @*$("#uuid").val(window.location.href.split("/")[window.location.href.split("/").length - 1])*@
-          @*} );*@
-  @*</script>*@
-@*}*@
-
 @content = {
   <div class="container">
-    <div class="row">
-      <div class="col-md-12">
+    <div class="row my-2">
+      <div class="col">
         <h1>User Profile Editor</h1>
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-12">
+    <div class="row my-2">
+      <div class="col">
         <ul class="nav nav-tabs">
           @if(activeFirst) {
             <li class="nav-item tab-pane active"><a class="nav-link" data-toggle="tab" href="#userEditor">Edit User</a></li>
@@ -38,11 +30,7 @@
         </ul>
 
         <div class="tab-content">
-          @if(activeFirst){
-            <div class="tab-pane active" id="userEditor">
-          }else{
-            <div class="tab-pane" id="userEditor">
-          }
+            <div class="tab-pane mt-2 @if(activeFirst){active}" id="userEditor">
               <form class="mt-1" action="@destination.url" method="POST">
               @if( form.hasGlobalErrors ){
                 <ul>
@@ -56,7 +44,7 @@
                 @form("uuid").errors.map(Helpers.messageToEng).mkString("<br>")
                 </div>
               }
-              <div class="form-group @Helpers.fieldStatus(form("username"))">
+              <div class="form-group row Helpers.fieldStatus(form("username"))">
                 <label for="idInput" class="col-sm-2 col-form-label">Username</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="usernameInput" name="username" value="@form("username").value.getOrElse("")"
@@ -70,7 +58,7 @@
               </div>
 
               @if(isNew){
-                <div class="form-group @Helpers.fieldStatus(form("password1"))">
+                <div class="form-group row @Helpers.fieldStatus(form("password1"))">
                   <label for="password1Input" class="col-sm-2 col-form-label">Password</label>
                   <div class="col-sm-10">
                     <input type="password" class="form-control" id="password1Input" name="password1" value="@form("password1").value.getOrElse("")"
@@ -82,7 +70,7 @@
                     }
                   </div>
                 </div>
-                <div class="form-group @Helpers.fieldStatus(form("password2"))">
+                <div class="form-group row @Helpers.fieldStatus(form("password2"))">
                   <label for="password2Input" class="col-sm-2 col-form-label">Password (again)</label>
                   <div class="col-sm-10">
                     <input type="password" class="form-control" id="password2Input" name="password2" value="@form("password2").value.getOrElse("")"
@@ -96,7 +84,7 @@
                 </div>
               }
 
-              <div class="form-group @Helpers.fieldStatus(form("name"))">
+              <div class="form-group row @Helpers.fieldStatus(form("name"))">
                 <label for="nameInput" class="col-sm-2 col-form-label">Name</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="nameInput" name="name" value="@form("name").value.getOrElse("")" placeholder="Human name">
@@ -108,7 +96,7 @@
                 </div>
               </div>
 
-              <div class="form-group @Helpers.fieldStatus(form("email"))">
+              <div class="form-group row @Helpers.fieldStatus(form("email"))">
                 <label for="emailInput" class="col-sm-2 col-form-label">Email Address</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="emailInput" name="email" value="@form("email").value.getOrElse("")"
@@ -124,7 +112,7 @@
                 </div>
               </div>
 
-              <div class="form-group @Helpers.fieldStatus(form("orcid"))">
+              <div class="form-group row @Helpers.fieldStatus(form("orcid"))">
                 <label for="orcidInput" class="col-sm-2 col-form-label">ORCiD</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="orcidInput" name="orcid" value="@form("orcid").value.getOrElse("")"
@@ -137,7 +125,7 @@
                 </div>
               </div>
 
-              <div class="form-group @Helpers.fieldStatus(form("url"))">
+              <div class="form-group row @Helpers.fieldStatus(form("url"))">
                 <label for="urlInput" class="col-sm-2 col-form-label">Website</label>
                 <div class="col-sm-10">
                   <input type="text" class="form-control" id="urlInput" name="url" value="@form("url").value.getOrElse("")"
@@ -150,8 +138,8 @@
                 </div>
               </div>
 
-              <div class="form-group">
-                <div class="col-md-12 text-right">
+              <div class="form-group row">
+                <div class="col text-right">
                   <hr>
                   <a href="/" class="btn btn-secondary">Cancel</a>
                   <button type="submit" class="btn btn-primary">Save</button>
@@ -161,18 +149,14 @@
             </form>
           </div>
 
-          @if(activeFirst){
-            <div class="tab-pane" id="changePassword">
-            }else{
-            <div class="tab-pane active" id="changePassword">
-            }
-            <div class="col-md-12 mt-1">
+          <div class="tab-pane mt-2 @if(!activeFirst){active}" id="changePassword">
+            <div class="col mt-2">
               <form action="@routes.UsersCtrl.doChangePassword()" method="POST">
-                <div class="form-group">
-                  <label for="password1Input" class="col-sm-2 col-form-label">Previous Password</label>
-                  <div class="col-sm-10">
+                <div class="form-group row">
+                  <label for="password1Input" class="col-sm-3 col-form-label">Previous Password</label>
+                  <div class="col-sm-9">
                     <input type="password" class="form-control" id="previousPassword" name="previousPassword" value=""
-                    placeholder="Password">
+                    placeholder="Previous Password">
                     @if(form("previousPassword").hasErrors){
                       <div class="errors">
                       @form("previousPassword").errors.map(Helpers.messageToEng).mkString("<br>")
@@ -180,11 +164,11 @@
                     }
                   </div>
                 </div>
-                <div class="form-group">
-                  <label for="password1Input" class="col-sm-2 col-form-label">New Password</label>
-                  <div class="col-sm-10">
+                <div class="form-group row">
+                  <label for="password1Input" class="col-sm-3 col-form-label">New Password</label>
+                  <div class="col-sm-9">
                     <input type="password" class="form-control" id="password1Input" name="password1" value=""
-                    placeholder="Password">
+                    placeholder="New Password">
                     @if(form("password1").hasErrors){
                       <div class="errors">
                       @form("password1").errors.map(Helpers.messageToEng).mkString("<br>")
@@ -192,11 +176,11 @@
                     }
                   </div>
                 </div>
-                <div class="form-group">
-                  <label for="password2Input" class="col-sm-2 col-form-label">New Password (again)</label>
-                  <div class="col-sm-10">
+                <div class="form-group row">
+                  <label for="password2Input" class="col-sm-3 col-form-label">New Password (again)</label>
+                  <div class="col-sm-9">
                     <input type="password" class="form-control" id="password2Input" name="password2" value=""
-                    placeholder="Password">
+                    placeholder="New Password (again)">
                     @if(form("password2").hasErrors){
                       <div class="errors">
                       @form("password2").errors.map(Helpers.messageToEng).mkString("<br>")
@@ -205,12 +189,10 @@
                   </div>
                 </div>
 
-                <div class="form-group">
-                  <div class="col-md-8">
-                    <div class="text-right">
-                      <a class="btn btn-secondary" href="/">Cancel</a>
-                      <button type="submit" class="btn btn-primary"><i class="fa fa-send"></i> change</button>
-                    </div>
+                <div class="form-group row">
+                  <div class="col text-right">
+                    <a class="btn btn-secondary" href="/">Cancel</a>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-send"></i> change</button>
                   </div>
                 </div>
               </form>

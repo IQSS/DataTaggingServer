@@ -1,16 +1,16 @@
 @(user:User, recentComments:Seq[CommentDN])
 
 @templates.backend("Manage PolicyModels Server", 'index){
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-2">
+    <div class="col">
       <h3>Hello, @user.name!</h3>
       <p>
         This is the management console for the PolicyModels Server.
       </p>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-6">
+  <div class="row my-2">
+    <div class="col-md-8">
       <h3>Recent Comments</h3>
       @if( recentComments.isEmpty ) {
         <div class="noData">No Comments</div>
@@ -40,7 +40,7 @@
         </table>
       }
     </div>
-    <div class="col-md-6">
+    <div class="col-md-4">
       <h3>Common Actions</h3>
       <a href="@routes.PolicyKitManagementCtrl.showVpmList()" class="btn btn-secondary btn-block">
         Manage PolicyModels

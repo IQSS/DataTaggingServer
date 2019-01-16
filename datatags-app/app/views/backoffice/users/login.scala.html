@@ -12,50 +12,43 @@
   <meta name="robots" content="noindex, nofollow">
 }
 
-@templates.bsBase("Log in", scripts, extraHead ){
-
-}{
-  <div class="row">
-    <div class="col-md-12">
-      <h1>Log In</h1>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-8 offset-2">
-      <form action="@routes.UsersCtrl.doLogin" method="POST">
-        @for( m <- message ){
-          <div class="form-group has-danger">
-            <div class="alert alert-danger">@m</div>
-          </div>
-        }
-        <div class="form-group">
-          <label for="idInput" class="col-sm-2 col-form-label">Username</label>
-          <div class="col-sm-10">
-            <input type="text" class="form-control" id="usernameInput" name="username" value="@username.getOrElse("")" placeholder="username">
-          </div>
+@templates.bsBase("Log in", scripts, extraHead )(Html("")){
+<form action="@routes.UsersCtrl.doLogin" method="POST">
+  <div class="row my-5">
+    <div class="col">
+      <div class="card mx-auto border-primary" style="width: 36rem">
+        <div class="card-header bg-primary text-light">
+          Log In to PolicyModels Server
         </div>
+        <div class="card-body">
+            @for( m <- message ){
+              <div class="form-group has-danger">
+                <div class="alert alert-danger">@m</div>
+              </div>
+            }
+            <div class="form-group">
+              <label for="idInput">Username</label>
+              <input type="text" class="form-control" id="usernameInput" name="username" value="@username.getOrElse("")" placeholder="username">
+            </div>
 
-        <div class="form-group">
-          <label for="passwordInput" class="col-sm-2 col-form-label">Password</label>
-          <div class="col-sm-10">
-            <input type="password" class="form-control" id="passwordInput" name="password" value="" placeholder="password">
-          </div>
+            <div class="form-group">
+              <label for="passwordInput">Password</label>
+              <input type="password" class="form-control" id="passwordInput" name="password" value="" placeholder="password">
+            </div>
         </div>
-
-        <div class="form-group">
-          <div class="col-md-4">
-            <a href="/admin/forgotPassword">forgot password?</a>
-          </div>
-          <div class="col-md-8">
-            <div class="text-right">
+        <div class="card-footer">
+          <div class="d-flex">
+            <div>
+              <a class="btn btn-outline-secondary" href="@routes.UsersCtrl.showForgotPassword">forgot password?</a>
+            </div>
+            <div class="flex-grow-1 text-right">
               <a class="btn btn-secondary" href="/">Cancel</a>
               <button type="submit" class="btn btn-primary"><i class="fa fa-sign-in"></i> Log In</button>
             </div>
           </div>
         </div>
-
-      </form>
-
+      </div>
     </div>
   </div>
+</form>
 }

@@ -9,13 +9,13 @@
 }
 
 @templates.bsBase("Reset Password", scripts)(Html("")){
-    <div class="row">
-        <div class="col-md-12">
+    <div class="row my-2">
+        <div class="col">
             <h1>Password Reset</h1>
         </div>
     </div>
-    <div class="row">
-        <div class="col-md-12">
+    <div class="row my-2">
+        <div class="col">
             <form action="@routes.UsersCtrl.doResetPassword()" method="POST">
                 @for( m <- message ){
                     <div class="form-group has-danger">
