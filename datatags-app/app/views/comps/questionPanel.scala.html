@@ -1,7 +1,7 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 @(questionNode:AskNode, pmvKit:PolicyModelVersionKit, loc:Option[Localization],
-        answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean)
+        answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, note:Option[String])
 
 <div class="card m-2 border-secondary">
   <div class="card-header bg-secondary text-white d-flex">
@@ -26,15 +26,21 @@
   </div>
   <div class="card-footer text-center">
   @helper.form( action=routes.InterviewCtrl.answer(pmvKit.id.modelId, pmvKit.id.version, questionNode.getId), 'id->"answerForm" ) {
-    @for( ans <- questionNode.getAnswers ) {
-      <button type="button" class="btn btn-primary" @if(interactive){
-      onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{disabled} >
-      @loc.map( l=>l.localizeAnswer(ans.getAnswerText)).getOrElse(Helpers.makeUpper(ans.getAnswerText))</button>
+      @if(note.nonEmpty) {<div id="noteDiv"> } else {<div id="noteDiv" style="display: none">}
+        <textarea id="note" name="note" class="form-control" rows="2">@note.getOrElse("")</textarea>
+      </div>
+      <div class="pull-left">
+        <button type="button" class="btn btn-secondary" onclick="$('#noteDiv').slideToggle()">Add note</button>
+      </div>
+      @for( ans <- questionNode.getAnswers ) {
+        <button type="button" class="btn btn-primary" @if(interactive){
+        onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{disabled} >
+        @loc.map( l=>l.localizeAnswer(ans.getAnswerText)).getOrElse(Helpers.makeUpper(ans.getAnswerText))</button>
+      }
+      @if( interactive ) {
+        <input type="hidden" name="answerText" id="answerText" value="" />
+        <input type="hidden" name="serializedHistory" id="serializedHistory" value="@pmvKit.serializer.encode(answerHistory)"/>
+      }
     }
-    @if( interactive ) {
-      <input type="hidden" name="answerText" id="answerText" value="" />
-      <input type="hidden" name="serializedHistory" id="serializedHistory" value="@pmvKit.serializer.encode(answerHistory)"/>
-    }
-  }
   </div>
 </div>

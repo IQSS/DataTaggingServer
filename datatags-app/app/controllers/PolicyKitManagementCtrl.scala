@@ -19,10 +19,10 @@ import play.api.mvc.{ControllerComponents, InjectedController}
 import scala.concurrent.Future
 
 
-case class VpmFormData( id:String, title:String, note:String) {
-  def this( vpm:VersionedPolicyModel ) = this(vpm.id, vpm.title, vpm.note)
+case class VpmFormData( id:String, title:String, note:String, saveStat:Boolean) {
+  def this( vpm:VersionedPolicyModel ) = this(vpm.id, vpm.title, vpm.note, vpm.saveStat)
   
-  def toVersionedPolicyModel = VersionedPolicyModel(id, title, new Timestamp(System.currentTimeMillis()), note)
+  def toVersionedPolicyModel = VersionedPolicyModel(id, title, new Timestamp(System.currentTimeMillis()), note, saveStat)
   
 }
 
@@ -53,7 +53,8 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
                   .verifying( "Illegal characters found. Use letters, numbers, and -_. only.",
                     s=>s.isEmpty || validModelId.findFirstIn(s).isDefined),
       "title" -> nonEmptyText,
-      "note" -> text
+      "note" -> text,
+      "saveStat" -> boolean
     )(VpmFormData.apply)(VpmFormData.unapply)
   )
   

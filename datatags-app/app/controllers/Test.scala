@@ -38,7 +38,7 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models
   }
   
   def addVersionedModel( name:String ) = Action.async{ req =>
-    models.add( new VersionedPolicyModel(name, "model named '"+name+"'", null, "") )
+    models.add( new VersionedPolicyModel(name, "model named '"+name+"'", null, "", false) )
       .map( mdl => Ok("Added model " + mdl.id) )
   }
   

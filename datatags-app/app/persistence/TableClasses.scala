@@ -4,6 +4,7 @@ import models._
 import slick.lifted.Tag
 import slick.jdbc.PostgresProfile.api._
 import java.sql.Timestamp
+import java.util.UUID
 /*
  * Table classes for Slick live in this file.
  */
@@ -30,8 +31,9 @@ class VersionedPolicyModelTable(tag:Tag) extends Table[VersionedPolicyModel](tag
   def title = column[String]("title")
   def note = column[String]("note")
   def created = column[Timestamp]("created")
-  
-  def * = (id, title, created, note) <> (VersionedPolicyModel.tupled, VersionedPolicyModel.unapply)
+  def saveStat = column[Boolean]("save_stat")
+
+  def * = (id, title, created, note, saveStat) <> (VersionedPolicyModel.tupled, VersionedPolicyModel.unapply)
 }
 
 class PolicyModelVersionTable(tag:Tag) extends Table[PolicyModelVersion](tag, "policy_model_versions") {
@@ -108,3 +110,41 @@ class UuidForForgotPasswordTable(tag:Tag) extends Table[UuidForForgotPassword](t
   def * = (username, uuid, reset_password_date) <> (UuidForForgotPassword.tupled, UuidForForgotPassword.unapply)
 }
 
+class InterviewHistoryTable(tag:Tag) extends Table[InterviewHistory](tag, "interview_history"){
+  def key         = column[UUID]("key", O.PrimaryKey)
+  def modelId     = column[String]("model_id")
+  def versionNum  = column[Int]("version_num")
+  def loc         = column[String]("loc")
+  def path        = column[String]("path")
+  def agent       = column[String]("agent")
+
+  def fk_version = foreignKey("interview_history_version_num_fkey", versionNum, TableClasses.policyModelVersions)(_.version)
+  def fk_model = foreignKey("interview_history_model_fkey", modelId, TableClasses.policyModelVersions)(_.modelId)
+
+  def * = (key, modelId, versionNum, loc, path, agent) <> (InterviewHistory.tupled, InterviewHistory.unapply)
+}
+
+class InterviewHistoryRecordTable(tag:Tag) extends Table[InterviewHistoryRecord](tag, "interview_history_records"){
+  def ihKey   = column[UUID]("interview_history_key")
+  def time    = column[Timestamp]("time")
+  def action  = column[String]("action")
+
+  def fk_uuid = foreignKey("interview_history_key_fkey", ihKey, TableClasses.interviewHistories)(_.key)
+
+  def * = (ihKey, time, action) <> (InterviewHistoryRecord.tupled, InterviewHistoryRecord.unapply)
+}
+
+class NotesTable(tag:Tag) extends Table[Note](tag, "notes"){
+  def uuid        = column[UUID]("uuid", O.PrimaryKey)
+  def note        = column[String]("note")
+  def nodeId      = column[String]("node_id", O.PrimaryKey)
+
+  def fk_uuid = foreignKey("notes_uuid_fkey", uuid, TableClasses.interviewHistories)(_.key)
+
+  def * = (uuid, note, nodeId) <> (Note.tupled, Note.unapply)
+}
+
+object TableClasses {
+  val interviewHistories = TableQuery[InterviewHistoryTable]
+  val policyModelVersions = TableQuery[PolicyModelVersionTable]
+}

@@ -1,8 +1,8 @@
 package controllers
 
 import java.util.concurrent.TimeUnit
-
 import javax.inject.Inject
+
 import play.api._
 import play.api.mvc._
 import play.api.cache.{AsyncCacheApi, CacheApi, SyncCacheApi}
@@ -10,8 +10,9 @@ import play.api.libs.ws._
 import play.api.libs.json.{JsError, Json}
 import models._
 import _root_.util.Jsonizer
+import persistence.{InterviewHistoryDAO, PolicyModelsDAO}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
@@ -23,9 +24,9 @@ import scala.concurrent.duration.Duration
   * @param ec
   * @param cc
   */
-class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient,
+class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, interviewHistories: InterviewHistoryDAO, models:PolicyModelsDAO,
                                        kits:PolicyModelKits, ec:ExecutionContext, cc:ControllerComponents) extends InjectedController {
-  
+
   def apiRequestInterview(modelId:String, versionNum:Int) = Action(cc.parsers.tolerantJson(maxLength = 1024*1024*10)) { implicit request =>
     val kitKey = KitKey(modelId,versionNum)
     kits.get(kitKey) match {
@@ -47,20 +48,27 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient,
     
   }
   
-  def start(uniqueLinkId: String) = Action { implicit request =>
+  def start(uniqueLinkId: String) = Action.async { implicit request =>
     Logger.info( "Fetching requested interview " + uniqueLinkId)
     cache.get[RequestedInterviewSession](uniqueLinkId) match {
-   	  case None => NotFound("Sorry - requested interview not found. Please try again using the system that sent you here.")
+   	  case None => Future(NotFound("Sorry - requested interview not found. Please try again using the system that sent you here."))
    	  case Some(requestedInterview) => {
         kits.get(requestedInterview.kitId) match {
-          case None => NotFound("Interview not found. The system that sent you here might be mis-configured.")
+          case None => Future(NotFound("Interview not found. The system that sent you here might be mis-configured."))
           case Some(kit) => {
-            val userSession = InterviewSession.create(kit).updatedWithRequestedInterview(requestedInterview)
-            
-            cache.set(userSession.key, userSession)
-  
-            Ok( views.html.interview.intro(kit, requestedInterview.message) )
-              .withSession( request2session + ("uuid" -> userSession.key)+( InterviewSessionAction.KEY -> userSession.key ))
+            for{
+              vpmOpt <- models.getVersionedModel(kit.model.toString)
+            } yield{
+              val userSession = InterviewSession.create(kit, vpmOpt.exists(vpm => vpm.saveStat)).updatedWithRequestedInterview(requestedInterview)
+              //Add to DB InterviewHistory
+                interviewHistories.addInterviewHistory(
+                  InterviewHistory(userSession.key, kit.id.modelId, kit.id.version, None, "", "requested", ""))
+              cache.set(userSession.key.toString, userSession)
+
+              Ok( views.html.interview.intro(kit, requestedInterview.message) )
+                .withSession( request2session + ("uuid" -> userSession.key.toString)+( InterviewSessionAction.KEY -> userSession.key.toString ))
+            }
+
           }
         }
       }

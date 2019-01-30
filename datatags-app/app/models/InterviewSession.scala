@@ -1,6 +1,6 @@
 package models
 
-import java.util.Date
+import java.util.{Date, UUID}
 
 import edu.harvard.iq.datatags.externaltexts.Localization
 import edu.harvard.iq.datatags.model.graphs.Answer
@@ -13,14 +13,16 @@ case class AnswerRecord( question: AskNode, answer: Answer)
 /**
  * All the data needed to maintain continuous user experience.
  */
-case class InterviewSession(key:String,
+case class InterviewSession(key:UUID,
                             engineState: RuntimeEngineState,
                             traversed: Seq[Node],
                             kit: PolicyModelVersionKit,
                             localization: Option[Localization],
                             answerHistory: Seq[AnswerRecord],
+                            notes: Set[String],
                             sessionStart: Date,
-                            requestedInterview: Option[RequestedInterviewSession] ) {
+                            requestedInterview: Option[RequestedInterviewSession],
+                            saveStat:Boolean) {
 
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat
@@ -40,16 +42,24 @@ case class InterviewSession(key:String,
   def updatedWithRequestedInterview( requestedUserInterview: RequestedInterviewSession) =
         copy (requestedInterview = Option(requestedUserInterview))
 
+  def updateNote( nodeId: String) =
+    copy (notes = notes+nodeId)
+
+  def removeNote( nodeId: String ) =
+    copy( notes=notes-nodeId)
+
 }
 
 object InterviewSession {
-  def create(mKit: PolicyModelVersionKit ) =
-        InterviewSession( "ks$"+java.util.UUID.randomUUID().toString,
+  def create(mKit: PolicyModelVersionKit, saveStat:Boolean ) =
+        InterviewSession( java.util.UUID.randomUUID(),
                      null,
                      Seq(),
                      mKit,
                      None,
-                     Seq(), 
+                     Seq(),
+                     Set(),
                      new Date,
-                     None )
+                     None,
+                     saveStat)
 }

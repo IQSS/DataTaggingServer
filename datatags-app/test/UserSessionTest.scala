@@ -9,7 +9,7 @@ class InterviewSessionSpeck extends PlaySpec {
 
 "A New UserSession" must {
   "Have an empty traversed node history" in {
-    val sut = InterviewSession.create("sample")
+    val sut = InterviewSession.create("sample", false)
     sut.traversed.size mustBe 0
     sut.answerHistory.size mustBe 0
   }
@@ -17,7 +17,7 @@ class InterviewSessionSpeck extends PlaySpec {
 
 "A UserSession" must {
   "be updated when using updatedWith" in {
-    val base = InterviewSession.create("sample")
+    val base = InterviewSession.create("sample", false)
     val ans1 = AnswerRecord( new AskNode("a","AA"), new Answer("indeed") )
     val history1 = Seq( new TodoNode("a"), new TodoNode("b"), new TodoNode("c") )
 
