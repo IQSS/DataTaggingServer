@@ -12,8 +12,8 @@
       <div><span class="badge badge-light">@questionNode.getId</span></div>
     }
     @if( enableComments ){
-      <div>
-      @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, None, "node", questionNode.getId)
+      <div class="ml-2">
+      @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, None, "node", questionNode.getId, "btn-outline-light")
       </div>
     }
   </div>
@@ -33,8 +33,8 @@
         <button type="button" class="btn btn-secondary" onclick="$('#noteDiv').slideToggle()">Add note</button>
       </div>
       @for( ans <- questionNode.getAnswers ) {
-        <button type="button" class="btn btn-primary" @if(interactive){
-        onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{disabled} >
+        <button type="button" @if(interactive){ class="btn btn-primary"
+          onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{ class="btn btn-outline-primary" disabled} >
         @loc.map( l=>l.localizeAnswer(ans.getAnswerText)).getOrElse(Helpers.makeUpper(ans.getAnswerText))</button>
       }
       @if( interactive ) {

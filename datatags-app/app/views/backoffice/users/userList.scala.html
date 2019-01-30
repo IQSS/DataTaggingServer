@@ -12,46 +12,48 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-12">
+    <div class="col">
       @if(users.isEmpty) {
         <div class="noData">
           At the moment, the system contains no users.
         </div>
       } else {
-        <table class="table table-striped table-responsive">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Username</th>
-              <th>email</th>
-              <th>ORCiD</th>
-              <th>Website</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for( u <- users ) {
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
               <tr>
-                <td>
-                  @u.name
-                  @if( u.username == curUser.username ) {
-                    <a class="btn btn-sm btn-secondary" href="@routes.UsersCtrl.showEditUserPage(u.username)"><i class="fa fa-edit"></i>
-                      Edit</a>
-                  }
-                </td>
-                <td><code>@u.username</code></td>
-                <td>@if(Helpers.hasContent(u.email)){
-                  <a href="mailto:@u.email">@u.email</a>
-                }</td>
-                <td>@if(Helpers.hasContent(u.orcid)){
-                  <a href="http://orcid.org/@u.orcid">@u.orcid</a>
-                }</td>
-                <td>@if(Helpers.hasContent(u.url)){
-                  <a href="@u.url">@u.url</a>
-                }</td>
+                <th>Name</th>
+                <th>Username</th>
+                <th>email</th>
+                <th>ORCiD</th>
+                <th>Website</th>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for( u <- users ) {
+                <tr>
+                  <td>
+                    @u.name
+                    @if( u.username == curUser.username ) {
+                      <a class="btn btn-sm btn-secondary" href="@routes.UsersCtrl.showEditUserPage(u.username)"><i class="fa fa-edit"></i>
+                        Edit</a>
+                    }
+                  </td>
+                  <td><code>@u.username</code></td>
+                  <td>@if(Helpers.hasContent(u.email)){
+                    <a href="mailto:@u.email">@u.email</a>
+                  }</td>
+                  <td>@if(Helpers.hasContent(u.orcid)){
+                    <a href="http://orcid.org/@u.orcid">@u.orcid</a>
+                  }</td>
+                  <td>@if(Helpers.hasContent(u.url)){
+                    <a href="@u.url">@u.url</a>
+                  }</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
     </div>
   </div>

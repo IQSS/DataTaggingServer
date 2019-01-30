@@ -1,4 +1,4 @@
 @(cmt:Comment, idOpt:Option[String]=None)
-@defining( if(cmt.resolved) "default" else "primary" ) { cclass=>
-  <span @for(id<-idOpt){id="@id" }class="badge label-@cclass">@if(cmt.resolved){resolved}else{open}</span>
+@defining( if(cmt.resolved) "secondary" else "primary" ) { cclass=>
+  <span @for(id<-idOpt){id="@id" }class="badge badge-@cclass">@if(cmt.resolved){resolved}else{open}</span>
 }
