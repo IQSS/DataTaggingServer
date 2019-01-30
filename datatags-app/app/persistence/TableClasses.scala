@@ -80,6 +80,9 @@ class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
   def resolved = column[Boolean]("resolved")
   def time  = column[Timestamp]("time")
 
+  def fk_version = foreignKey("comments_version_num_fkey", version, TableClasses.policyModelVersions)(_.version)
+  def fk_model = foreignKey("comments_model_fkey", versionPolicyModelID, TableClasses.policyModelVersions)(_.modelId)
+
   def * = (writer, comment, versionPolicyModelID, version, localization,
            targetType, targetContent, resolved, time, id) <> (Comment.tupled, Comment.unapply)
 }

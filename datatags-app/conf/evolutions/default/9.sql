@@ -9,7 +9,7 @@ create table interview_history(
   path VARCHAR(32),
   agent VARCHAR(128),
 
-  FOREIGN KEY (version_num, model_id) REFERENCES policy_model_versions(version_num, model_id)
+  FOREIGN KEY (version_num, model_id) REFERENCES policy_model_versions(version_num, model_id) on DELETE CASCADE
 );
 
 create table interview_history_records(
