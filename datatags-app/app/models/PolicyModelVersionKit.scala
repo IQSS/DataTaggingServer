@@ -62,7 +62,7 @@ class PolicyModelVersionKit(val id:KitKey,
   
   def availableVisualizations():Visualizations = {
     if ( Files.exists(visualizationsPath) ) {
-      val modelPrefix = id.modelId + "~" + id.version + "~"
+      val modelPrefix = (id.modelId + "~" + id.version + "~").toLowerCase
       val groups = Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala
         .groupBy( _.getFileName.toString.toLowerCase.split("\\.",2)(0) ).filter(_._1.startsWith(modelPrefix))
       val res = Visualizations(

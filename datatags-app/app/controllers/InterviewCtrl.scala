@@ -55,7 +55,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
               cache.set(userSession.key.toString, userSession)
 
               //Add to DB InterviewHistory
-                if(request.headers.get("Referer").isDefined & request.headers.get("Referer").get.endsWith("/accept")) {
+                if(request.headers.get("Referer").isDefined && request.headers.get("Referer").get.endsWith("/accept")) {
                   interviewHistories.addInterviewHistory(
                     InterviewHistory(userSession.key, kit.id.modelId, kit.id.version, "", "restart", request.headers.get("User-Agent").get))
                 } else {
