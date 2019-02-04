@@ -62,7 +62,7 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
               val userSession = InterviewSession.create(kit, vpmOpt.exists(vpm => vpm.saveStat)).updatedWithRequestedInterview(requestedInterview)
               //Add to DB InterviewHistory
                 interviewHistories.addInterviewHistory(
-                  InterviewHistory(userSession.key, kit.id.modelId, kit.id.version, None, "", "requested", ""))
+                  InterviewHistory(userSession.key, kit.id.modelId, kit.id.version, "", "requested", request.headers.get("User-Agent").get))
               cache.set(userSession.key.toString, userSession)
 
               Ok( views.html.interview.intro(kit, requestedInterview.message) )
