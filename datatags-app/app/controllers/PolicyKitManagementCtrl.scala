@@ -45,7 +45,8 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   
   implicit private val ec = cc.executionContext
   private val uploadPath = Paths.get(config.get[String]("taggingServer.model-uploads.folder"))
-  
+  private val visualizationsPath = Paths.get(config.get[String]("taggingServer.visualize.folder"))
+  private val MIME_TYPES = Map("svg"->"image/svg+xml", "pdf"->"application/pdf", "png"->"image/png")
   private val validModelId = "^[-._a-zA-Z0-9]+$".r
   val vpmForm = Form(
     mapping(
@@ -267,6 +268,21 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
       
     } else {
       Future( Unauthorized("This endpoint available from localhost only") )
+    }
+  }
+
+  def visualizationFile(modelId:String, version:Int, suffix:String, fileType:String) = Action{ req =>
+    val fileName = "%s~%d~%s.%s".format(modelId, version, fileType, suffix)
+    val destPath = visualizationsPath.resolve(fileName)
+
+    if ( Files.exists(destPath) ) {
+      val content = Files.readAllBytes(destPath)
+      val suffix = fileName.split("\\.").last.toLowerCase()
+      Ok( content ).withHeaders(
+        ("Content-Disposition", "inline; filename=\"Visualization.pdf\"")
+      ).as(MIME_TYPES.getOrElse(suffix, "application/octet-stream"))
+    } else {
+      NotFound("Visualization not found.")
     }
   }
 

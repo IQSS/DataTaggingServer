@@ -68,7 +68,7 @@
                 <strong>Decision Graph:</strong>
                 <ul class="visualizationList">
                   @for(p <- avz.decisionGraph) {
-                    <li><a href="@routes.Application.visualizationFile(p.getFileName + "")">@p.getFileName.toString.split("\\.").last</a></li>
+                    <li><a href="@routes.PolicyKitManagementCtrl.visualizationFile(p.model, p.version, p.suffix, "decision-graph")">@p.suffix</a></li>
                   }
                 </ul>
               }
@@ -78,7 +78,7 @@
                 <strong>Policy Space:</strong>
                 <ul class="visualizationList">
                   @for(p <- avz.policySpace) {
-                    <li><a href="@routes.Application.visualizationFile(p.getFileName + "")">@p.getFileName.toString.split("\\.").last</a></li>
+                    <li><a href="@routes.PolicyKitManagementCtrl.visualizationFile(p.model, p.version, p.suffix, "policy-space")">@p.suffix</a></li>
                   }
                 </ul>
               }

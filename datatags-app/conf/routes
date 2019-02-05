@@ -20,7 +20,7 @@ POST    /models/:modelId/:versionNum/revisit/    controllers.InterviewCtrl.revis
 GET     /models/:modelId/:versionNum/allQuestions controllers.InterviewCtrl.viewAllQuestions(modelId, versionNum:Int, localizationName:Option[String]?=None)
 
 
-GET    /visualizations/:name                     controllers.Application.visualizationFile(name)
+GET    /visualizations/                          controllers.PolicyKitManagementCtrl.visualizationFile(model:String, version:Int, suffix:String, fileType:String)
 GET    /admin/visualizations/recreate            controllers.PolicyKitManagementCtrl.recreateViz
 
 # Link to access a model with no login

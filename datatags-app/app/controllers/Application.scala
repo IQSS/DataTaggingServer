@@ -34,20 +34,6 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
       else Ok( views.html.modelCatalog(mdls.sortBy(_.title)) )
     )
   }
-  
-  def visualizationFile(path:String) = Action{ req =>
-    val destPath = visualizationsPath.resolve(path)
-    
-    if ( Files.exists(destPath) ) {
-      val content = Files.readAllBytes(destPath)
-      val suffix = path.split("\\.").last.toLowerCase()
-      Ok( content ).withHeaders(
-        ("Content-Disposition", "inline; filename=\"Visualization.pdf\"")
-      ).as(MIME_TYPES.getOrElse(suffix, "application/octet-stream"))
-    } else {
-      NotFound("Visualization not found.")
-    }
-  }
 
   def showVersionedPolicyModel(id:String) = Action.async { implicit req =>
     if ( LoggedInAction.userPresent(req) ) {

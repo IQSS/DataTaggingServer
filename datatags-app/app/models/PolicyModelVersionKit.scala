@@ -63,11 +63,14 @@ class PolicyModelVersionKit(val id:KitKey,
   def availableVisualizations():Visualizations = {
     if ( Files.exists(visualizationsPath) ) {
       val modelPrefix = (id.modelId + "~" + id.version + "~").toLowerCase
+      val files = Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala.map(files => files.getFileName.toString).filter(_.startsWith(modelPrefix))
+
       val groups = Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala
         .groupBy( _.getFileName.toString.toLowerCase.split("\\.",2)(0) ).filter(_._1.startsWith(modelPrefix))
+
       val res = Visualizations(
-        groups.get( modelPrefix + PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set()),
-        groups.get( modelPrefix + PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set())
+        groups.get( modelPrefix + PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set()).map(s => FileParameters(id.modelId, id.version, s.toString.split("\\.", 2)(1))),
+        groups.get( modelPrefix + PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set()).map(s => FileParameters(id.modelId, id.version, s.toString.split("\\.", 2)(1)))
       )
       if ( res.decisionGraph.isEmpty || res.policySpace.isEmpty ) {
         Logger.warn( "Can't find visualizations for model %s. Visualizations folder:%s".format(id, visualizationsPath.toAbsolutePath))
@@ -89,7 +92,9 @@ object PolicyModelVersionKit {
   val POLICY_SPACE_VISUALIZATION_FILE_NAME = "policy-space"
 }
 
-case class Visualizations( decisionGraph:Set[Path], policySpace:Set[Path] ) {
+case class FileParameters(model:String, version:Int, suffix:String)
+
+case class Visualizations( decisionGraph:Set[FileParameters], policySpace:Set[FileParameters] ) {
   def hasData:Boolean = decisionGraph.nonEmpty||policySpace.nonEmpty
 }
 
