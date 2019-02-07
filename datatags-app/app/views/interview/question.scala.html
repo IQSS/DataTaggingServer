@@ -4,7 +4,7 @@
    dataTags: edu.harvard.iq.datatags.model.values.CompoundValue,
    history:Seq[edu.harvard.iq.datatags.model.graphs.nodes.Node],
    answerHistory: Seq[AnswerRecord],
-   loc:Option[Localization], note:Option[String]
+   loc:Option[Localization], noteOpt:Boolean, note:Option[String]
 )(implicit req:Request[_])
 
 @scripts = {
@@ -26,7 +26,7 @@
   <div class="row">
     <div class="col">
      @comps.questionPanel(
-       questionNode, pmvKit, loc, answerHistory, pmvKit.dbData.commentingStatus != CommentingStatus.Closed, interactive=true, showId = false, note
+       questionNode, pmvKit, loc, answerHistory, pmvKit.dbData.commentingStatus != CommentingStatus.Closed, interactive=true, showId = false, noteOpt, note
      )
     </div>
   </div>

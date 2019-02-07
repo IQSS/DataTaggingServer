@@ -22,7 +22,8 @@ case class InterviewSession(key:UUID,
                             notes: Set[String],
                             sessionStart: Date,
                             requestedInterview: Option[RequestedInterviewSession],
-                            saveStat:Boolean) {
+                            saveStat:Boolean,
+                            noteOpt:Boolean) {
 
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat
@@ -51,7 +52,7 @@ case class InterviewSession(key:UUID,
 }
 
 object InterviewSession {
-  def create(mKit: PolicyModelVersionKit, saveStat:Boolean ) =
+  def create(mKit: PolicyModelVersionKit, saveStat:Boolean, noteOpt:Boolean ) =
         InterviewSession( java.util.UUID.randomUUID(),
                      null,
                      Seq(),
@@ -61,5 +62,6 @@ object InterviewSession {
                      Set(),
                      new Date,
                      None,
-                     saveStat)
+                     saveStat,
+                     noteOpt)
 }

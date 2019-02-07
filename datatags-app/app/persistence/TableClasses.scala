@@ -32,8 +32,9 @@ class VersionedPolicyModelTable(tag:Tag) extends Table[VersionedPolicyModel](tag
   def note = column[String]("note")
   def created = column[Timestamp]("created")
   def saveStat = column[Boolean]("save_stat")
+  def noteOpt = column[Boolean]("note_opt")
 
-  def * = (id, title, created, note, saveStat) <> (VersionedPolicyModel.tupled, VersionedPolicyModel.unapply)
+  def * = (id, title, created, note, saveStat, noteOpt) <> (VersionedPolicyModel.tupled, VersionedPolicyModel.unapply)
 }
 
 class PolicyModelVersionTable(tag:Tag) extends Table[PolicyModelVersion](tag, "policy_model_versions") {

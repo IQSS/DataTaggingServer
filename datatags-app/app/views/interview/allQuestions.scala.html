@@ -15,7 +15,7 @@ loc:Option[Localization]
 
 @visitAskNode( nd:AskNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="question">
-    @comps.questionPanel(nd, pmvKit, loc, Seq(), enableComments = true, false, showId = true, None)
+    @comps.questionPanel(nd, pmvKit, loc, Seq(), enableComments = true, false, showId = true, false, None)
 
     @for( a <- nd.getAnswers ) {
       @visitNode( nd.getNodeFor(a), baseLevel, visited )

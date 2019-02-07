@@ -51,7 +51,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
           pmvOpt.map( pmv => {
             // ensure viewing permissions
             if ( canView(request, pmv) ) {
-              val userSession = InterviewSession.create( kit, vpmOpt.exists(vpm => vpm.saveStat) )
+              val userSession = InterviewSession.create( kit, vpmOpt.exists(vpm => vpm.saveStat), vpmOpt.exists(vpm => vpm.noteOpt) )
               cache.set(userSession.key.toString, userSession)
 
               //Add to DB InterviewHistory
@@ -134,7 +134,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
               updated.tags,
               l.traversedNodes,
               Seq(),
-              req.userSession.localization, None))
+              req.userSession.localization, updated.noteOpt, None))
           })
       }
       
@@ -165,7 +165,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
       updated.tags,
       l.traversedNodes,
       Seq(),
-      req.userSession.localization, None))
+      req.userSession.localization, updated.noteOpt, None))
   }
   
   def askNode( modelId:String, versionNum:Int, reqNodeId:String) = InterviewSessionAction(cache, cc).async { implicit req =>
@@ -192,8 +192,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
           interviewHistories.addRecord(
             InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "q: " + askNode.getId))
         }
-
-        if(session.notes.contains(reqNodeId)){
+        if(session.noteOpt && session.notes.contains(reqNodeId)){
           for {
             note <- notes.getNoteText(session.key, reqNodeId)
           } yield {
@@ -202,7 +201,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
               session.tags,
               session.traversed,
               session.answerHistory,
-              session.localization, note ))
+              session.localization, session.noteOpt, note ))
           }
         } else {
           Future(Ok( views.html.interview.question( kit,
@@ -210,7 +209,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
             session.tags,
             session.traversed,
             session.answerHistory,
-            session.localization, None) ))
+            session.localization, session.noteOpt, None) ))
         }
       }
       case None => Future(NotFound("Model not found."))

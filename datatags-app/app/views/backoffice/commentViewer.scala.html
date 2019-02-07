@@ -51,7 +51,7 @@
         } else {
           @defining(qKit.model.getDecisionGraph.getNode(cmt.targetContent)) {
             case ask: AskNode => {
-              @comps.questionPanel(ask, qKit, locOpt, Seq(), enableComments=false, interactive=false, showId = true, None)
+              @comps.questionPanel(ask, qKit, locOpt, Seq(), enableComments=false, interactive=false, showId = true, false, None)
             }
             case rej: RejectNode => {
               @comps.rejectPanel(rej, qKit, locOpt, Seq(), enableComments=false)

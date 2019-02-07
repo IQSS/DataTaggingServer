@@ -19,10 +19,10 @@ import play.api.mvc.{ControllerComponents, InjectedController}
 import scala.concurrent.Future
 
 
-case class VpmFormData( id:String, title:String, note:String, saveStat:Boolean) {
-  def this( vpm:VersionedPolicyModel ) = this(vpm.id, vpm.title, vpm.note, vpm.saveStat)
+case class VpmFormData( id:String, title:String, note:String, saveStat:Boolean, noteOpt:Boolean) {
+  def this( vpm:VersionedPolicyModel ) = this(vpm.id, vpm.title, vpm.note, vpm.saveStat, vpm.noteOpt)
   
-  def toVersionedPolicyModel = VersionedPolicyModel(id, title, new Timestamp(System.currentTimeMillis()), note, saveStat)
+  def toVersionedPolicyModel = VersionedPolicyModel(id, title, new Timestamp(System.currentTimeMillis()), note, saveStat, noteOpt)
   
 }
 
@@ -55,7 +55,8 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
                     s=>s.isEmpty || validModelId.findFirstIn(s).isDefined),
       "title" -> nonEmptyText,
       "note" -> text,
-      "saveStat" -> boolean
+      "saveStat" -> boolean,
+      "noteOpt" -> boolean
     )(VpmFormData.apply)(VpmFormData.unapply)
   )
   
