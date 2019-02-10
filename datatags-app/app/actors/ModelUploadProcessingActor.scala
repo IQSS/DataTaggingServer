@@ -126,7 +126,7 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
         }
       }
     } catch{
-      case uoe: UnsupportedOperationException => Logger.info("[UPP] UnsupportedOperationException from setPosixFilePermissions")
+      case uoe: UnsupportedOperationException => logger.info("[UPP] UnsupportedOperationException from setPosixFilePermissions", uoe)
       case ioe: IOException => {
         logger.error("[Exp] IOException while unzipping- " + ioe.getMessage, ioe)
       }

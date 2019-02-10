@@ -116,12 +116,13 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
       },
       vpmFd => models.getVersionedModel(vpmFd.id).flatMap({
         case None => {
-          models.add(vpmFd.toVersionedPolicyModel)
-          Future(Redirect(routes.PolicyKitManagementCtrl.showVpmList).flashing("message"->"Model '%s' created.".format(vpmFd.id)))
+          models.add(vpmFd.toVersionedPolicyModel).map( _ =>
+            Redirect(routes.PolicyKitManagementCtrl.showVpmPage(id)).flashing("message"->"Model '%s' created.".format(vpmFd.id)))
+          
         }
         case Some(vpm) => {
           models.update( vpmFd.toVersionedPolicyModel.copy(created=vpm.created) )
-              .map( _ => Redirect(routes.PolicyKitManagementCtrl.showVpmList).flashing("message"->"Model '%s' updated.".format(vpm.id)) )
+              .map( _ => Redirect(routes.PolicyKitManagementCtrl.showVpmPage(vpm.id)).flashing("message"->"Model '%s' updated.".format(vpm.id)) )
         
         }
       })
