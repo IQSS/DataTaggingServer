@@ -32,62 +32,60 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
   
   private val modelsFolderPath = Paths.get( conf.get[String]("taggingServer.models.folder") )
   
+  val logger = Logger(classOf[ModelUploadProcessingActor])
+  
   override def receive: Receive = {
     case PrepareModel(path, pmv) => {
       val ttl = "[UPP] " + pmv.parentId + "/" + pmv.version + ": "
-      Logger.info(ttl + "Received request to prepare model")
+      logger.info(ttl + "Received request to prepare model")
       val modelPath = modelsFolderPath.resolve(pmv.parentId).resolve(pmv.version.toString)
       
       if ( Files.exists(modelPath) ) {
-        Logger.info(ttl + "Deleting content of old " + modelPath)
+        logger.info(ttl + "Deleting content of old " + modelPath)
         try {
           Files.list(modelPath).iterator().asScala.foreach(delete)
         }catch{
           case ioe:IOException => {
-            Logger.info("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"))
-            Logger.info("[Exp] delete old files - " + ioe.getCause)
-            Logger.info("[Exp] delete old files - " + ioe.getMessage)
+            logger.error("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"), ioe)
           }
         }
       }
       
       // unzip
-      Logger.info(ttl + "unzipping...")
+      logger.info(ttl + "unzipping...")
       unzip(path, modelPath)
       if ( reLayout(modelPath) ) {
-        Logger.info(ttl + "re-layout of unzipped directory done.")
+        logger.info(ttl + "re-layout of unzipped directory done.")
       }
-      Logger.info(ttl + "...unzipping done")
+      logger.info(ttl + "...unzipping done")
       
       // add to kits
-      Logger.info(ttl + "loading...")
+      logger.info(ttl + "loading...")
       val newKit = kits.loadSingleKit(pmv, modelPath)
-      Logger.info(ttl + "...loading done")
+      logger.info(ttl + "...loading done")
       
       // ping visualizer
       if ( newKit.canRun ) {
         vizActor ! CreateVisualizationFiles(newKit)
       }
       
-      Logger.info(ttl + "deleting %s".format(path))
+      logger.info(ttl + "deleting %s".format(path))
       Files.delete(path)
-      Logger.info(ttl + " DONE")
+      logger.info(ttl + " DONE")
     }
     
     case DeleteVersion(pmv) => {
       vizActor ! DeleteVisualizationFiles(KitKey.of(pmv))
       val modelPath = modelsFolderPath.resolve(pmv.parentId).resolve(pmv.version.toString)
       if ( Files.exists(modelPath) ) {
-        Logger.info("Deleting content of old " + modelPath)
+        logger.info("Deleting content of old " + modelPath)
         try {
           Files.list(modelPath).iterator().asScala.foreach(delete)
           delete(modelPath)
           
         } catch {
           case ioe:IOException => {
-            Logger.info("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"))
-            Logger.info("[Exp] delete old files - " + ioe.getCause)
-            Logger.info("[Exp] delete old files - " + ioe.getMessage)
+            logger.error("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"), ioe)
           }
         }
       }
@@ -130,13 +128,10 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
     } catch{
       case uoe: UnsupportedOperationException => Logger.info("[UPP] UnsupportedOperationException from setPosixFilePermissions")
       case ioe: IOException => {
-        Logger.info("[Exp] IOException - " + ioe.getMessage)
-        Logger.info("[Exp] IOException - " + ioe.getStackTrace.mkString("\n"))
+        logger.error("[Exp] IOException while unzipping- " + ioe.getMessage, ioe)
       }
       case e:Exception => {
-        Logger.info("[Exp] Unzip - General Exception")
-        Logger.info("[Exp] - " + e.getMessage)
-        Logger.info("[Exp Trace] " + e.getStackTrace.mkString("\n"))
+        logger.error("[Exp] Unzip - General Exception", e)
       }
     } finally {
       zis.close()

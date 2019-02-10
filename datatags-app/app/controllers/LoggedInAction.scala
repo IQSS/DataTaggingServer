@@ -16,6 +16,7 @@ class LoggedInRequest[A](val user: User, request: Request[A]) extends WrappedReq
 object LoggedInAction {
   val KEY = "LoggedInAction-key"
   def userPresent(req:Request[_]) = req.session.get(LoggedInAction.KEY).isDefined
+  val logger = Logger(classOf[LoggedInAction])
 }
 
 case class LoggedInAction(cache:SyncCacheApi, cc:ControllerComponents) extends ActionBuilder[LoggedInRequest, AnyContent] {
@@ -26,12 +27,12 @@ case class LoggedInAction(cache:SyncCacheApi, cc:ControllerComponents) extends A
       cache.get[User](uuid) match {
         case Some(userSession) => requestHandler(new LoggedInRequest(userSession, request))
         case None => {
-          Logger.warn("Request has a uuid (%s) but no logged in user".format(uuid) )
+          LoggedInAction.logger.warn("Request has a uuid (%s) but no logged in user".format(uuid) )
           Future.successful( Redirect(routes.UsersCtrl.showLogin()).withNewSession )
         }
       }
     }.getOrElse{
-      Logger.warn("Blocked attempt to access a LoggedInAction with no user involved." )
+      LoggedInAction.logger.warn("Blocked attempt to access a LoggedInAction with no user involved." )
       Future.successful( Redirect(routes.UsersCtrl.showLogin()) )
     }
   }

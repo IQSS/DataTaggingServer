@@ -96,7 +96,6 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   def doSaveNewVpm = LoggedInAction(cache,cc).async { implicit req =>
     vpmForm.bindFromRequest.fold(
       formWithErrors => {
-        Logger.info( formWithErrors.errors.mkString("\n") )
         Future( Ok(views.html.backoffice.versionedPolicyModelEditor(formWithErrors, true)) )
       },
       vpmFd => models.getVersionedModel(vpmFd.id).flatMap({
@@ -113,7 +112,6 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   def doSaveVpm(id:String) = LoggedInAction(cache,cc).async { implicit req =>
     vpmForm.bindFromRequest.fold(
       formWithErrors => {
-        Logger.info( formWithErrors.errors.mkString("\n") )
         Future( BadRequest(views.html.backoffice.versionedPolicyModelEditor(formWithErrors, false)) )
       },
       vpmFd => models.getVersionedModel(vpmFd.id).flatMap({
@@ -140,10 +138,9 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   }
   
   def apiDoDeleteVpm( id:String ) = LoggedInAction(cache,cc).async {
-    models.getVersionedModel(id).flatMap( opt => opt match {
+    models.getVersionedModel(id).flatMap({
       case None => Future(NotFound(Json.obj("result"->false)))
       case Some(_) => {
-        
         models.deleteVersionedPolicyModel(id).map( _ => Ok(Json.obj("result"->true)).flashing("message"->("Model " + id + " deleted")) )
       }
     })
@@ -161,7 +158,7 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
           )
           models.addNewVersion(modelVersion).map( mv => {
             val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
-            file.ref.moveTo( destFile, replace=false )
+            file.ref.moveFileTo( destFile, replace=false )
             uploadPostProcessor ! PrepareModel(destFile, mv)
             Redirect(routes.PolicyKitManagementCtrl.showVpmPage(modelId)).flashing( "message"->"Created new version '%d'.".format(mv.version) )
           })
@@ -209,7 +206,6 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   }
   
   def doSaveVersion(modelId:String, vNum:Int) = LoggedInAction(cache,cc)(parse.multipartFormData).async{ implicit req =>
-    Logger.info("Saving version")
     modelForm.bindFromRequest.fold(
       formWithErrors => Future(BadRequest(views.html.backoffice.policyModelVersionEditor(formWithErrors, modelId, Some(vNum)))),
       pfd => {
@@ -223,14 +219,10 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
             req.body.file("zippedModel").foreach( file => {
               // validate the file is non-empty
               if ( Files.size(file.ref.path) > 0 ) {
-                Logger.info("new file uploaded.")
                 val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
-                file.ref.moveTo( destFile, replace=false )
+                file.ref.moveFileTo( destFile, replace=false )
                 kits.removeVersion( KitKey.of(modelVersion) )
                 uploadPostProcessor ! PrepareModel(destFile, modelVersion)
-                
-              } else {
-                Logger.info("no new file uploaded.")
               }
             })
             models.updateVersion(modelVersion).map( mv =>
@@ -262,7 +254,6 @@ class PolicyKitManagementCtrl @Inject() (cache:SyncCacheApi, kits:PolicyModelKit
   }
 
   def recreateViz = Action.async { implicit req =>
-    Logger.info( s"remote address: ${req.connection.remoteAddress}")
     if ( req.connection.remoteAddress.isLoopbackAddress ) {
       kits.getAllKitKeys().flatMap(kits.get).foreach(uploadPostProcessor ! RecreateVisualizationFiles(_))
       Future(Ok("Recreating all visualization files"))

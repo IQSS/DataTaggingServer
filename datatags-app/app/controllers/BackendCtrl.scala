@@ -47,7 +47,7 @@ class BackendCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settings:Set
            .map( _ => Ok(Json.toJson("message" -> "Data Stored")) )
        }
        case e:JsError => {
-         Logger.info("Error parsing JSON: " + e.errors.map(_.toString).mkString("\n"))
+         Logger(classOf[BackendCtrl]).warn("Error parsing JSON: " + e.errors.map(_.toString).mkString("\n"))
          Future(BadRequest(Json.toJson(Json.obj("message" -> e.toString))))
        }
      }

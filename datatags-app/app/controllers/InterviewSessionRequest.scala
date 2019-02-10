@@ -34,12 +34,10 @@ case class InterviewSessionAction(cache:SyncCacheApi, cc:ControllerComponents) e
       cache.get[InterviewSession](uuid) match {
         case Some(userSession) => requestHandler(new InterviewSessionRequest(userSession, request))
         case None => {
-          Logger.warn("Request has a uuid (%s) but no session".format(uuid) )
           Future.successful( Redirect(routes.Application.index()) )
         }
       }
     }.getOrElse{
-      Logger.warn("Request does not have an interview uuid" )
       Future.successful( Redirect(routes.Application.index()) )
     }
   }

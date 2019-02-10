@@ -5,7 +5,7 @@ import edu.harvard.iq.datatags.model.values.AbstractValue
 import play.api.libs.json._
 import play.api.libs.json.Json
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 // TODO merge with controllers.JSONFormats
 object Jsonizer extends AbstractValue.Visitor[JsValue]{
@@ -14,11 +14,11 @@ object Jsonizer extends AbstractValue.Visitor[JsValue]{
 
 	def visitAtomicValue (simple: AtomicValue) = Json.toJson(simple.getName)
 
-	def visitAggregateValue (aggregate: AggregateValue) = Json.toJson(aggregate.getValues.map(visitAtomicValue))
+	def visitAggregateValue (aggregate: AggregateValue) = Json.toJson(aggregate.getValues.asScala.map(visitAtomicValue))
 
 	def visitCompoundValue (compound: CompoundValue) = {
 		var compoundMap = collection.mutable.Map[String, JsValue]()
-		for (fieldType <- compound.getNonEmptySubSlots) {
+		for (fieldType <- compound.getNonEmptySubSlots.asScala) {
 			compoundMap += (fieldType.getName -> compound.get(fieldType).accept(this))
 		}
 		val compoundSeq = compoundMap.toSeq

@@ -31,7 +31,7 @@ POST	/api/1/interviewRequest/:modelId/:versionNum  controllers.RequestedIntervie
 GET		/requestedInterview/:uniqueLinkId             controllers.RequestedInterviewCtrl.start(uniqueLinkId: String)
 POST	/postBackTo/:uniqueLinkId				            controllers.RequestedInterviewCtrl.postBackTo(uniqueLinkId: String)
 POST 	/unacceptableDataset/:uniqueLinkId/:reason	controllers.RequestedInterviewCtrl.unacceptableDataset(uniqueLinkId: String, reason: String)
-POST 	/tempTestServer							                controllers.Test.tempTestServer
+POST 	/tempTestServer							                controllers.TestCtrl.tempTestServer
 
 # Back-office
 GET     /admin/vpms-m/new     controllers.PolicyKitManagementCtrl.showNewVpmPage
@@ -87,8 +87,8 @@ GET  /assets/*file        controllers.Assets.versioned(path="/public", file: Ass
 GET  /javascriptRoutes    controllers.Application.javascriptRoutes
 
 # Game and funs
-GET	    /test/tagsDisplay/:modelId/:versionNum  controllers.Test.showTagTree(modelId, versionNum:Int, loc:Option[String]?=None)
+GET	    /test/tagsDisplay/:modelId/:versionNum  controllers.TestCtrl.showTagTree(modelId, versionNum:Int, loc:Option[String]?=None)
 
-PUT     /test/models/:name  controllers.Test.addVersionedModel(name)
-GET     /test/models/       controllers.Test.listVersionedModels
-GET     /test/models/:name  controllers.Test.showModel(name)
+PUT     /test/models/:name  controllers.TestCtrl.addVersionedModel(name)
+GET     /test/models/       controllers.TestCtrl.listVersionedModels
+GET     /test/models/:name  controllers.TestCtrl.showModel(name)

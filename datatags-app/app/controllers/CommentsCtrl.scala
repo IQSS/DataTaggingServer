@@ -24,7 +24,6 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, kits:PolicyModelKits,
           comments.addComment(s.value.toComment()).map(_ => Ok(Json.toJson("message" -> "Comment sent")))
         }
         case e:JsError => {
-          Logger.info("Error parsing JSON: " + e.errors.map(_.toString).mkString("\n"))
           Future(BadRequest(Json.toJson(Json.obj("message" -> e.toString))))
         }
         

@@ -1,13 +1,12 @@
 package models
 
-import edu.harvard.iq.datatags.model.PolicyModel
 import edu.harvard.iq.datatags.model.graphs.nodes._
 import edu.harvard.iq.datatags.model.slots.CompoundSlot
 import edu.harvard.iq.datatags.runtime._
 import edu.harvard.iq.datatags.model.graphs._
 import edu.harvard.iq.datatags.model.graphs.DecisionGraph
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 
 
 /*** 
@@ -61,8 +60,8 @@ object Serialization {
   }
 
   def getAnswersSortedByFrequencies( questionnaire: DecisionGraph ) : Seq[Answer] = {
-    val answerList = questionnaire.nodes.flatMap({
-          case a:AskNode => a.getAnswers.toList
+    val answerList = questionnaire.nodes.asScala.flatMap({
+          case a:AskNode => a.getAnswers.asScala
           case _ => Nil
         })
     answerList.groupBy( p=>p )

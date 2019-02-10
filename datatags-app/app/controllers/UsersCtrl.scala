@@ -329,7 +329,6 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
   def doInviteUser = LoggedInAction(cache,cc).async { implicit req =>
     emailForm.bindFromRequest().fold(
       fwi => {
-        Logger.info( fwi.errors.mkString("\n") )
         Future(BadRequest(views.html.comps.inviteUser()))
       },
       fd => {

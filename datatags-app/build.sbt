@@ -15,7 +15,7 @@ resolvers += "Typesafe repository releases" at "http://repo.typesafe.com/typesaf
 resolvers += Resolver.sonatypeRepo("releases")
 
 libraryDependencies ++= Seq(
-  ehcache,
+  caffeine,
   ws,
   guice,
   openId,
@@ -25,8 +25,8 @@ libraryDependencies ++= Seq(
   "com.vladsch.flexmark" % "flexmark-all" % "0.40.0",
   "org.postgresql" % "postgresql" % "42.0.0",
   "org.webjars" % "popper.js" % "1.14.6",
-  "com.typesafe.play" %% "play-slick" % "3.0.3",
-  "com.typesafe.play" %% "play-slick-evolutions" % "3.0.3",
+  "com.typesafe.play" %% "play-slick" % "4.0.0",
+  "com.typesafe.play" %% "play-slick-evolutions" % "4.0.0",
   "org.mindrot" % "jbcrypt" % "0.3m",
   "com.typesafe.play" %% "play-iteratees" % "2.6.1",
   "com.typesafe.play" %% "play-mailer" % "6.0.1",

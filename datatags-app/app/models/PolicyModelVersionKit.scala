@@ -63,7 +63,6 @@ class PolicyModelVersionKit(val id:KitKey,
   def availableVisualizations():Visualizations = {
     if ( Files.exists(visualizationsPath) ) {
       val modelPrefix = (id.modelId + "~" + id.version + "~").toLowerCase
-      val files = Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala.map(files => files.getFileName.toString).filter(_.startsWith(modelPrefix))
 
       val groups = Files.list(visualizationsPath).collect( Collectors.toSet() ).asScala
         .groupBy( _.getFileName.toString.toLowerCase.split("\\.",2)(0) ).filter(_._1.startsWith(modelPrefix))
@@ -73,11 +72,11 @@ class PolicyModelVersionKit(val id:KitKey,
         groups.get( modelPrefix + PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME).map(_.toSet).getOrElse(Set()).map(s => FileParameters(id.modelId, id.version, s.toString.split("\\.", 2)(1)))
       )
       if ( res.decisionGraph.isEmpty || res.policySpace.isEmpty ) {
-        Logger.warn( "Can't find visualizations for model %s. Visualizations folder:%s".format(id, visualizationsPath.toAbsolutePath))
+        PolicyModelVersionKit.logger.warn( "Can't find visualizations for model %s. Visualizations folder:%s".format(id, visualizationsPath.toAbsolutePath))
       }
       res
     } else {
-      Logger.warn( "Can't find visualizations for model %s. Visualizations folder:%s".format(id, visualizationsPath.toAbsolutePath))
+      PolicyModelVersionKit.logger.warn( "Can't find visualizations for model %s. Visualizations folder:%s".format(id, visualizationsPath.toAbsolutePath))
       Visualizations(Set(),Set())
     }
   }
@@ -90,6 +89,7 @@ class PolicyModelVersionKit(val id:KitKey,
 object PolicyModelVersionKit {
   val DECISION_GRAPH_VISUALIZATION_FILE_NAME = "decision-graph"
   val POLICY_SPACE_VISUALIZATION_FILE_NAME = "policy-space"
+  val logger = Logger(classOf[PolicyModelVersionKit])
 }
 
 case class FileParameters(model:String, version:Int, suffix:String)
@@ -105,15 +105,16 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
   
   private val allKits: TrieMap[KitKey,PolicyModelVersionKit] = TrieMap()
   private val allLocalizations: TrieMap[KitKey, mutable.Map[String,Localization]] = TrieMap()
+  private val logger = Logger( classOf[PolicyModelKits] )
   
-  Logger.info("Using PolicyModels library " + PolicyModelsInfo.getVersionString )
+  logger.info("Using PolicyModels library " + PolicyModelsInfo.getVersionString )
   
   if ( rootVisualizationsPath==null ) {
-    Logger.error("Cannot get base visualization path from the config.")
+    logger.error("Cannot get base visualization path from the config.")
   }
   
   if ( ! Files.exists(rootVisualizationsPath) ) {
-    Logger.error("Base visualization path does not exist (%s)".format(rootVisualizationsPath.toAbsolutePath) )
+    logger.error("Base visualization path does not exist (%s)".format(rootVisualizationsPath.toAbsolutePath) )
   }
   
   loadAllModels()
@@ -154,7 +155,7 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
     * @return the kit loading result.
     */
   def loadSingleKit(pmv:PolicyModelVersion, modelPath:Path ):PolicyModelVersionKit = {
-    Logger.info( "[PMKs] Reading model %s".format(modelPath.toString))
+    logger.info( "[PMKs] Reading model %s".format(modelPath.toString))
     
     var model:PolicyModel = null
     val msgs = mutable.Buffer[ValidationMessage]()
@@ -170,17 +171,17 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
         val loadRes = PolicyModelLoader.verboseLoader().load(pmdp.read(policyModelMdPath))
   
         if ( loadRes.isSuccessful ) {
-          Logger.info("[PMKs] Model %s/%d ('%s') loaded".format(pmv.parentId, pmv.version, loadRes.getModel.getMetadata.getTitle))
+          logger.info("[PMKs] Model %s/%d ('%s') loaded".format(pmv.parentId, pmv.version, loadRes.getModel.getMetadata.getTitle))
         } else {
-          Logger.warn("[PMKs] Failed to load model %s/%d".format(pmv.parentId, pmv.version))
+          logger.warn("[PMKs] Failed to load model %s/%d".format(pmv.parentId, pmv.version))
         }
         model = loadRes.getModel
-        Logger.info("[PMKs] Message count: " + loadRes.getMessages.size())
+        logger.info("[PMKs] Message count: " + loadRes.getMessages.size())
         loadRes.getMessages.asScala.foreach( msgs.+= )
         
       } catch {
         case pmle:PolicyModelLoadingException => {
-          Logger.warn("[PMKs] Error loading policy model %s: %s".format(modelPath.getFileName.toString, pmle.getMessage) )
+          logger.warn("[PMKs] Error loading policy model %s: %s".format(modelPath.getFileName.toString, pmle.getMessage) )
           msgs += new ValidationMessage(Level.ERROR, "Error parsing model metadata: " + pmle.getMessage )
           
         }
@@ -211,18 +212,18 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
         val locLoad = new LocalizationLoader()
         val loc = locLoad.load(allKits(kitId).model, localizationName)
         if ( ! locLoad.getMessages.isEmpty ) {
-          Logger.warn("Messages on localization «" + localizationName + "» for model «" + kitId + "»")
+          logger.warn("Messages on localization «" + localizationName + "» for model «" + kitId + "»")
           for ( m <- locLoad.getMessages.asScala ) {
-            Logger.warn(m.getLevel.toString + ": " + m.getMessage)
+            logger.warn(m.getLevel.toString + ": " + m.getMessage)
           }
         }
         
         if ( locLoad.isHasErrors ) {
-          Logger.warn("Errors loading localization «" + localizationName + "» for model «" + kitId + "»" )
+          logger.warn("Errors loading localization «" + localizationName + "» for model «" + kitId + "»" )
           None
         } else {
           locMap(localizationName) = loc
-          Logger.info("Loaded localization «" + localizationName + "» for model «" + kitId + "»")
+          logger.info("Loaded localization «" + localizationName + "» for model «" + kitId + "»")
           
           Some(loc)
         }

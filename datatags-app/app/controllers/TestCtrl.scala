@@ -10,12 +10,11 @@ import play.api.mvc._
 import play.api.libs.json.Json
 import play.api._
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
-//import scala.concurrent.ExecutionContext.Implicits.global
 
-class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models:PolicyModelsDAO) extends InjectedController {
+class TestCtrl @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models:PolicyModelsDAO) extends InjectedController {
 
   /**
 	 * test server for postBackTo in RequestedInterview
@@ -23,7 +22,7 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models
   def tempTestServer = Action { implicit request =>
 
 		val body = request.body.asJson
-		Logger.info(body.get.toString)
+		Logger(classOf[TestCtrl]).info(body.get.toString)
 
   	val userRedirectURL = "http://dataverse-demo.iq.harvard.edu"
   	Ok(Json.obj("status" -> "OK", "redirectURL" -> userRedirectURL))
@@ -38,7 +37,7 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models
   }
   
   def addVersionedModel( name:String ) = Action.async{ req =>
-    models.add( new VersionedPolicyModel(name, "model named '"+name+"'", null, "", false, false) )
+    models.add( VersionedPolicyModel(name, "model named '"+name+"'", null, "", false, false) )
       .map( mdl => Ok("Added model " + mdl.id) )
   }
   
@@ -72,7 +71,7 @@ class Test @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models
       }
       case cs:CompoundSlot => {
         val ins = cs.createInstance()
-        for ( tt <- cs.getSubSlots) {
+        for ( tt <- cs.getSubSlots.asScala ) {
           if ( Random.nextBoolean() ) {
             ins.put( generateInstance(tt) )
           }

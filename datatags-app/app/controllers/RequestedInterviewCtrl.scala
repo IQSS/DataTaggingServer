@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 import play.api._
 import play.api.mvc._
-import play.api.cache.{AsyncCacheApi, CacheApi, SyncCacheApi}
+import play.api.cache.SyncCacheApi
 import play.api.libs.ws._
 import play.api.libs.json.{JsError, Json}
 import models._
@@ -37,7 +37,6 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
             val requestedInterviewSession = RequestedInterviewSession(interviewData.callbackURL, interviewData.title,
               interviewData.message, interviewData.returnButtonTitle, interviewData.returnButtonText, kitKey)
             cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
-            Logger.info( "Stored requested interview " + requestedInterviewSession.key)
             // send response with interview URL
             Created(routes.RequestedInterviewCtrl.start(requestedInterviewSession.key).url)
           }
@@ -49,7 +48,6 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
   }
   
   def start(uniqueLinkId: String) = Action.async { implicit request =>
-    Logger.info( "Fetching requested interview " + uniqueLinkId)
     cache.get[RequestedInterviewSession](uniqueLinkId) match {
    	  case None => Future(NotFound("Sorry - requested interview not found. Please try again using the system that sent you here."))
    	  case Some(requestedInterview) => {
@@ -79,9 +77,7 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
       val finalValue = request.userSession.tags.accept(Jsonizer)
       val json = Json.obj( "status"->"accept", "values"->finalValue )
       val callbackURL = request.userSession.requestedInterview.get.callbackURL
-      Logger.info("posting results back to '%s'".format(callbackURL))
       ws.url(callbackURL).post(Json.toJson(json)).map{ response =>
-        Logger.info( "Response status: " + response.status )
         response.status match {
           case 201 => Redirect(response.body)
           case _ => InternalServerError("Bad response from originating server:" + response.body + "\n\n("+response.status+")")
