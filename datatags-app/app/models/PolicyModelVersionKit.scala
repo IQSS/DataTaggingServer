@@ -103,6 +103,7 @@ class PolicyModelKits @Inject()(config:Configuration, models:PolicyModelsDAO){
   private val rootVisualizationsPath = Paths.get(config.get[String]("taggingServer.visualize.folder"))
   private val rootModelsPath = Paths.get(config.get[String]("taggingServer.models.folder"))
   
+  // Issue #49: These maps will probably be replaced with Caffeine coming via dependency injection.
   private val allKits: TrieMap[KitKey,PolicyModelVersionKit] = TrieMap()
   private val allLocalizations: TrieMap[KitKey, mutable.Map[String,Localization]] = TrieMap()
   private val logger = Logger( classOf[PolicyModelKits] )

@@ -1,7 +1,6 @@
 package controllers
 
 import java.sql.Timestamp
-import java.util.UUID
 
 import play.api.mvc._
 import play.api.cache.SyncCacheApi
@@ -52,7 +51,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
           pmvOpt.map( pmv => {
             // ensure viewing permissions
             if ( canView(request, pmv) ) {
-              val userSession = InterviewSession.create( kit, vpmOpt.exists(vpm => vpm.saveStat), vpmOpt.exists(vpm => vpm.noteOpt) )
+              val userSession = InterviewSession.create( kit, vpmOpt.exists(vpm => vpm.saveStat), vpmOpt.exists(vpm => vpm.notesAllowed) )
               cache.set(userSession.key.toString, userSession)
 
               //Add to DB InterviewHistory

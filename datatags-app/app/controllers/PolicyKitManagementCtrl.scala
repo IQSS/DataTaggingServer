@@ -20,7 +20,7 @@ import scala.concurrent.Future
 
 
 case class VpmFormData( id:String, title:String, note:String, saveStat:Boolean, noteOpt:Boolean) {
-  def this( vpm:VersionedPolicyModel ) = this(vpm.id, vpm.title, vpm.note, vpm.saveStat, vpm.noteOpt)
+  def this( vpm:VersionedPolicyModel ) = this(vpm.id, vpm.title, vpm.note, vpm.saveStat, vpm.notesAllowed)
   
   def toVersionedPolicyModel = VersionedPolicyModel(id, title, new Timestamp(System.currentTimeMillis()), note, saveStat, noteOpt)
   
