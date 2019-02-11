@@ -33,18 +33,24 @@
                     .flatMap(jop=>if(jop.isPresent) Some(jop.get) else None)
                     .getOrElse(Helpers.askNodeToMarkdown(ans.question))
           ){ nodeText =>
-            @Helpers.renderMarkdown( nodeText )
+            <div class="text">
+              @Helpers.renderMarkdown( nodeText )
+            </div>
           }
           @if( notes.contains(ans.question.getId) ){
-            <div class="note">
+            <div class="questionSection questionSectionNote">
               <h6>Note</h6>
               <div class="text">
                 @notes(ans.question.getId).note
               </div>
             </div>
           }
-          <div class="answer">
-            @session.localization.map( l=>l.localizeAnswer(ans.answer.getAnswerText)).getOrElse(Helpers.makeUpper(ans.answer.getAnswerText))
+          <div class="questionSection questionSectionAnswer">
+            <h6>Answer</h6>
+            <div class="text">
+              @session.localization.map( l=>l.localizeAnswer(ans.answer.getAnswerText)
+                     ).getOrElse(Helpers.makeUpper(ans.answer.getAnswerText))
+            </div>
           </div>
         </div>
       }
