@@ -19,7 +19,7 @@ class NotesDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvider,
 
   def getNote(uuid:UUID, nodeId:String): Future[Option[Note]] = {
     db.run(
-      notes.filter( n => (n.uuid === uuid) && (n.nodeId === nodeId)).result
+      notes.filter( n => (n.interviewHistoryId === uuid) && (n.nodeId === nodeId)).result
     ) map ( _.headOption )
   }
 
@@ -31,8 +31,12 @@ class NotesDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvider,
 
   def getNoteText(uuid:UUID, nodeId:String): Future[Option[String]] = {
     db.run(
-      notes.filter( n => (n.uuid === uuid) && (n.nodeId === nodeId)).map(_.note).result
+      notes.filter( n => (n.interviewHistoryId === uuid) && (n.nodeId === nodeId)).map(_.note).result
     ) map ( _.headOption )
   }
+  
+  def getNotesForInterview( interviewId:UUID ):Future[Map[String,Note]] = db.run {
+    notes.filter( r => r.interviewHistoryId === interviewId ).result
+  }.map( _.map(n=>(n.nodeId,n)).toMap )
 
 }

@@ -1,11 +1,7 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.values.AtomicValue
-@( qKit:PolicyModelVersionKit,
-   dataTags: edu.harvard.iq.datatags.model.values.CompoundValue,
-   codeTag: Option[edu.harvard.iq.datatags.model.values.AbstractValue],
-   requestedInterview: Option[RequestedInterviewSession],
-   answerHistory: Seq[AnswerRecord],
-   loc:Option[Localization]
+@( session :InterviewSession,
+   codeTag :Option[edu.harvard.iq.datatags.model.values.AbstractValue]
 )(implicit req:Request[_])
 
 @scripts = {
@@ -16,10 +12,6 @@
 @templates.bsNavBar("Dataset Accepted", 'ask, scripts) {
   <div class="row my-2">
     <div class="col">
-      @*<div class="alert alert-warning" role="alert">*@
-      @*<strong>This is a demonstration of the DataTags framework, and the tags on this page are provided for informational purposes only.</strong>*@
-      @*If you seek to share a dataset containing confidential information, you should consult the institutional review board of your organization.*@
-      @*</div>*@
       <div class="card">
         <div class="card-header bg-success text-white">
           Interview Completed - Final Results
@@ -38,11 +30,14 @@
               }
             </div>
           }
-          @comps.tagValue(dataTags, loc)
+          @comps.tagValue(session.tags, session.localization)
 
           <div class="text-center mt-2">
             <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
               <i class="fa fa-download"></i>&nbsp;Download Policy as JSON
+            </a>
+            <a href="@routes.InterviewCtrl.transcript(session.kit.id.modelId, session.kit.id.version)" class="btn btn-primary">
+              <i class="fa fa-book"></i>&nbsp;Interview Transcript
             </a>
           </div>
         </div>
@@ -56,12 +51,12 @@
           Answer History
         </div>
         <div class="card-body">
-        @comps.answerHistory(answerHistory, qKit.id, false, qKit.serializer, loc)
+        @comps.answerHistory(session.answerHistory, session.kit.id, false, session.kit.serializer, session.localization)
         </div>
       </div></div></div>
   <div class="row my-2">
     <div class="col text-center">
-      @requestedInterview match {
+      @session.requestedInterview match {
         case Some(reqInt) => {
           <p>@reqInt.returnButtonTitle</p>
           <form action="@routes.RequestedInterviewCtrl.postBackTo(reqInt.key)" method="POST">
@@ -69,7 +64,7 @@
           </form>
         }
         case None => {
-          <a href="@routes.InterviewCtrl.interviewIntro(qKit.id.modelId, qKit.id.version)" class="btn btn-primary">Start Again</a>
+          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.id.modelId, session.kit.id.version)" class="btn btn-primary">Start Again</a>
         }
       }
     </div>

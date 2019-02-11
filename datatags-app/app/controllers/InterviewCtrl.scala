@@ -35,6 +35,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
                               models:PolicyModelsDAO, cc:ControllerComponents, interviewHistories: InterviewHistoryDAO) extends InjectedController {
 
   private implicit val ec = cc.executionContext
+  private val logger = Logger( classOf[InterviewCtrl] )
   
   def interviewIntroDirect(modelId:String, versionNum:Int) = Action {
     TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, versionNum).url )
@@ -129,12 +130,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
             interviewHistories.changeLoc(req.userSession.key, req.userSession.localization.map(_.getLanguage).getOrElse(""))
           }
 
-            Ok(views.html.interview.question(kit,
+            Ok(views.html.interview.question( req.userSession,
               rte.getCurrentNode.asInstanceOf[AskNode],
-              updated.tags,
-              l.traversedNodes,
-              Seq(),
-              req.userSession.localization, updated.noteOpt, None))
+              None))
           })
       }
       
@@ -147,11 +145,11 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
     rte.setModel(req.userSession.kit.model)
     val l = rte.setListener(new TaggingEngineListener)
     rte.start()
-    val updated = req.userSession.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
-    cache.set(req.userSession.key.toString, updated)
+    val updatedSession = req.userSession.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
+    cache.set(req.userSession.key.toString, updatedSession)
 
     //Add Record to DB
-    if(updated.saveStat){
+    if(updatedSession.saveStat){
       interviewHistories.addRecord(
         InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "start interview"))
       interviewHistories.addRecord(
@@ -160,12 +158,11 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
       interviewHistories.changeLoc(req.userSession.key, req.userSession.localization.map(_.getLanguage).getOrElse(""))
     }
 
-    Ok(views.html.interview.question(req.userSession.kit,
+    Ok(views.html.interview.question(
+      updatedSession,
       rte.getCurrentNode.asInstanceOf[AskNode],
-      updated.tags,
-      l.traversedNodes,
-      Seq(),
-      req.userSession.localization, updated.noteOpt, None))
+      None)
+    )
   }
   
   def askNode( modelId:String, versionNum:Int, reqNodeId:String) = InterviewSessionAction(cache, cc).async { implicit req =>
@@ -192,24 +189,14 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
           interviewHistories.addRecord(
             InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "q: " + askNode.getId))
         }
-        if(session.noteOpt && session.notes.contains(reqNodeId)){
+        if(session.allowNotes && session.notes.contains(reqNodeId)){
           for {
             note <- notes.getNoteText(session.key, reqNodeId)
           } yield {
-            Ok( views.html.interview.question( kit,
-              askNode,
-              session.tags,
-              session.traversed,
-              session.answerHistory,
-              session.localization, session.noteOpt, note ))
+            Ok( views.html.interview.question( session, askNode, note ))
           }
         } else {
-          Future(Ok( views.html.interview.question( kit,
-            askNode,
-            session.tags,
-            session.traversed,
-            session.answerHistory,
-            session.localization, session.noteOpt, None) ))
+          Future(Ok( views.html.interview.question( session, askNode, None) ))
         }
       }
       case None => Future(NotFound("Model not found."))
@@ -306,13 +293,12 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
     val codeOpt = Option(tags.getSlot.getSubSlot("Code")).map(tags.get)
 
     //Add Record to DB
-    if(request.userSession.saveStat){
+    if ( session.saveStat ) {
       interviewHistories.addRecord(
         InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "accept"))
     }
-
-    Ok( views.html.interview.accepted(session.kit, tags, codeOpt,
-                                        session.requestedInterview, session.answerHistory, session.localization) )
+    
+    Ok( views.html.interview.accepted(session, codeOpt) )
   }
 
   def reject( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc) { implicit request =>
@@ -326,8 +312,17 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
         InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "reject"))
     }
 
-    Ok( views.html.interview.rejected(session.kit, node.asInstanceOf[RejectNode],
-      session.requestedInterview, session.answerHistory, session.localization ) )
+    Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode]) )
+  }
+  
+  def transcript( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc).async { implicit request =>
+    val session = request.userSession
+    
+    notes.getNotesForInterview(session.key).map( noteMap => {
+        Ok( views.html.interview.transcript(session, noteMap) )
+      }
+    )
+    
   }
   
   def downloadTags = InterviewSessionAction(cache, cc) { implicit request =>
@@ -357,7 +352,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
 
   }
 
-  // TODO: return a Future[EngineRunResult]
   def runUpToNode(kit:PolicyModelVersionKit, nodeId: String, answers:Seq[AnswerRecord] ) : EngineRunResult = {
     val rte = new RuntimeEngine
     rte.setModel( kit.model )
@@ -378,7 +372,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
   /**
    * Run the engine, from the start, through all the answer sequence passed.
    */
-  // TODO: return a Future[EngineRunResult]
   def replayAnswers(kit:PolicyModelVersionKit, answers:Seq[AnswerRecord] ) : EngineRunResult = {
     val rte = new RuntimeEngine
     rte.setModel( kit.model )

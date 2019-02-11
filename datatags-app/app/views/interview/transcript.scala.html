@@ -1,0 +1,54 @@
+@( session:InterviewSession,
+        notes: Map[String,Note]
+)(implicit req:Request[_])
+
+@scripts = {
+  <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
+  <script type="text/javascript" src="@routes.Assets.at("js/Question.js")"></script>
+}
+
+@templates.bsNavBar("Interview Transcript", 'ask, scripts) {
+  <div class="row my-2">
+    <div class="col">
+      <div class="card">
+        <div class="card-header bg-success text-white">
+          Result
+        </div>
+        <div class="card-body">
+          @comps.tagValue(session.tags, session.localization)
+          <div class="text-center mt-2">
+            <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
+              <i class="fa fa-download"></i>&nbsp;Download Policy as JSON
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row my-2">
+    <div class="col transcript">
+      @for( ans <- session.answerHistory ) {
+        <div class="question">
+          @defining( session.localization.map(_.getNodeText(ans.question.getId))
+                    .flatMap(jop=>if(jop.isPresent) Some(jop.get) else None)
+                    .getOrElse(Helpers.askNodeToMarkdown(ans.question))
+          ){ nodeText =>
+            @Helpers.renderMarkdown( nodeText )
+          }
+          @if( notes.contains(ans.question.getId) ){
+            <div class="note">
+              <h6>Note</h6>
+              <div class="text">
+                @notes(ans.question.getId).note
+              </div>
+            </div>
+          }
+          <div class="answer">
+            @session.localization.map( l=>l.localizeAnswer(ans.answer.getAnswerText)).getOrElse(Helpers.makeUpper(ans.answer.getAnswerText))
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+}

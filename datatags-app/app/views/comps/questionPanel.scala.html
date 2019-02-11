@@ -1,9 +1,9 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 @(questionNode:AskNode, pmvKit:PolicyModelVersionKit, loc:Option[Localization],
-        answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, noteOpt:Boolean, note:Option[String])
+        answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, allowNotes:Boolean, note:Option[String])
 
-<div class="card m-2 border-secondary">
+<div class="card m-2 border-secondary questionPanel">
   <div class="card-header bg-secondary text-white d-flex">
     <div class="flex-grow-1">
       Question: Please select one answer
@@ -24,25 +24,25 @@
       @Helpers.renderMarkdown( nodeText )
     }
   </div>
-  <div class="card-footer text-center">
   @helper.form( action=routes.InterviewCtrl.answer(pmvKit.id.modelId, pmvKit.id.version, questionNode.getId), 'id->"answerForm" ) {
-      @if(noteOpt){
-        @if(note.nonEmpty) {<div id="noteDiv"> } else {<div id="noteDiv" style="display: none">}
-          <textarea id="note" name="note" class="form-control" rows="2">@note.getOrElse("")</textarea>
-        </div>
-        <div class="pull-left">
-          <button type="button" class="btn btn-secondary" onclick="$('#noteDiv').slideToggle()">Add note</button>
-        </div>
-      }
-      @for( ans <- questionNode.getAnswers ) {
-        <button type="button" @if(interactive){ class="btn btn-primary"
-          onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{ class="btn btn-outline-primary" disabled} >
-        @loc.map( l=>l.localizeAnswer(ans.getAnswerText)).getOrElse(Helpers.makeUpper(ans.getAnswerText))</button>
-      }
+    <div class="card-body noteCtnr" id="noteDiv" @if(note.isEmpty) {style="display: none" }>
+        <textarea placeholder="Annotate your answer here" name="note" class="form-control" rows="2">@note.getOrElse("")</textarea>
+    </div>
+    <div class="card-footer">
+      <div class="answerButtonCtnr">
+        @if(allowNotes){
+          <button type="button" class="toggleNoteBtn" onclick="$('#noteDiv').slideToggle()"><i class="fa fa-pencil"></i> Add note</button>
+        }
+        @for( ans <- questionNode.getAnswers ) {
+          <button type="button" @if(interactive){ class="btn btn-primary"
+            onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{ class="btn btn-outline-primary" disabled} >
+          @loc.map( l=>l.localizeAnswer(ans.getAnswerText)).getOrElse(Helpers.makeUpper(ans.getAnswerText))</button>
+        }
+      </div>
       @if( interactive ) {
         <input type="hidden" name="answerText" id="answerText" value="" />
         <input type="hidden" name="serializedHistory" id="serializedHistory" value="@pmvKit.serializer.encode(answerHistory)"/>
       }
-    }
-  </div>
+    </div>
+  }
 </div>

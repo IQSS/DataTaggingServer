@@ -2,10 +2,12 @@
 import org.scalatestplus.play._
 import edu.harvard.iq.datatags.runtime.RuntimeEngineState
 import edu.harvard.iq.datatags.model.charts.nodes._
+import edu.harvard.iq.datatags.model.graphs.Answer
+import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 import edu.harvard.iq.datatags.model.values._
 import models._
 
-class InterviewSessionSpeck extends PlaySpec {
+class InterviewSessionSpec extends PlaySpec {
 
 "A New UserSession" must {
   "Have an empty traversed node history" in {

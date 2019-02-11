@@ -1,10 +1,7 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@( pmvKit: PolicyModelVersionKit,
+@( session:InterviewSession,
    questionNode: edu.harvard.iq.datatags.model.graphs.nodes.AskNode,
-   dataTags: edu.harvard.iq.datatags.model.values.CompoundValue,
-   history:Seq[edu.harvard.iq.datatags.model.graphs.nodes.Node],
-   answerHistory: Seq[AnswerRecord],
-   loc:Option[Localization], noteOpt:Boolean, note:Option[String]
+   note:Option[String]
 )(implicit req:Request[_])
 
 @scripts = {
@@ -17,7 +14,7 @@
 @templates.bsNavBar( "Question", 'tag, scripts) {
   <div class="row">
     <div class="col">
-      <a href="@routes.InterviewCtrl.startInterview(pmvKit.id.modelId, pmvKit.id.version, loc.map(_.getLanguage))">
+      <a href="@routes.InterviewCtrl.startInterview(session.kit.id.modelId, session.kit.id.version, session.localization.map(_.getLanguage))">
         <i class="fa fa-arrow-left"></i> Intro
       </a>
       <br>
@@ -26,7 +23,8 @@
   <div class="row">
     <div class="col">
      @comps.questionPanel(
-       questionNode, pmvKit, loc, answerHistory, pmvKit.dbData.commentingStatus != CommentingStatus.Closed, interactive=true, showId = false, noteOpt, note
+       questionNode, session.kit, session.localization, session.answerHistory,
+       session.kit.dbData.commentingStatus != CommentingStatus.Closed, interactive=true, showId = false, session.allowNotes, note
      )
     </div>
   </div>
@@ -37,8 +35,8 @@
               Answer Feed
           </div>
           <div class="card-body">
-              @if( answerHistory.nonEmpty ) {
-                  @comps.answerHistory(answerHistory, pmvKit.id, reverse=true, pmvKit.serializer, loc)
+              @if( session.answerHistory.nonEmpty ) {
+                  @comps.answerHistory(session.answerHistory, session.kit.id, reverse=true, session.kit.serializer, session.localization)
               } else {
                   <div class="well well-sm text-center">
                       <span class="muted small">This space will contain your answers, and will allow you to revisit them when needed.</span>
@@ -54,12 +52,12 @@
           </div>
           <div class="card-body">
               <ul class="list-unstyled">
-                  @if( dataTags.getNonEmptySubSlots.isEmpty ) {
+                  @if( session.tags.getNonEmptySubSlots.isEmpty ) {
                       <div class="well well-sm text-center">
                           <span class="muted small">This space will contain the resultant policy. It will be updated as we go along.</span>
                       </div>
                   } else {
-                      @comps.tagValue(dataTags, loc)
+                      @comps.tagValue(session.tags, session.localization)
                   }
               </ul>
           </div>
@@ -84,7 +82,7 @@
                           </tr>
                       </thead>
                       <tbody>
-                      @for( nd <- history.reverse ){
+                      @for( nd <- session.traversed.reverse ){
                           <tr>
                               @comps.node(nd)
                           </tr>

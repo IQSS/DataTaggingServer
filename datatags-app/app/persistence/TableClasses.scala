@@ -139,13 +139,13 @@ class InterviewHistoryRecordTable(tag:Tag) extends Table[InterviewHistoryRecord]
 }
 
 class NotesTable(tag:Tag) extends Table[Note](tag, "notes"){
-  def uuid        = column[UUID]("uuid", O.PrimaryKey)
-  def note        = column[String]("note")
-  def nodeId      = column[String]("node_id", O.PrimaryKey)
+  def interviewHistoryId = column[UUID]("interview_history_id", O.PrimaryKey)
+  def note               = column[String]("note")
+  def nodeId             = column[String]("node_id", O.PrimaryKey)
 
-  def fk_uuid = foreignKey("notes_uuid_fkey", uuid, TableClasses.interviewHistories)(_.key)
+  def fk_uuid = foreignKey("notes_interview_history_id_fkey", interviewHistoryId, TableClasses.interviewHistories)(_.key)
 
-  def * = (uuid, note, nodeId) <> (Note.tupled, Note.unapply)
+  def * = (interviewHistoryId, note, nodeId) <> (Note.tupled, Note.unapply)
 }
 
 object TableClasses {

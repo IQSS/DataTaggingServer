@@ -2,12 +2,12 @@
 
 # -- !Ups
 create table notes (
-  uuid uuid,
+  interview_history_id uuid,
   note text,
-  node_id char(64),
+  node_id varchar(256),
 
-  PRIMARY KEY (uuid, node_id),
-  FOREIGN KEY (uuid) REFERENCES interview_history (key) ON DELETE CASCADE
+  PRIMARY KEY (interview_history_id, node_id),
+  FOREIGN KEY (interview_history_id) REFERENCES interview_history (key) ON DELETE CASCADE
 );
 
 # -- !Downs

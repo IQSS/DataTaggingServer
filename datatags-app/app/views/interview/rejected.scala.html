@@ -1,17 +1,14 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
 @import Helpers.{o2o, renderMarkdown}
-@(pmvKit: PolicyModelVersionKit,
-  node: RejectNode,
-  requestedInterview: Option[RequestedInterviewSession],
-  answerHistory: Seq[AnswerRecord],
-  loc:Option[Localization]
+@(session:InterviewSession,
+  node: RejectNode
 )(implicit req:Request[_])
 
 @templates.bsNavBar("Dataset Rejected", 'tag) {
   <div class="row my-2">
     <div class="col">
-      @comps.rejectPanel(node, pmvKit, loc, answerHistory, pmvKit.dbData.commentingStatus != CommentingStatus.Closed)
+      @comps.rejectPanel(node, session.kit, session.localization, session.answerHistory, session.kit.dbData.commentingStatus != CommentingStatus.Closed)
     </div>
   </div>
   <div class="row my-2">
@@ -21,7 +18,7 @@
           Answer History
         </div>
         <div class="card-body">
-          @comps.answerHistory(answerHistory, pmvKit.id, false, pmvKit.serializer, loc)
+          @comps.answerHistory(session.answerHistory, session.kit.id, false, session.kit.serializer, session.localization)
         </div>
       </div>
     </div>
@@ -30,7 +27,7 @@
   <div class="row my-2">
     <div class="col text-center">
 
-      @requestedInterview match {
+      @session.requestedInterview match {
         case Some(reqInt) => {
           <p>@reqInt.returnButtonTitle</p>
           <form action="@routes.RequestedInterviewCtrl.unacceptableDataset(reqInt.key, node.getReason)" method="POST">
@@ -38,7 +35,7 @@
           </form>
         }
         case None => {
-          <a href="@routes.InterviewCtrl.interviewIntro(pmvKit.id.modelId, pmvKit.id.version)" class="btn btn-primary">Start Again</a>
+          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.id.modelId, session.kit.id.version)" class="btn btn-primary">Start Again</a>
         }
       }
     </div>

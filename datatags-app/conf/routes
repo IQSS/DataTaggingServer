@@ -15,8 +15,9 @@ GET     /models/:modelId/:versionNum/postReadme  controllers.InterviewCtrl.start
 GET     /models/:modelId/:versionNum/q/:nodeId   controllers.InterviewCtrl.askNode(modelId, versionNum:Int, nodeId)
 POST    /models/:modelId/:versionNum/q/:nodeId   controllers.InterviewCtrl.answer(modelId, versionNum:Int, nodeId)
 GET     /models/:modelId/:versionNum/accept      controllers.InterviewCtrl.accept(modelId, versionNum:Int)
+GET     /models/:modelId/:versionNum/transcript  controllers.InterviewCtrl.transcript(modelId, versionNum:Int)
 GET     /models/:modelId/:versionNum/reject      controllers.InterviewCtrl.reject(modelId, versionNum:Int)
-POST    /models/:modelId/:versionNum/revisit/    controllers.InterviewCtrl.revisit(modelId, versionNum:Int)
+POST    /models/:modelId/:versionNum/revisit     controllers.InterviewCtrl.revisit(modelId, versionNum:Int)
 GET     /models/:modelId/:versionNum/allQuestions controllers.InterviewCtrl.viewAllQuestions(modelId, versionNum:Int, localizationName:Option[String]?=None)
 
 

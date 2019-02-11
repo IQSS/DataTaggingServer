@@ -23,7 +23,7 @@ case class InterviewSession(key:UUID,
                             sessionStart: Date,
                             requestedInterview: Option[RequestedInterviewSession],
                             saveStat:Boolean,
-                            noteOpt:Boolean) {
+                            allowNotes:Boolean) {
 
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat

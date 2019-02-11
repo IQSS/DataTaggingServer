@@ -1,6 +1,6 @@
 @(formID:String, versionPolicyModelID:String, version:Int, locOpt:Option[String], targetType:String, targetContent:String, buttonClass:String="btn-outline-dark")
 <div class="commentComponent">
-  <button onclick="Comments.toggleForm('@formID')" class="btn btn-sm @buttonClass"><i class="fa fa-edit"></i> Comment</button>
+  <button type="button" onclick="Comments.toggleForm('@formID')" class="btn btn-sm @buttonClass"><i class="fa fa-edit"></i> Comment</button>
   <div class="commentFormDiv" id="@formID" style="display:none">
     <input type="hidden" data-role="versionPolicyModelID" value="@versionPolicyModelID">
     <input type="hidden" data-role="version" value="@version">

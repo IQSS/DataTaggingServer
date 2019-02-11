@@ -77,13 +77,73 @@ h1, h2, h3 {
   }
 }
 
-.questionText {
-  font-size: 18px;
-  font-weight: 300;
+.questionPanel {
+  .noteCtnr {
+    width: 100%;
+    padding: .5em;
+    box-shadow: inset 0px 2px 4px  rgba(0,0,0,.25);
+    background-color: #EEE;
+  }
+  .card-footer {
+    position: relative;
+  }
+  .answerButtonCtnr {
+    text-align: center;
+
+    button.toggleNoteBtn {
+      background-color: transparent;
+      border: 1px solid #6c757d;
+      font-size: 0.7em;
+      border-radius: 0 0 5px 5px;
+      position: absolute;
+      top: 0;
+      height: auto;
+      width: auto;
+      left: 10px;
+      &:hover {
+        background-color: white;
+      }
+    }
+  }
+}
+
+.transcript {
+  .question {
+    border-top: 1px solid #DDD;
+
+    .note{
+      display: flex;
+      align-content: stretch;
+      flex-direction: row;
+      align-items: center;
+
+      background-color: #DDD;
+      font-style: italic;
+      border: 1px solid #EFEFEF;
+      margin: 0.2em;
+      padding: 0.4em;
+      border-radius: 0.4em;
+      font-size: 0.8em;
+      h6 {
+        flex-grow: 0;
+        margin: 0.5em 0.5em .5em 0;
+      }
+      .text {
+        flex-grow: 1;
+      }
+    }
+
+    .answer {
+      font-weight: bold;
+      text-align: right;
+      background-color: #FFE;
+      padding: 0.2em;
+    }
+  }
 }
 
 @rotate: -1deg;
-.note {
+.pinnedNote {
     &:before {
       content:url(/assets/images/ThumbTack.png);
       display: block;
