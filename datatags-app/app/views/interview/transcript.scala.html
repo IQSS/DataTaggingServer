@@ -1,3 +1,4 @@
+@import  edu.harvard.iq.datatags.runtime.RuntimeEngineStatus
 @( session:InterviewSession,
         notes: Map[String,Note]
 )(implicit req:Request[_])
@@ -10,18 +11,28 @@
 @templates.bsNavBar("Interview Transcript", 'ask, scripts) {
   <div class="row my-2">
     <div class="col">
+      <h2>
+        <div class="pull-right">
+          <a class="btn btn-sm btn-outline-dark" href="@routes.InterviewCtrl.transcript(session.kit.id.modelId, session.kit.id.version, Some("xml"))">
+            <i class="fa fa-code"></i>
+            Download as xml
+          </a>
+        </div>
+        Interview Transcript</h2>
+      Model <strong>@session.kit.id.modelId version @session.kit.id.version</strong>
+    </div>
+  </div>
+  <div class="row my-2">
+    <div class="col">
       <div class="card">
-        <div class="card-header bg-success text-white">
-          Result
-        </div>
-        <div class="card-body">
-          @comps.tagValue(session.tags, session.localization)
-          <div class="text-center mt-2">
-            <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
-              <i class="fa fa-download"></i>&nbsp;Download Policy as JSON
-            </a>
+        @defining( session.engineState.getStatus == RuntimeEngineStatus.Accept ) { accepted =>
+          <div class="card-header @if(accepted){bg-success}else{bg-danger} text-white">
+            Result @if(!accepted){ - Rejection}
           </div>
-        </div>
+          <div class="card-body">
+            @comps.tagValue(session.tags, session.localization)
+          </div>
+        }
       </div>
     </div>
   </div>

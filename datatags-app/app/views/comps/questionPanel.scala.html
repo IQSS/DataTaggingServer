@@ -31,7 +31,7 @@
     <div class="card-footer">
       <div class="answerButtonCtnr">
         @if(allowNotes){
-          <button type="button" class="toggleNoteBtn" onclick="$('#noteDiv').slideToggle()"><i class="fa fa-pencil"></i> Add note</button>
+          <button type="button" class="toggleNoteBtn" onclick="$('#noteDiv').slideToggle(); $('#noteDiv textarea').focus()"><i class="fa fa-pencil"></i> Add note</button>
         }
         @for( ans <- questionNode.getAnswers ) {
           <button type="button" @if(interactive){ class="btn btn-primary"

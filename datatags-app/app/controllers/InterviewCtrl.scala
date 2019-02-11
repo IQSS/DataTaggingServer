@@ -11,16 +11,17 @@ import edu.harvard.iq.datatags.model.graphs.nodes._
 import models._
 import _root_.util.Jsonizer
 import javax.inject.Inject
-
 import com.ibm.icu.text.SimpleDateFormat
 import edu.harvard.iq.datatags.externaltexts.MarkupString
 import edu.harvard.iq.datatags.model.graphs.Answer
 import persistence.{InterviewHistoryDAO, NotesDAO, PolicyModelsDAO}
 import play.api.Logger
 import play.api.mvc.Results.Redirect
+import views.Helpers
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.xml.PCData
 
 
 object InterviewCtrl {
@@ -314,14 +315,16 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
     Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode]) )
   }
   
-  def transcript( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc).async { implicit request =>
+  def transcript( modelId:String, versionNum:Int, format:Option[String] ) = InterviewSessionAction(cache, cc).async { implicit request =>
     val session = request.userSession
-    
     notes.getNotesForInterview(session.key).map( noteMap => {
-        Ok( views.html.interview.transcript(session, noteMap) )
+      format.map( _.trim.toLowerCase ) match {
+        case None         => Ok( views.html.interview.transcript(session, noteMap) )
+        case Some("html") => Ok( views.html.interview.transcript(session, noteMap) )
+        case Some("xml")  => Ok( Helpers.transcriptAsXml(session, noteMap) )
+        case _ => BadRequest("Unknown format")
       }
-    )
-    
+    })
   }
   
   def downloadTags = InterviewSessionAction(cache, cc) { implicit request =>
@@ -410,4 +413,5 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
       false
     }
   }
+  
 }

@@ -53,7 +53,16 @@ class TestCtrl @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, mo
       case None => NotFound("Can't find model")
     }
   }
-
+  
+  def getXmlText(count:Int) = Action { req =>
+    val list = collection.immutable.Range(0,count).map(i=> <item>{i}</item>)
+    val elem = <base>
+      <k>grrr</k>
+      {list}
+    </base>
+    Ok( elem )
+  }
+  
   def generateInstance(tt:AbstractSlot):AbstractValue = {
     tt match {
       case as:AtomicSlot => as.values.first()

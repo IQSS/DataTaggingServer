@@ -20,9 +20,11 @@ import com.vladsch.flexmark.parser.Parser
 import controllers.LoggedInAction
 import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 import edu.harvard.iq.datatags.model.values.AbstractValue
-import models.{CommentingStatus, PublicationStatus}
+import models.{CommentingStatus, InterviewSession, Note, PublicationStatus}
 import play.api.data.{Field, FormError}
 import play.api.mvc.Request
+
+import scala.xml.{Elem, NodeBuffer, PCData}
 
 object Helpers {
   
@@ -202,6 +204,41 @@ object Helpers {
     } else {
       Html("")
     }
+  }
+  
+  def transcriptAsXml(session:InterviewSession, noteMap:Map[String,Note]):scala.xml.Elem = {
+    val head = <metadata>
+          <model>
+            <id>{session.kit.id.modelId}</id>
+            <version>{session.kit.id.modelId}</version>
+            <localization>{session.localization.map(l=>l.getLanguage).getOrElse("-NONE-")}</localization>
+          </model>
+        </metadata>
+    
+    val questionTextMap = session.answerHistory.map( ans =>
+      ans.question.getId -> session.localization.map(_.getNodeText(ans.question.getId))
+        .flatMap(jop=>if(jop.isPresent) Some(jop.get) else None)
+        .getOrElse(Helpers.askNodeToMarkdown(ans.question))
+    ).toMap
+    
+    val answerMap = session.answerHistory.map( ans => (
+      ans.question.getId,
+      session.localization.map( l=>l.localizeAnswer(ans.answer.getAnswerText)).getOrElse(Helpers.makeUpper(ans.answer.getAnswerText))
+    )
+    ).toMap
+    
+    val body:Elem = <interview>
+      {session.answerHistory.map( ans => <question id={ans.question.getId}>
+        <text>{PCData(questionTextMap(ans.question.getId))}</text>
+        <note>{PCData(noteMap.get(ans.question.getId).map(_.note).getOrElse(""))}</note>
+        <answer>{answerMap(ans.question.getId)}</answer>
+      </question>)}
+    </interview>
+      
+    return <transcript>
+      {head}
+      {body}
+    </transcript>
   }
   
 }
