@@ -15,7 +15,7 @@ import com.ibm.icu.text.SimpleDateFormat
 import edu.harvard.iq.datatags.externaltexts.MarkupString
 import edu.harvard.iq.datatags.model.graphs.Answer
 import persistence.{InterviewHistoryDAO, NotesDAO, PolicyModelsDAO}
-import play.api.Logger
+import play.api.{Configuration, Logger}
 import play.api.mvc.Results.Redirect
 import views.Helpers
 
@@ -106,6 +106,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
           val updated = req.userSession.copy(localization = l10n)
           cache.set(req.userSession.key.toString, updated)
         }
+        //Change loc
+        interviewHistories.changeLoc(req.userSession.key, l10n.map(_.getLanguage).getOrElse(""))
+
         // if there's a readme present, we show it first. Else, we start the interview.
         readmeOpt.map( readMe => Ok(views.html.interview.showReadme(kit, readMe,
                                                                      l10n.map(_.getLocalizedModelData.getTitle).getOrElse(kit.model.getMetadata.getTitle),
@@ -126,8 +129,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
               InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "start interview"))
             interviewHistories.addRecord(
               InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "q: " + rte.getCurrentNode.getId))
-            //Change loc
-            interviewHistories.changeLoc(req.userSession.key, req.userSession.localization.map(_.getLanguage).getOrElse(""))
           }
 
             Ok(views.html.interview.question( req.userSession,
@@ -154,8 +155,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
         InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "start interview"))
       interviewHistories.addRecord(
         InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "q: " + rte.getCurrentNode.getId))
-      //Change loc
-      interviewHistories.changeLoc(req.userSession.key, req.userSession.localization.map(_.getLanguage).getOrElse(""))
     }
 
     Ok(views.html.interview.question(
@@ -193,7 +192,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
           for {
             note <- notes.getNoteText(session.key, reqNodeId)
           } yield {
-            Ok( views.html.interview.question( session, askNode, note ))
+            Ok( views.html.interview.question( session, askNode, note))
           }
         } else {
           Future(Ok( views.html.interview.question( session, askNode, None) ))

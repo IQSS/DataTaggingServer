@@ -240,5 +240,10 @@ object Helpers {
       {body}
     </transcript>
   }
+
+  def isRtl(lang:String):Boolean = {
+    val rtlLangs = Set("he", "ar")
+    rtlLangs.contains(lang.toLowerCase)
+  }
   
 }

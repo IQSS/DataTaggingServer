@@ -9,9 +9,15 @@
     <script type="text/javascript" src="@routes.Assets.at("js/Question.js")"></script>
 }
 
+@extraHead = {
+  @if(Helpers.isRtl(session.localization.map(_.getLanguage).getOrElse(""))){
+    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+  }
+}
+
 @import views.Helpers
 
-@templates.bsNavBar( "Question", 'tag, scripts) {
+@templates.bsNavBar( "Question", 'tag, scripts, extraHead ) {
   <div class="row">
     <div class="col">
       <a href="@routes.InterviewCtrl.startInterview(session.kit.id.modelId, session.kit.id.version, session.localization.map(_.getLanguage))">

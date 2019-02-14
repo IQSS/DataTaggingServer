@@ -9,7 +9,13 @@
     <script type="text/javascript" src="@routes.Assets.at("js/Question.js")"></script>
 }
 
-@templates.bsNavBar("Dataset Accepted", 'ask, scripts) {
+@extraHead = {
+  @if(Helpers.isRtl(session.localization.map(_.getLanguage).getOrElse(""))){
+    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+  }
+}
+
+@templates.bsNavBar("Dataset Accepted", 'ask, scripts, extraHead) {
   <div class="row my-2">
     <div class="col">
       <div class="card">

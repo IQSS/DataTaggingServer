@@ -5,7 +5,14 @@
   node: RejectNode
 )(implicit req:Request[_])
 
-@templates.bsNavBar("Dataset Rejected", 'tag) {
+
+@extraHead = {
+  @if(Helpers.isRtl(session.localization.map(_.getLanguage).getOrElse(""))){
+    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+  }
+}
+
+@templates.bsNavBar("Dataset Rejected", 'tag, extraHead = extraHead) {
   <div class="row my-2">
     <div class="col">
       @comps.rejectPanel(node, session.kit, session.localization, session.answerHistory, session.kit.dbData.commentingStatus != CommentingStatus.Closed)

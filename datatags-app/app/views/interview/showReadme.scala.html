@@ -1,16 +1,21 @@
 @import edu.harvard.iq.datatags.externaltexts.MarkupString
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@( qKit:PolicyModelVersionKit, readme:MarkupString, title:String, subTitle:String, loc:Option[Localization] )(implicit req:Request[_])
+@( qKit:PolicyModelVersionKit, readme:MarkupString, title:String, subTitle:String, loc:Option[Localization])(implicit req:Request[_])
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
   <script type="text/javascript" src="@routes.Assets.at("js/Question.js")"></script>
 }
 
+@extraHead = {
+  @if(Helpers.isRtl(loc.map(_.getLanguage).getOrElse(""))){
+    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+  }
+}
+
 @import views.Helpers
 
-@templates.bsNavBar(qKit.model.getMetadata.getTitle + ": README", 'tag, scripts) {
-
+@templates.bsNavBar(qKit.model.getMetadata.getTitle + ": README", 'tag, scripts, extraHead) {
 <div class="row">
   <div class="col-md-12">
     <div>

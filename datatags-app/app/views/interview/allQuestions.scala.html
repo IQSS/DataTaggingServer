@@ -68,8 +68,14 @@ loc:Option[Localization]
   }}
 }
 
+@extraHead = {
+  @if(Helpers.isRtl(loc.map(_.getLanguage).getOrElse(""))){
+    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+  }
+}
 
-@templates.bsNavBar("Interview questions: " + pmvKit.model.getMetadata.getVersion, 'tag ) {
+
+@templates.bsNavBar("Interview questions: " + pmvKit.model.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
   <div class="row">
     <div class="col-md-12">
       <a href="@routes.InterviewCtrl.interviewIntro(pmvKit.id.modelId, pmvKit.id.version)"><i class="fa fa-arrow-left"></i> Back</a>
