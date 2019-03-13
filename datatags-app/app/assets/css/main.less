@@ -376,21 +376,21 @@ footer {
   padding: 0;
   margin: 0;
 
+
   .answer-record {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
     border-bottom: 1px #DDD solid;
     padding: 4px;
     position: relative;
     margin-bottom: 0.2em;
     .ar-question {
-      width:  100%;
-      margin: 0;
-      padding-right: @ar-controls-width;
+      flex-shrink: 1;
+      flex-grow: 1;
     }
     .ar-controls {
-      position: absolute;
-      top:0;
-      right: 0;
-      width: @ar-controls-width;
+      flex-grow: 0;
       text-align: right;
       form {
         display: inline;
