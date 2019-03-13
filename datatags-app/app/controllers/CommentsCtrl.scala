@@ -1,61 +1,55 @@
 package controllers
 
 import javax.inject.Inject
-
 import edu.harvard.iq.datatags.externaltexts.MarkupString
-import models.{Comment, CommentDTO, KitKey, PolicyModelKits}
+import models.{CommentDTO, KitKey, VersionKit}
 import play.api.libs.json._
-import persistence.CommentsDAO
-import play.api.Logger
+import persistence.{CommentsDAO, LocalizationManager, ModelManager}
 import play.api.cache.SyncCacheApi
 import play.api.mvc.{ControllerComponents, InjectedController}
 
+import scala.compat.java8.OptionConverters._
 import scala.concurrent.Future
-import _root_.util.JavaOptionals.toRichOptional
 
-class CommentsCtrl @Inject()(comments:CommentsDAO, kits:PolicyModelKits,
-                             cache:SyncCacheApi, cc:ControllerComponents) extends InjectedController{
+class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:LocalizationManager,
+                             cache:SyncCacheApi, cc:ControllerComponents) extends InjectedController {
+
   import JSONFormats.commentDTOFmt
+
   implicit private val ec = cc.executionContext
 
-  def apiAddComment = Action(parse.tolerantJson).async {implicit req =>
+  def apiAddComment = Action(parse.tolerantJson).async { implicit req =>
     req.body.validate[CommentDTO] match {
-        case s:JsSuccess[CommentDTO] => {
-          comments.addComment(s.value.toComment()).map(_ => Ok(Json.toJson("message" -> "Comment sent")))
-        }
-        case e:JsError => {
-          Future(BadRequest(Json.toJson(Json.obj("message" -> e.toString))))
-        }
-        
+      case s: JsSuccess[CommentDTO] => {
+        comments.addComment(s.value.toComment()).map(_ => Ok(Json.toJson("message" -> "Comment sent")))
       }
-    }
-  
-  def showComment(id:Long) = LoggedInAction(cache, cc).async { implicit req =>
-    for {
-      commentOpt <- comments.get(id)
-    } yield {
-      commentOpt match {
-        case None => NotFound("Cannot find comment " + id)
-        case Some(comment) => {
-          val cmt = comment.trimmed
-          val kit = kits.get(KitKey(cmt.versionedPolicyModelID, comment.version))
-          kit match {
-            case None => NotFound("Cannot find comment " + id)
-            case Some(aKit) => {
-              val loc = cmt.localization.flatMap(ln=>kits.localization(aKit.id, ln.trim))
-  
-              val readmeOpt:Option[MarkupString] = loc.map( loc =>
-                loc.getLocalizedModelData.getBestReadmeFormat.toOption.map(loc.getLocalizedModelData.getReadme(_))
-              ).getOrElse(aKit.model.getMetadata.getBestReadmeFormat.toOption.map(aKit.model.getMetadata.getReadme(_)))
-  
-              Ok( views.html.backoffice.commentViewer(cmt, aKit, loc, readmeOpt) )
-            }
-          }
-          
-        }
+      case e: JsError => {
+        Future(BadRequest(Json.toJson(Json.obj("message" -> e.toString))))
       }
+
     }
   }
+
+  def showComment(id: Long) = LoggedInAction(cache, cc).async { implicit req =>
+    for {
+      commentOpt <- comments.get(id)
+      modelOpt:Option[VersionKit] <- commentOpt.map(cmt => models.getVersionKit(KitKey(cmt.modelID, cmt.version))).getOrElse(Future(None))
+    } yield {
+      modelOpt match {
+        case None => NotFound("Cannot find model " + id)
+        case Some(aKit) => {
+          val loc = commentOpt.get.localization.flatMap(ln => locs.localization(aKit.md.id, ln.trim))
+          val readmeOpt: Option[MarkupString] = loc.map(loc =>
+            loc.getLocalizedModelData.getBestReadmeFormat.asScala.map(loc.getLocalizedModelData.getReadme(_))
+          ).getOrElse(aKit.model.get.getMetadata.getBestReadmeFormat.asScala.map(aKit.model.get.getMetadata.getReadme(_)))
+
+          Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, loc, readmeOpt))
+        }
+      }
+
+    }
+  }
+
   
   def apiSetCommentStatus(id:Long) = Action.async{ implicit req =>
     comments.get(id).flatMap({

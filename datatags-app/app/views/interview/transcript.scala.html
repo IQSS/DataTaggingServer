@@ -13,13 +13,13 @@
     <div class="col">
       <h2>
         <div class="pull-right">
-          <a class="btn btn-sm btn-outline-dark" href="@routes.InterviewCtrl.transcript(session.kit.id.modelId, session.kit.id.version, Some("xml"))">
+          <a class="btn btn-sm btn-outline-dark" href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, Some("xml"))">
             <i class="fa fa-code"></i>
             Download as xml
           </a>
         </div>
         Interview Transcript</h2>
-      Model <strong>@session.kit.id.modelId version @session.kit.id.version</strong>
+      Model <strong>@session.kit.md.id.modelId version @session.kit.md.id.version</strong>
     </div>
   </div>
   <div class="row my-2">

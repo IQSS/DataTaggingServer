@@ -20,7 +20,7 @@
 @templates.bsNavBar( "Question", 'tag, scripts, extraHead ) {
   <div class="row">
     <div class="col">
-      <a href="@routes.InterviewCtrl.startInterview(session.kit.id.modelId, session.kit.id.version, session.localization.map(_.getLanguage))">
+      <a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, session.localization.map(_.getLanguage))">
         <i class="fa fa-arrow-left"></i> Intro
       </a>
       <br>
@@ -30,7 +30,7 @@
     <div class="col">
      @comps.questionPanel(
        questionNode, session.kit, session.localization, session.answerHistory,
-       session.kit.dbData.commentingStatus != CommentingStatus.Closed, interactive=true, showId = false, session.allowNotes, note
+       session.kit.md.commentingStatus != CommentingStatus.Closed, interactive=true, showId = false, session.allowNotes, note
      )
     </div>
   </div>
@@ -42,7 +42,7 @@
           </div>
           <div class="card-body">
               @if( session.answerHistory.nonEmpty ) {
-                  @comps.answerHistory(session.answerHistory, session.kit.id, reverse=true, session.kit.serializer, session.localization)
+                  @comps.answerHistory(session.answerHistory, session.kit.md.id, reverse=true, session.kit.serializer, session.localization)
               } else {
                   <div class="well well-sm text-center">
                       <span class="muted small">This space will contain your answers, and will allow you to revisit them when needed.</span>

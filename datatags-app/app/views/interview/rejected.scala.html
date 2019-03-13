@@ -15,12 +15,12 @@
 @templates.bsNavBar("Dataset Rejected", 'tag, extraHead = extraHead) {
   <div class="row my-2">
     <div class="col">
-      @comps.rejectPanel(node, session.kit, session.localization, session.answerHistory, session.kit.dbData.commentingStatus != CommentingStatus.Closed)
+      @comps.rejectPanel(node, session.kit.md.id, session.localization, session.answerHistory, session.kit.md.commentingStatus != CommentingStatus.Closed)
     </div>
   </div>
   <div class="row my-2">
     <div class="col text-center">
-      <a href="@routes.InterviewCtrl.transcript(session.kit.id.modelId, session.kit.id.version, None)" class="btn btn-primary">
+      <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None)" class="btn btn-primary">
         <i class="fa fa-book"></i>&nbsp;Interview Transcript
       </a>
     </div>
@@ -32,7 +32,7 @@
           Answer History
         </div>
         <div class="card-body">
-          @comps.answerHistory(session.answerHistory, session.kit.id, false, session.kit.serializer, session.localization)
+          @comps.answerHistory(session.answerHistory, session.kit.md.id, false, session.kit.serializer, session.localization)
         </div>
       </div>
     </div>
@@ -49,7 +49,7 @@
           </form>
         }
         case None => {
-          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.id.modelId, session.kit.id.version)" class="btn btn-primary">Start Again</a>
+          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.md.id.modelId, session.kit.md.id.version)" class="btn btn-primary">Start Again</a>
         }
       }
     </div>

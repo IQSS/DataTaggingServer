@@ -1,0 +1,123 @@
+@(model:Model, versions:Seq[VersionMD], enableEdits:Boolean, message:Option[String] )
+
+@scripts ={
+  @if(versions.map(_.runningStatus).contains(RunningStatus.Processing)){
+    <script language="Javascript">
+      console.log("missing models detected. Will reload window");
+      window.setTimeout( function(){ window.location.reload(); }, 3000 );
+    </script>
+  }
+  <script language="JavaScript">
+    $(document).ready( function(){
+        JsUtils.fillAccessLinks();
+        JsUtils.addHost("#linkToLatest");
+    })
+  </script>
+  <script src="@routes.Assets.at("js/DeleteVersion.js")"></script>
+}
+
+@templates.backend("Model Editor", 'backOffice, scripts ) {
+
+  <div class="row my-2 d-flex flex-row">
+    <div class="col flex-grow-1">
+      <h3>
+        @model.title
+      </h3>
+      <h6>Permalink to latest published version:</h6>
+      <a class="publicLink" id="linkToLatest" target="_blank" href="@routes.ModelCtrl.showLatestVersion(model.id)">@routes.ModelCtrl.showLatestVersion(model.id)</a>
+    </div>
+    @if(enableEdits){
+      <div class="col text-right">
+        <a class="btn btn-secondary" href="@routes.ModelCtrl.showEditModelPage(model.id)">
+          <i class="fa fa-edit"></i> Edit</a>
+      </div>
+    }
+  </div>
+  @for( m <- message ){
+    <div class="row my-2">
+      <div class="col">
+        <div class="alert alert-info alert-dismissable" role="alert">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          @m
+        </div>
+      </div>
+    </div>
+  }
+  @if( model.note.trim.nonEmpty ) {
+    <div class="row my-2">
+      <div class="col">
+        @model.note
+      </div>
+    </div>
+  }
+
+  <div class="row my-2 d-flex flex-row">
+    <div class="col flex-grow-1">
+      <h4>Versions</h4>
+    </div>
+    <div class="col text-right">
+        <a class="btn btn-secondary" href="@routes.ModelCtrl.showNewVersionPage(model.id)">
+          <i class="fa fa-plus-circle"></i> Add New Version</a>
+    </div>
+  </div>
+
+  <div class="row my-2">
+    <div class="col">
+      @if( versions.isEmpty ) {
+        <div class="noData">
+          This model currently has no versions. @if(enableEdits){Why not <a href="@routes.ModelCtrl.showNewVersionPage(model.id)">add one</a>?}
+        </div>
+      } else {
+        <table class="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Title</th>
+              <th>Status</th>
+              <th>Last Update</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for( v <- versions ) {
+              <tr>
+                <td><a href="@routes.ModelCtrl.showVersionPage(model.id,v.id.version)">@v.id.version</a></td>
+                <td><a href="@routes.ModelCtrl.showVersionPage(model.id,v.id.version)">
+                      @v.runningStatus match {
+                        case RunningStatus.Runnable => {@v.pmTitle}
+                        case RunningStatus.Processing => {"Model not loaded"}
+                        case RunningStatus.Failed => {"Model Missing"}
+                      }
+                  </a>
+                  @if(v.messages.nonEmpty){<span class="badge badge-warning"><i class="fa fa-warning"></i></span>}
+                  @if(v.runningStatus == RunningStatus.Failed){<span class="badge badge-danger"><i class="fa fa-times-circle"></i> model error</span>}
+                </td>
+                <td>
+                  @comps.commentingStatus(v.commentingStatus)
+                  @comps.publicationStatus(v.publicationStatus)
+                  @if( v.publicationStatus == PublicationStatus.LinkOnly ) {
+                    <br>
+                    <a class="publicLink"  href="" data-role="accessLink" data-link="@v.accessLink"></a>
+                  }
+                </td>
+                <td>@Helpers.dateTimeFormat(v.lastUpdate)</td>
+                <td>
+                  <a class="btn btn-outline-secondary btn-sm my-1" href="@routes.ModelCtrl.showEditVersionPage(v.id.modelId, v.id.version)">
+                    <i class="fa fa-edit"></i> Edit</a>
+                  <button class="btn btn-outline-danger btn-sm my-1" onclick="DeleteVersion.deleteVersion('@v.id.modelId', '@v.id.version')">
+                    <i class="fa fa-trash-o"></i> Delete
+                  </button>
+                  @v.runningStatus match {
+                    case RunningStatus.Processing => {<button type="button" class="btn btn-secondary my-1" disabled>Processing...</button>}
+                    case RunningStatus.Runnable => {<a class="btn btn-primary btn-sm my-1" href="@routes.InterviewCtrl.interviewIntro(v.id.modelId, v.id.version)"><i class="fa fa-play"></i> Run</a>}
+                    case _ => {}
+                  }
+                </td>
+              </tr>
+              }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+}

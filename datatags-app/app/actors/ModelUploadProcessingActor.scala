@@ -5,11 +5,12 @@ import java.nio.file.attribute.PosixFilePermission
 import java.nio.file._
 import java.util.UUID
 import java.util.zip.ZipInputStream
+
 import javax.inject.{Inject, Named}
 
 import scala.collection.JavaConverters._
-import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel, RecreateVisualizationFiles}
-import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationFiles}
+import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel}
+import actors.VisualizationActor.DeleteVisualizationFiles
 import akka.actor.{Actor, ActorRef, Props}
 import play.api.{Configuration, Logger}
 import models._
@@ -17,9 +18,8 @@ import util.FileUtils.delete
 
 object ModelUploadProcessingActor {
   def props = Props[ModelUploadProcessingActor]
-  case class PrepareModel(filePath:Path, pmv:PolicyModelVersion )
-  case class DeleteVersion(pmv:PolicyModelVersion)
-  case class RecreateVisualizationFiles(kitVersion:PolicyModelVersionKit)
+  case class PrepareModel(filePath:Path, version:VersionMD )
+  case class DeleteVersion(kitKey: KitKey)
 
 }
 
@@ -27,18 +27,17 @@ object ModelUploadProcessingActor {
   * Takes an uploaded .zip file with a PolicyModel, sets it up and prepares it to be loaded.
   */
 
-class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configuration,
-                                           @Named("visualize-actor") vizActor: ActorRef) extends Actor {
+class ModelUploadProcessingActor @Inject()(conf:Configuration, @Named("visualize-actor") vizActor: ActorRef) extends Actor {
   
   private val modelsFolderPath = Paths.get( conf.get[String]("taggingServer.models.folder") )
   
   val logger = Logger(classOf[ModelUploadProcessingActor])
   
   override def receive: Receive = {
-    case PrepareModel(path, pmv) => {
-      val ttl = "[UPP] " + pmv.parentId + "/" + pmv.version + ": "
+    case PrepareModel(path, version) => {
+      val ttl = "[UPP] " + version.id.modelId + "/" + version.id.version + ": "
       logger.info(ttl + "Received request to prepare model")
-      val modelPath = modelsFolderPath.resolve(pmv.parentId).resolve(pmv.version.toString)
+      val modelPath = modelsFolderPath.resolve(version.id.modelId).resolve(version.id.version.toString + "/model")
       
       if ( Files.exists(modelPath) ) {
         logger.info(ttl + "Deleting content of old " + modelPath)
@@ -58,31 +57,26 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
         logger.info(ttl + "re-layout of unzipped directory done.")
       }
       logger.info(ttl + "...unzipping done")
-      
-      // add to kits
-      logger.info(ttl + "loading...")
-      val newKit = kits.loadSingleKit(pmv, modelPath)
-      logger.info(ttl + "...loading done")
-      
-      // ping visualizer
-      if ( newKit.canRun ) {
-        vizActor ! CreateVisualizationFiles(newKit)
-      }
-      
       logger.info(ttl + "deleting %s".format(path))
       Files.delete(path)
       logger.info(ttl + " DONE")
+      sender() ! modelPath
+//      // add to kits
+//      logger.info(ttl + "loading...")
+//      logger.info(ttl + "...loading done")
+      
+//      // ping visualizer
+//      if ( newKit.canRun ) {
+//        vizActor ! CreateVisualizationFiles(newKit)
+//      }
     }
     
-    case DeleteVersion(pmv) => {
-      vizActor ! DeleteVisualizationFiles(KitKey.of(pmv))
-      val modelPath = modelsFolderPath.resolve(pmv.parentId).resolve(pmv.version.toString)
+    case DeleteVersion(kitKey) => {
+      val modelPath = modelsFolderPath.resolve(kitKey.modelId).resolve(kitKey.version.toString + "/model")
       if ( Files.exists(modelPath) ) {
         logger.info("Deleting content of old " + modelPath)
         try {
-          Files.list(modelPath).iterator().asScala.foreach(delete)
           delete(modelPath)
-          
         } catch {
           case ioe:IOException => {
             logger.error("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"), ioe)
@@ -90,8 +84,6 @@ class ModelUploadProcessingActor @Inject()(kits:PolicyModelKits, conf:Configurat
         }
       }
     }
-
-    case RecreateVisualizationFiles(kitVersion:PolicyModelVersionKit) => vizActor ! CreateVisualizationFiles(kitVersion)
   }
   
   private def unzip(zipFile:Path, destination:Path) = {

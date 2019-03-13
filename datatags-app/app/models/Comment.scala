@@ -9,37 +9,37 @@ import java.sql.Timestamp
   * Created by mor_vilozni on 20/07/2017.
   */
 case class Comment (
-                   writer:String,
-                   comment:String,
-                   versionedPolicyModelID:String,
-                   version:Int,
-                   localization:Option[String],
-                   targetType:String,
-                   targetContent:String,
-                   resolved:Boolean,
-                   time:Timestamp,
-                   id:Long = 0L
+                     writer:String,
+                     comment:String,
+                     modelID:String,
+                     version:Int,
+                     localization:Option[String],
+                     targetType:String,
+                     targetContent:String,
+                     resolved:Boolean,
+                     time:Timestamp,
+                     id:Long = 0L
                    ) {
-  val vpmId = versionedPolicyModelID.trim
-  def trimmed = copy(writer=writer.trim, comment=comment.trim, versionedPolicyModelID=versionedPolicyModelID.trim,
+  val modelId = modelID.trim
+  def trimmed = copy(writer=writer.trim, comment=comment.trim, modelID=modelID.trim,
                       localization=localization.map(_.trim), targetType=targetType.trim, targetContent=targetContent.trim)
 }
 
-case class CommentDTO( id:Option[Long],
-                       writer:String,
-                       comment:String,
-                       versionedPolicyModelID:String,
-                       version:Int,
-                       localization:Option[String],
-                       targetType:String,
-                       targetContent:String ) {
-  def toComment() = Comment(writer, comment, versionedPolicyModelID,version, localization,
+case class CommentDTO(id:Option[Long],
+                      writer:String,
+                      comment:String,
+                      modelID:String,
+                      version:Int,
+                      localization:Option[String],
+                      targetType:String,
+                      targetContent:String ) {
+  def toComment() = Comment(writer, comment, modelID,version, localization,
                             targetType, targetContent, false,
                             new Timestamp(System.currentTimeMillis), id.getOrElse(0) )
 }
 
 object CommentDTO {
   def of(c:Comment):CommentDTO = CommentDTO(Some(c.id), c.writer, c.comment,
-                                            c.versionedPolicyModelID, c.version, c.localization,
+                                            c.modelID, c.version, c.localization,
                                             c.targetType, c.targetContent)
 }

@@ -1,11 +1,10 @@
 package controllers
 
 import javax.inject.Inject
-
 import edu.harvard.iq.datatags.model.slots._
 import edu.harvard.iq.datatags.model.values.AbstractValue
-import models.{KitKey, PolicyModelKits, VersionedPolicyModel}
-import persistence.PolicyModelsDAO
+import models.{KitKey, Model}
+import persistence.{LocalizationManager, ModelManager}
 import play.api.mvc._
 import play.api.libs.json.Json
 import play.api._
@@ -14,7 +13,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-class TestCtrl @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, models:PolicyModelsDAO) extends InjectedController {
+class TestCtrl @Inject()(implicit ec: ExecutionContext, models:ModelManager, locs:LocalizationManager) extends InjectedController {
 
   /**
 	 * test server for postBackTo in RequestedInterview
@@ -30,25 +29,25 @@ class TestCtrl @Inject()(implicit ec: ExecutionContext, kits:PolicyModelKits, mo
 
   def showTagTree(modelId:String, versionNum:Int, locName:Option[String]) = Action{ req =>
     val id = KitKey(modelId, versionNum)
-    kits.get(id) match {
+    models.getPolicyModel(id) match {
       case None => NotFound("Can't find interview with id " + id)
-      case Some(kit) => Ok(views.html.tagsTree(kit.model.getSpaceRoot, generateInstance(kit.model.getSpaceRoot), locName.flatMap(kits.localization(id,_))) )
+      case Some(model) => Ok(views.html.tagsTree(model.getSpaceRoot, generateInstance(model.getSpaceRoot), locName.flatMap(locs.localization(id,_))) )
     }
   }
   
   def addVersionedModel( name:String ) = Action.async{ req =>
-    models.add( VersionedPolicyModel(name, "model named '"+name+"'", null, "", false, false) )
+    models.add( Model(name, "model named '"+name+"'", null, "", false, false) )
       .map( mdl => Ok("Added model " + mdl.id) )
   }
   
   def listVersionedModels() = Action.async { req =>
-    models.listAllVersionedModels.map(seq =>
+    models.listAllModels().map(seq =>
       Ok(seq.map(_.id).mkString("\n"))
     )
   }
   
   def showModel(id:String) = Action.async{ req =>
-    models.getVersionedModel(id).map{
+    models.getModel(id).map{
       case Some(mdl) => Ok( Seq(mdl.id, mdl.title, mdl.created, mdl.note).mkString("\n") )
       case None => NotFound("Can't find model")
     }

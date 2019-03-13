@@ -25,6 +25,18 @@ object CommentingStatus extends Enumeration {
   val Everyone = Value
 }
 
+object RunningStatus extends Enumeration {
+
+  /** finished with no errors */
+  val Runnable = Value
+
+  /** not finished to create policy model */
+  val Processing = Value
+
+  /** finished with errors*/
+  val Failed = Value
+}
+
 /**
   * A version of a policy model. Holds a 1-to-1 connection with an actual PolicyModel used by CliRunner et.al.
   */

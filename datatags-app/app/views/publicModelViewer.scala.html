@@ -1,4 +1,4 @@
-@(vpm:VersionedPolicyModel, versions:Seq[PolicyModelVersionKit] )(implicit req:Request[_])
+@(model:Model, versions:Seq[VersionMD] )(implicit req:Request[_])
 
 @scripts = {
   <script language="JavaScript">
@@ -8,23 +8,23 @@
   </script>
 }
 
-@templates.bsNavBar(vpm.title, 'frontEnd, scripts ) {
+@templates.bsNavBar(model.title, 'frontEnd, scripts ) {
 
   <div class="row">
     <div class="col-md-8">
       <a href="@routes.Application.publicModelCatalog()"><i class="fa fa-list"></i> Models List</a>
       <h3>
-        @vpm.title
+        @model.title
       </h3>
       <h6>Permalink to Latest version:
-          <a id="linkToLatest" href="@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)">@routes.PolicyKitManagementCtrl.showLatestVersion(vpm.id)</a>
+          <a id="linkToLatest" href="@routes.ModelCtrl.showLatestVersion(model.id)">@routes.ModelCtrl.showLatestVersion(model.id)</a>
       </h6>
-      <h6><code>@vpm.id</code></h6>
+      <h6><code>@model.id</code></h6>
     </div>
     @if( versions.nonEmpty ) {
       <div class="col-md-4">
         <div class="text-right">
-          <a href="@routes.InterviewCtrl.interviewIntro(versions.head.dbData.parentId, versions.head.dbData.version)"
+          <a href="@routes.InterviewCtrl.interviewIntro(versions.head.id.modelId, versions.head.id.version)"
           class="btn btn-lg btn-primary">
             <i class="fa fa-play"></i> Run Latest Version
           </a>
@@ -33,10 +33,10 @@
     }
   </div>
 
-  @if( vpm.note.trim.nonEmpty ) {
+  @if( model.note.trim.nonEmpty ) {
     <div class="row">
       <div class="col-md-12">
-        @vpm.note
+        @model.note
       </div>
     </div>
   }
@@ -63,28 +63,28 @@
           <tbody>
             @for( v <- versions ) {
               <tr>
-                <td>@v.dbData.version</td>
+                <td>@v.id.version</td>
                 <td>
-                  @if(v.model != null) {
-                    @v.model.getMetadata.getTitle
-                    @if(Helpers.hasContent(v.model.getMetadata.getSubTitle)) {
-                      <small>@v.model.getMetadata.getSubTitle</small>
+                  @if(v.runningStatus != RunningStatus.Failed) {
+                    @v.pmTitle
+                    @if(Helpers.hasContent(v.pmSubTitle)) {
+                      <small>@v.pmSubTitle</small>
                     }
                   } else {
                     <div class="noData">Missing Model</div>
                   }
                 </td>
-                <td>@v.dbData.lastUpdate</td>
+                <td>@v.lastUpdate</td>
                 <td>
-                  @if(v.canRun){
-                    <a class="btn btn-primary btn-sm" href="@routes.InterviewCtrl.interviewIntro(v.dbData.parentId, v.dbData.version)"><i class="fa fa-play"></i> Run</a>
+                  @if(v.runningStatus == RunningStatus.Runnable){
+                    <a class="btn btn-primary btn-sm" href="@routes.InterviewCtrl.interviewIntro(v.id.modelId, v.id.version)"><i class="fa fa-play"></i> Run</a>
                   }
                 </td>
               </tr>
-              @if(v.dbData.note.trim.nonEmpty){
+              @if(v.note.trim.nonEmpty){
                 <tr>
                   <td>&nbsp;</td>
-                  <td colspan="3" class="noteTd">@v.dbData.note</td>
+                  <td colspan="3" class="noteTd">@v.note</td>
                   <td>&nbsp;</td>
                 </tr>
               }

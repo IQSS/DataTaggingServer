@@ -1,23 +1,27 @@
 package actors
 import java.io.{File, IOException, OutputStreamWriter}
 import java.nio.file.{Files, Path, Paths}
+
 import javax.inject._
 
 import scala.collection.JavaConverters._
-import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationFiles}
+import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationFiles, RecreateVisualizationFiles}
 import akka.actor.{Actor, Props}
 import edu.harvard.iq.datatags.cli.ProcessOutputDumper
 import edu.harvard.iq.datatags.model.PolicyModel
 import edu.harvard.iq.datatags.visualizers.graphviz.{AbstractGraphvizDecisionGraphVisualizer, GraphvizDecisionGraphClusteredVisualizer, GraphvizDecisionGraphF11Visualizer, GraphvizTagSpacePathsVizualizer}
-import models.{KitKey, PolicyModelVersionKit}
+import models.{KitKey, VersionKit}
+import persistence.ModelManager
 import play.api.{Configuration, Logger}
+import util.FileUtils
 
 
 
 object VisualizationActor {
   def props = Props[VisualizationActor]
-  case class CreateVisualizationFiles(kitVersion:PolicyModelVersionKit)
+  case class CreateVisualizationFiles(key:KitKey, model:PolicyModel)
   case class DeleteVisualizationFiles(key:KitKey)
+  case class RecreateVisualizationFiles(key:KitKey, model:PolicyModel)
 
 }
 
@@ -26,18 +30,22 @@ object VisualizationActor {
   *
   * Created by mor_vilozni on 04/07/2017.
   */
-class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
+class VisualizationActor @Inject()(configuration:Configuration, modelManager:ModelManager) extends Actor {
   private val style = configuration.get[String]("taggingServer.visualize.style")
   private val pathToDot = configuration.get[String]("taggingServer.visualize.pathToDot")
-  private val pathToFiles = Paths.get(configuration.get[String]("taggingServer.visualize.folder"))
+  private val pathToFiles = Paths.get(configuration.get[String]("taggingServer.models.folder"))
+  private val vizDirName = "viz"
+  private val availableVisualizations:collection.mutable.Map[String, Set[String]] = collection.mutable.Map[String, Set[String]]()
+  val logger = Logger(classOf[VisualizationActor])
   
   def receive = {
-    case CreateVisualizationFiles(kitVersion:PolicyModelVersionKit) => {
-      val folder = Files.createDirectories(pathToFiles)
+    case CreateVisualizationFiles(key:KitKey, model:PolicyModel) => {
+      val folder = Files.createDirectories(pathToFiles.resolve(key.modelId).resolve(key.version.toString).resolve(vizDirName))
       Seq("pdf", "svg", "png").foreach(ext => {
-        createDecisionGraphVisualizationFile(kitVersion.model, folder, ext, kitVersion.id)
-        createPolicySpaceVisualizationFile(kitVersion.model, folder, ext, kitVersion.id)
+        createDecisionGraphVisualizationFile(model, folder, ext, key)
+        createPolicySpaceVisualizationFile(model, folder, ext, key)
       })
+      modelManager.updateAvailableVisualizations(key, availableVisualizations.map(e => e._1 + "~" + e._2.mkString("/")).mkString("\n"))
     }
     case DeleteVisualizationFiles(key:KitKey) => {
       val folder = key.resolve(pathToFiles)
@@ -47,24 +55,34 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
         delete(folder)
       } catch {
         case ioe:IOException => {
-          Logger.info("[VIZ] delete old files - " + ioe.getStackTrace.mkString("\n"))
-          Logger.info("[VIZ] delete old files - " + ioe.getCause)
-          Logger.info("[VIZ] delete old files - " + ioe.getMessage)
+          logger.info("[VIZ] delete old files - " + ioe.getStackTrace.mkString("\n"))
+          logger.info("[VIZ] delete old files - " + ioe.getCause)
+          logger.info("[VIZ] delete old files - " + ioe.getMessage)
         }
       }
     }
-//    case RecreateVisualizationFiles () => {
-//
-//    }
+    case RecreateVisualizationFiles(key:KitKey, model:PolicyModel) => {
+      val folder = pathToFiles.resolve(key.modelId).resolve(key.version.toString).resolve(vizDirName)
+      if(!Files.exists(pathToFiles.resolve(key.modelId).resolve(key.version.toString).resolve(vizDirName))){
+        Files.createDirectories(pathToFiles.resolve(key.modelId).resolve(key.version.toString).resolve(vizDirName))
+      } else { //delete old viz
+        Files.list(folder).iterator().asScala.foreach(FileUtils.delete)
+      }
+      Seq("pdf", "svg", "png").foreach(ext => {
+        createDecisionGraphVisualizationFile(model, folder, ext, key)
+        createPolicySpaceVisualizationFile(model, folder, ext, key)
+      })
+      modelManager.updateAvailableVisualizations(key, availableVisualizations.map(e => e._1 + "~" + e._2.mkString("/")).mkString("\n"))
+    }
   }
   
   def createDecisionGraphVisualizationFile(model:PolicyModel, folder:Path, fileExtension:String, id:KitKey): Unit ={
 
-    val fileName = id.modelId + "~" + id.version + "~" + PolicyModelVersionKit.DECISION_GRAPH_VISUALIZATION_FILE_NAME
+    val fileName = "decision-graph"
     val outputPath = folder.resolve( fileName + "." + fileExtension)
     
     if ( Files.exists(outputPath)) {
-      Logger.info("[VIZ] deleting old file %s".format(outputPath))
+      logger.info("[VIZ] deleting old file %s".format(outputPath))
       Files.delete(outputPath)
     }
     
@@ -88,17 +106,19 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
     dump.start()
     val statusCode = gv.waitFor
     if (statusCode != 0) {
-      Logger.info("[VIZ] While visualizing decision graph of model «" + model.getMetadata.getTitle + "», Graphviz terminated with an error (exit code: " + statusCode + ")")
+      logger.info("[VIZ] While visualizing decision graph of model «" + model.getMetadata.getTitle + "», Graphviz terminated with an error (exit code: " + statusCode + ")")
     }
     else {
       dump.await()
-      Logger.info("[VIZ] File created at: " +  outputPath)
+      logger.info("[VIZ] File created at: " +  outputPath)
+      availableVisualizations.get(fileName).map( _ => availableVisualizations(fileName) += fileExtension)
+        .getOrElse(availableVisualizations(fileName) = Set(fileExtension))
     }
   }
   
   def createPolicySpaceVisualizationFile(model:PolicyModel, folder:Path, fileExtension:String, id:KitKey): Unit ={
 
-    val fileName = id.modelId + "~" + id.version + "~" + PolicyModelVersionKit.POLICY_SPACE_VISUALIZATION_FILE_NAME
+    val fileName = "policy-space"
     val outputPath = folder.resolve( fileName + "." + fileExtension)
 
     val pb = new ProcessBuilder(pathToDot.toString, "-T" + fileExtension)
@@ -117,11 +137,13 @@ class VisualizationActor @Inject()(configuration:Configuration) extends Actor {
     dump.start()
     val statusCode = gv.waitFor
     if (statusCode != 0) {
-      Logger.info("While visualizing policy space of model «" + model.getMetadata.getTitle + "», Graphviz terminated with an error (exit code: " + statusCode + ")")
+      logger.info("While visualizing policy space of model «" + model.getMetadata.getTitle + "», Graphviz terminated with an error (exit code: " + statusCode + ")")
     }
     else {
       dump.await()
-      Logger.info("File created at: " +  outputPath)
+      logger.info("File created at: " +  outputPath)
+      availableVisualizations.get(fileName).map( _ => availableVisualizations(fileName) += fileExtension)
+        .getOrElse(availableVisualizations(fileName) = Set(fileExtension))
     }
   }
   

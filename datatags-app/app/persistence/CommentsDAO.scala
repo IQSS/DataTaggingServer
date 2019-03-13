@@ -3,7 +3,7 @@ package persistence
 import javax.inject.Inject
 
 import controllers.CommentDN
-import models.{Comment, KitKey, PolicyModelKits}
+import models.{Comment, KitKey}
 import play.api.Configuration
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -15,19 +15,19 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class CommentsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvider,
-                             kits: PolicyModelKits,
+                             models: ModelManager,
                              conf:Configuration) extends HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
 
   private val Comments = TableQuery[CommentTable]
-  private val VersionedModels = TableQuery[VersionedPolicyModelTable]
+  private val modelsTable = TableQuery[ModelTable]
 
   def get(id:Long):Future[Option[Comment]] = {
     db.run {
       Comments.filter( _.id === id ).result
     } map { _.headOption }
   }
-  
+
   //add
   def addComment( c:Comment ):Future[Comment] = {
     db.run {
@@ -47,34 +47,34 @@ class CommentsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvid
       Comments.filter(_.id===c.id).delete
     }
   }
-  
+
   def listForModelVersion( modelId:String, versionNum:Int ):Future[Seq[Comment]] = {
     db.run {
-      Comments.filter( row => row.versionPolicyModelID===modelId && row.version===versionNum )
+      Comments.filter( row => row.modelID===modelId && row.version===versionNum )
               .sortBy( r => (r.resolved.desc, r.time.asc) )
               .result
     }
   }
-  
+
 //  def openCountPerVersion( modelId:String ):Future[Map[String,Int]] = {
 //    db.run {
 //      Comments.filter( _.versionPolicyModelID === modelId ).map(r => r.version ).groupBy( _._1 )
 //    }
 //  }
-  
+
   def listRecent( count:Int ):Future[Seq[CommentDN]] = {
     db.run {
       Comments.sortBy( _.time.desc ).take(count)
-              .join(VersionedModels.map( vm => (vm.title, vm.id)))
-              .on( (cm,vm)=> cm.versionPolicyModelID === vm._2 ).result
+              .join(modelsTable.map(vm => (vm.title, vm.id)))
+              .on( (cm,vm)=> cm.modelID === vm._2 ).result
     } map ( rows => rows.map(
-                  row => CommentDN(row._1, row._2._1, modelVersionTitle(row._1.vpmId, row._1.version))))
+                  row => CommentDN(row._1, row._2._1, modelVersionTitle(row._1.modelId, row._1.version))))
   }
-  
+
   private def modelVersionTitle(model:String, version:Int):String = {
-    kits.get(KitKey(model, version)) match {
+    models.getPolicyModel(KitKey(model, version)) match {
       case None => "(model version missing)"
-      case Some(k) => if ( k.model != null ) { k.model.getMetadata.getTitle }
+      case Some(model) => if ( model != null ) { model.getMetadata.getTitle }
                         else "(model version corrupt)"
     }
   }

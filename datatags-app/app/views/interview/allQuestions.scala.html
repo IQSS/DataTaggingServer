@@ -9,13 +9,13 @@
 @import edu.harvard.iq.datatags.model.graphs.nodes.Node
 @import collection.mutable.Set
 
-@(pmvKit: PolicyModelVersionKit,
+@(verKit: VersionKit,
 loc:Option[Localization]
 )(implicit req:Request[_])
 
 @visitAskNode( nd:AskNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="question">
-    @comps.questionPanel(nd, pmvKit, loc, Seq(), enableComments = true, false, showId = true, false, None)
+    @comps.questionPanel(nd, verKit, loc, Seq(), enableComments = true, false, showId = true, false, None)
 
     @for( a <- nd.getAnswers ) {
       @visitNode( nd.getNodeFor(a), baseLevel, visited )
@@ -75,10 +75,10 @@ loc:Option[Localization]
 }
 
 
-@templates.bsNavBar("Interview questions: " + pmvKit.model.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
+@templates.bsNavBar("Interview questions: " + verKit.model.get.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
   <div class="row">
     <div class="col-md-12">
-      <a href="@routes.InterviewCtrl.interviewIntro(pmvKit.id.modelId, pmvKit.id.version)"><i class="fa fa-arrow-left"></i> Back</a>
+      <a href="@routes.InterviewCtrl.interviewIntro(verKit.md.id.modelId, verKit.md.id.version)"><i class="fa fa-arrow-left"></i> Back</a>
     </div>
   </div>
   <div class="row">
@@ -91,7 +91,7 @@ loc:Option[Localization]
   <div class="row">
     <div class="col-md-12">
       <div class="allQuestions">
-        @visitNode( pmvKit.model.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
+        @visitNode( verKit.model.get.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
       </div>
     </div>
   </div>

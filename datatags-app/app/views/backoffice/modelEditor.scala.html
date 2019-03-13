@@ -1,23 +1,23 @@
-@(form:Form[VpmFormData], isNew:Boolean)
+@(form:Form[ModelFormData], isNew:Boolean)
 
 @scripts = {
-  <script type="text/javascript" src="@routes.Assets.at("js/versionedPolicyModelEditor.js")"></script>
+  <script type="text/javascript" src="@routes.Assets.at("js/modelEditor.js")"></script>
 }
 
 
-@templates.backend("Versioned Policy Model Editor", 'backOffice, scripts ) {
+@templates.backend("Model Editor", 'backOffice, scripts ) {
 
   <div class="row my-2">
     <div class="col">
-      <h3>Versioned Policy Model Editor</h3>
+      <h3>Model Editor</h3>
       <div class="form-text text-muted">
-        Use this page to create and edit <em>versioned policy models (VPMs)</em>. VPMs serve as a container with a fixed URL for different versions of a policy model.
+        Use this page to create and edit <em>models</em>. models serve as a container with a fixed URL for different versions of a policy model.
       </div>
     </div>
   </div>
   <div class="row my-2">
     <div class="col">
-      <form action="@if(isNew){@routes.PolicyKitManagementCtrl.doSaveNewVpm}else{@routes.PolicyKitManagementCtrl.doSaveVpm(form("id").value.get)}" method="POST">
+      <form action="@if(isNew){@routes.ModelCtrl.doSaveNewModel}else{@routes.ModelCtrl.doSaveModel(form("id").value.get)}" method="POST">
         <input type="hidden" name="shouldBeNew" value="@form("shouldBeNew").value.getOrElse("0")">
 
         <div class="form-group row @Helpers.fieldStatus(form("id"))">
@@ -31,7 +31,7 @@
               </div>
             }
             <small class="form-text text-muted">
-              The VPM's id will be part of its URL: <code>server/models/<b>id</b>/version</code>. Thus, it must be unique,
+              The model's id will be part of its URL: <code>server/models/<b>id</b>/version</code>. Thus, it must be unique,
                 and cannot contain spaces or special characters, only letters, numbers and the characters "-_.". It cannot be empty, either.
             </small>
           </div>
@@ -74,11 +74,11 @@
             <hr>
             @if( ! isNew ) {
               <div class="float-left">
-                <button type="button" onclick='VpmEditor.confirmDelete("@Helpers.jsEscape(form("title").value.get)","@form("id").value.get")' class="btn btn-danger"><i class="fa fa-trash-o"></i> Delete Model</button>
+                <button type="button" onclick='ModelEditor.confirmDelete("@Helpers.jsEscape(form("title").value.get)","@form("id").value.get")' class="btn btn-danger"><i class="fa fa-trash-o"></i> Delete Model</button>
               </div>
             }
             @if( ! isNew ){
-              <a href="@routes.PolicyKitManagementCtrl.showVpmPage(form("id").value.get)" class="btn btn-secondary">Cancel</a>
+              <a href="@routes.ModelCtrl.showModelPage(form("id").value.get)" class="btn btn-secondary">Cancel</a>
             }
             <button type="submit" class="btn btn-primary">Save</button>
           </div>

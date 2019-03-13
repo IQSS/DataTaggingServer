@@ -30,8 +30,8 @@ class Serialization private( val answerMap: Map[Answer, String],
     val rte = new RuntimeEngine
     val l = rte.setListener( new TaggingEngineListener )
     val buffer = collection.mutable.Buffer[AnswerRecord]()
-    rte.setModel( userSession.kit.model   )
-    rte.setCurrentValue( userSession.kit.model.getSpaceRoot.createInstance )
+    rte.setModel( userSession.kit.model.get   )
+    rte.setCurrentValue( userSession.kit.model.get.getSpaceRoot.createInstance )
 
     // Deserialize and feed the answers to rte
     rte.start()

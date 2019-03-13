@@ -1,6 +1,6 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
-@(questionNode:AskNode, pmvKit:PolicyModelVersionKit, loc:Option[Localization],
+@(questionNode:AskNode, versionKit:VersionKit, loc:Option[Localization],
         answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, allowNotes:Boolean, note:Option[String])
 
 <div class="card m-2 border-secondary questionPanel">
@@ -13,7 +13,7 @@
     }
     @if( enableComments ){
       <div class="ml-2">
-      @comps.comments("cmnt", pmvKit.dbData.parentId, pmvKit.dbData.version, None, "node", questionNode.getId, "btn-outline-light")
+      @comps.comments("cmnt", versionKit.md.id.modelId, versionKit.md.id.version, None, "node", questionNode.getId, "btn-outline-light")
       </div>
     }
   </div>
@@ -24,7 +24,7 @@
       @Helpers.renderMarkdown( nodeText )
     }
   </div>
-  @helper.form( action=routes.InterviewCtrl.answer(pmvKit.id.modelId, pmvKit.id.version, questionNode.getId), 'id->"answerForm" ) {
+  @helper.form( action=routes.InterviewCtrl.answer(versionKit.md.id.modelId, versionKit.md.id.version, questionNode.getId), 'id->"answerForm" ) {
     <div class="card-body noteCtnr" id="noteDiv" @if(note.isEmpty) {style="display: none" }>
         <textarea placeholder="Annotate your answer here" name="note" class="form-control" rows="2">@note.getOrElse("")</textarea>
     </div>
@@ -41,7 +41,7 @@
       </div>
       @if( interactive ) {
         <input type="hidden" name="answerText" id="answerText" value="" />
-        <input type="hidden" name="serializedHistory" id="serializedHistory" value="@pmvKit.serializer.encode(answerHistory)"/>
+        <input type="hidden" name="serializedHistory" id="serializedHistory" value="@versionKit.serializer.encode(answerHistory)"/>
       }
     </div>
   }

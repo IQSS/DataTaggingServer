@@ -1,7 +1,7 @@
-@(pmv:PolicyModelVersion, kitOpt:Option[PolicyModelVersionKit], vpm:VersionedPolicyModel, comments:Seq[Comment])
+@(ver:VersionKit, model:Model, comments:Seq[Comment])
 
 @scripts ={
-@if(kitOpt.isEmpty){
+@if(ver.md.runningStatus == RunningStatus.Processing){
   <script language="Javascript">
           window.setTimeout( function(){ window.location.reload(); }, 3000 );
   </script>
@@ -18,23 +18,23 @@
 @templates.backend("Version Viewer", 'backOffice, scripts ) {
   <div class="row">
     <div class="col-md-12">
-      <a href="@routes.PolicyKitManagementCtrl.showVpmPage(vpm.id)">
-        <i class="fa fa-arrow-left"></i> @vpm.title
+      <a href="@routes.ModelCtrl.showModelPage(model.id)">
+        <i class="fa fa-arrow-left"></i> @model.title
       </a>
       <h3>
         <div class="float-right">
-          @kitOpt match {
+          @ver.model match {
             case None      => {<button type="button" class="btn btn-secondary" disabled>Processing...</button>}
-            case Some(kit) => {@if(kit.canRun){<a class="btn btn-primary" href="@routes.InterviewCtrl.interviewIntro(pmv.parentId, pmv.version)"><i class="fa fa-play"></i> Run</a>}}
+            case Some(kit) => {@if(ver.md.runningStatus == RunningStatus.Runnable){<a class="btn btn-primary" href="@routes.InterviewCtrl.interviewIntro(ver.md.id.modelId, ver.md.id.version)"><i class="fa fa-play"></i> Run</a>}}
           }
-          <a class="btn btn-secondary" href="@routes.PolicyKitManagementCtrl.showEditVersionPage(pmv.parentId, pmv.version)">
+          <a class="btn btn-secondary" href="@routes.ModelCtrl.showEditVersionPage(ver.md.id.modelId, ver.md.id.version)">
             <i class="fa fa-edit"></i> Edit
           </a>
-          <a class="btn btn-danger" onclick="DeleteVersion.deleteVersion('@pmv.parentId', '@pmv.version')">
+          <button type="button" class="btn btn-danger" onclick="DeleteVersion.deleteVersion('@ver.md.id.modelId', '@ver.md.id.version')">
             <i class="fa fa-trash-o"></i> Delete
-          </a>
+          </button>
         </div>
-        @kitOpt.flatMap( k => Option(k.model)).map(_.getMetadata.getTitle ).getOrElse(vpm.id + "/" + pmv.version)
+        @ver.model.flatMap( k => Option(k)).map(_.getMetadata.getTitle ).getOrElse(model.id + "/" + ver.md.id.version)
       </h3>
     </div>
   </div>
@@ -42,7 +42,7 @@
     <div class="col-md-12">
       <h4>Server Data</h4>
       <div class="help">
-        This part shows the status of the version in the server. It is editable by clicking the <a href="@routes.PolicyKitManagementCtrl.showEditVersionPage(pmv.parentId, pmv.version)">
+        This part shows the status of the version in the server. It is editable by clicking the <a href="@routes.ModelCtrl.showEditVersionPage(ver.md.id.modelId, ver.md.id.version)">
           <i class="fa fa-edit"></i> Edit
         </a> button.
       </div>
@@ -54,22 +54,22 @@
         <tbody>
           <tr>
             <th>Last Update</th>
-            <td>@Helpers.dateTimeFormat(pmv.lastUpdate)</td>
+            <td>@Helpers.dateTimeFormat(ver.md.lastUpdate)</td>
           </tr>
           <tr>
             <th>Viewable By</th>
             <td>
-              @comps.publicationStatus(pmv.publicationStatus)
-              @if( pmv.publicationStatus == PublicationStatus.LinkOnly ) {
+              @comps.publicationStatus(ver.md.publicationStatus)
+              @if( ver.md.publicationStatus == PublicationStatus.LinkOnly ) {
                 <br>
-                <a class="publicLink" href="" data-role="accessLink" data-link="@pmv.accessLink"></a>
+                <a class="publicLink" href="" data-role="accessLink" data-link="@ver.md.accessLink"></a>
               }
             </td>
           </tr>
           <tr>
             <th>Commenting Status</th>
             <td>
-              @comps.commentingStatus(pmv.commentingStatus)
+              @comps.commentingStatus(ver.md.commentingStatus)
             </td>
           </tr>
         </tbody>
@@ -77,15 +77,15 @@
     </div>
     <div class="col-md-6">
       <strong>Note</strong>
-      @if( Helpers.hasContent(pmv.note) ) {
-        <div class="card bg-info border-info"><div class="card-body">@pmv.note</div></div>
+      @if( Helpers.hasContent(ver.md.note) ) {
+        <div class="card bg-info border-info"><div class="card-body">@ver.md.note</div></div>
       } else {
         <div class="noData">This version has no note.</div>
       }
     </div>
   </div>
 
-  @for( kit <- kitOpt ) {
+  @for( model <- ver.model ) {
     <div class="row my-2">
       <div class="col">
         <h4>Model Data</h4>
@@ -99,15 +99,15 @@
     <div class="row my-2">
       <div class="col-md-6">
         <h5>Metadata</h5>
-        @if( kit.model!=null ) {
-          @comps.modelVersionMetadataTable(kit.model.getMetadata)
+        @if( model!=null ) {
+          @comps.versionMetadataTable(model.getMetadata)
         } else {
           <div class="alert alert-danger">Model failed to load. See messages section.</div>
         }
       </div>
       <div class="col-md-6">
         <h5>Messages</h5>
-        @comps.kitMessageList(kit.messages)
+        @comps.kitMessageList(if(ver.md.messages.trim != "") {ver.md.messages.split("\n%%%\n").grouped(2).map(arr => (arr(0), arr(1))).toSeq} else {Seq[(String, String)]()})
       </div>
     </div>
   }
@@ -148,7 +148,7 @@
                   View</a>
                 <button class="btn btn-sm btn-secondary" onclick="Comments.setResolved(this, '@{"cmtsts"+cmt.id}', @cmt.id, @if(cmt.resolved){false}else{true})">
                   Mark as @if(cmt.resolved){Unresolved}else{Resolved}</button>
-                <button class="btn btn-sm btn-secondary" onclick="Comments.deleteComment('@cmt.id','@pmv.parentId', '@pmv.version')"><i class="fa fa-trash-o"></i> Delete</button>
+                <button class="btn btn-sm btn-secondary" onclick="Comments.deleteComment('@cmt.id','@ver.md.id.modelId', '@ver.md.id.version')"><i class="fa fa-trash-o"></i> Delete</button>
               </td>
             </tr>
             <tr>

@@ -1,9 +1,9 @@
-var VpmEditor = (function(){
+var ModelEditor = (function(){
     function deleteFile(id) {
-        $.ajax( jsRoutes.controllers.PolicyKitManagementCtrl.apiDoDeleteVpm(id) )
+        $.ajax( jsRoutes.controllers.ModelCtrl.apiDoDeleteModel(id) )
             .done( function(data){
                if ( data.result ) {
-                window.location.href=jsRoutes.controllers.PolicyKitManagementCtrl.showVpmList().url;
+                window.location.href=jsRoutes.controllers.ModelCtrl.showModelsList().url;
                } else {
                    swal({
                        title:"Error during deletion",
@@ -17,7 +17,7 @@ var VpmEditor = (function(){
     return {
         confirmDelete: function(name, id) {
             swal({
-                    title: "Delete Versioned policy model '"+name+"'?",
+                    title: "Delete Model '"+name+"'?",
                     text: "This operation cannot be undone. External links referring to this model will be broken.",
                     type: "warning",
                     showCancelButton: true,

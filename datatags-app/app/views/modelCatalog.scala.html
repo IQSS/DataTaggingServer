@@ -1,4 +1,4 @@
-@(vpms: Seq[VersionedPolicyModel])(implicit req:Request[_])
+@(models: Seq[Model])(implicit req:Request[_])
 
 @templates.bsNavBar("PolicyModels: Server Catalog", 'frontEnd) {
   <div class="container" id="content">
@@ -7,11 +7,11 @@
         <h1>Available Models</h1>
 
         <ul class="list-unstyled">
-        @for(vpm <- vpms) {
+        @for(model <- models) {
           <li>
-            <h4><a href="@routes.Application.showVersionedPolicyModel(vpm.id)">@vpm.title</a></h4>
-            @if( vpm.note!=null && vpm.note.trim.nonEmpty ) {
-              <p>@vpm.note</p>
+            <h4><a href="@routes.Application.showModel(model.id)">@model.title</a></h4>
+            @if( model.note!=null && model.note.trim.nonEmpty ) {
+              <p>@model.note</p>
             }
           </li>
         }

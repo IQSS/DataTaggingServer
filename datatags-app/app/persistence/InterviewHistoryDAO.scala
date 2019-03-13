@@ -3,8 +3,8 @@ package persistence
 import java.util.UUID
 import javax.inject.Inject
 
-import models.{InterviewHistory, InterviewHistoryRecord, PolicyModelKits}
-import play.api.{Configuration, Logger}
+import models.{InterviewHistory, InterviewHistoryRecord}
+import play.api.Configuration
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 

@@ -3,7 +3,7 @@ package controllers
 import javax.inject.Inject
 
 import models._
-import persistence.{CommentsDAO, PolicyModelsDAO, SettingsDAO}
+import persistence.{CommentsDAO, SettingsDAO}
 import play.api.{Configuration, Logger}
 import play.api.cache.{Cached, SyncCacheApi}
 import play.api.libs.json.{JsError, JsSuccess, Json}

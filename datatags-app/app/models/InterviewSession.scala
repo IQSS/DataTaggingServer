@@ -16,7 +16,7 @@ case class AnswerRecord( question: AskNode, answer: Answer)
 case class InterviewSession(key:UUID,
                             engineState: RuntimeEngineState,
                             traversed: Seq[Node],
-                            kit: PolicyModelVersionKit,
+                            kit: VersionKit,
                             localization: Option[Localization],
                             answerHistory: Seq[AnswerRecord],
                             notes: Set[String],
@@ -27,7 +27,7 @@ case class InterviewSession(key:UUID,
 
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat
-    val tagType = kit.model.getSpaceRoot
+    val tagType = kit.model.get.getSpaceRoot
     Option(parser.parseCompoundValue(tagType, engineState.getSerializedTagValue )).getOrElse(tagType.createInstance())
   }
 
@@ -52,7 +52,7 @@ case class InterviewSession(key:UUID,
 }
 
 object InterviewSession {
-  def create(mKit: PolicyModelVersionKit, saveStat:Boolean, noteOpt:Boolean ) =
+  def create(mKit: VersionKit, saveStat:Boolean, noteOpt:Boolean ) =
         InterviewSession( java.util.UUID.randomUUID(),
                      null,
                      Seq(),

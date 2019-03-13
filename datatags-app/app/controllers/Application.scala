@@ -1,20 +1,20 @@
 package controllers
 
 import java.nio.file.{Files, Paths}
-import javax.inject.Inject
 
+import javax.inject.Inject
 import play.api.mvc._
 import play.api.cache.Cached
 import models._
-import persistence.{PolicyModelsDAO, SettingsDAO}
+import persistence.{ModelManager, SettingsDAO}
 import play.api.{Configuration, Logger, routing}
 
 import scala.concurrent.Future
 
 
-class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
+class Application @Inject()(cached: Cached, models:ModelManager,
                             conf:Configuration, cc:ControllerComponents,
-                            kits:PolicyModelKits, settings:SettingsDAO ) extends InjectedController {
+                            settings:SettingsDAO ) extends InjectedController {
   implicit val ec = cc.executionContext
   
   private val visualizationsPath = Paths.get(conf.get[String]("taggingServer.visualize.folder"))
@@ -29,27 +29,27 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
   
   
   def publicModelCatalog = Action.async { implicit req =>
-    models.listAllVersionedModels.map( mdls =>
-      if ( LoggedInAction.userPresent(req) ) Redirect(routes.PolicyKitManagementCtrl.showVpmList)
+    models.listAllModels().map( mdls =>
+      if ( LoggedInAction.userPresent(req) ) Redirect(routes.ModelCtrl.showModelsList)
       else Ok( views.html.modelCatalog(mdls.sortBy(_.title)) )
     )
   }
 
-  def showVersionedPolicyModel(id:String) = Action.async { implicit req =>
+  def showModel(id:String) = Action.async { implicit req =>
     if ( LoggedInAction.userPresent(req) ) {
-      Future(Redirect(routes.PolicyKitManagementCtrl.showVpmPage(id)))
+      Future(Redirect(routes.ModelCtrl.showModelPage(id)))
     
     } else {
       
       for {
-        model <- models.getVersionedModel(id)
-        versions <- models.listVersionsFor(id).map( seq => seq.filter(_.publicationStatus==PublicationStatus.Published) )
-        
+        modelOpt <- models.getModel(id)
+        versions <- models.listVersionsMDFor(id).map(seq => seq.filter(_.publicationStatus==PublicationStatus.Published) )
+
       } yield {
-        model match {
+        modelOpt match {
           case None => NotFound("Policy Model does not exist.")
-          case Some(vpm) => Ok(
-            views.html.publicVersionedPolicyModelViewer(vpm, versions.map(v => kits.get(KitKey.of(v))).filter(_.nonEmpty).map(_.get)))
+          case Some(model) => Ok(
+            views.html.publicModelViewer(model, versions.filter(v => v.runningStatus != RunningStatus.Failed)))
         }
       }
     }
@@ -64,16 +64,16 @@ class Application @Inject()(cached: Cached, models:PolicyModelsDAO,
           routes.javascript.InterviewCtrl.interviewIntro,
           routes.javascript.InterviewCtrl.startInterview,
           routes.javascript.InterviewCtrl.accessByLink,
-          routes.javascript.PolicyKitManagementCtrl.apiDoDeleteVpm,
-          routes.javascript.PolicyKitManagementCtrl.showVpmList,
+          routes.javascript.ModelCtrl.apiDoDeleteModel,
+          routes.javascript.ModelCtrl.showModelsList,
           routes.javascript.BackendCtrl.apiGetCustomizations,
           routes.javascript.BackendCtrl.apiSetCustomizations,
           routes.javascript.CommentsCtrl.apiAddComment,
           routes.javascript.CommentsCtrl.apiSetCommentStatus,
           routes.javascript.CommentsCtrl.deleteComment,
-          routes.javascript.PolicyKitManagementCtrl.deleteVersion,
-          routes.javascript.PolicyKitManagementCtrl.showVpmPage,
-          routes.javascript.PolicyKitManagementCtrl.showVersionPage
+          routes.javascript.ModelCtrl.deleteVersion,
+          routes.javascript.ModelCtrl.showModelPage,
+          routes.javascript.ModelCtrl.showVersionPage
         )
       ).as("text/javascript")
     }

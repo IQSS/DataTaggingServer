@@ -1,6 +1,6 @@
 @import edu.harvard.iq.datatags.externaltexts.MarkupString
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@( qKit:PolicyModelVersionKit, readme:MarkupString, title:String, subTitle:String, loc:Option[Localization])(implicit req:Request[_])
+@( qKit:VersionKit, readme:MarkupString, title:String, subTitle:String, loc:Option[Localization])(implicit req:Request[_])
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -15,7 +15,7 @@
 
 @import views.Helpers
 
-@templates.bsNavBar(qKit.model.getMetadata.getTitle + ": README", 'tag, scripts, extraHead) {
+@templates.bsNavBar(qKit.model.get.getMetadata.getTitle + ": README", 'tag, scripts, extraHead) {
 <div class="row">
   <div class="col-md-12">
     <div>
@@ -29,9 +29,9 @@
 <div class="row">
   <div class="col-md-12">
     <div class="mdRender">
-      @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
+      @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
         <div class="float-right">
-        @comps.comments("cmntReadme", qKit.dbData.parentId, qKit.dbData.version, loc.map(_.getLanguage), "meta", "readme")
+        @comps.comments("cmntReadme", qKit.md.id.modelId, qKit.md.id.version, loc.map(_.getLanguage), "meta", "readme")
         </div>}
       @Helpers.render(readme)
     </div>
@@ -40,18 +40,18 @@
   <div class="row">
     <div class="col-md-12">
       <h3>
-        @if( qKit.dbData.commentingStatus != CommentingStatus.Closed ) {
+        @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
           <div class="float-right">
-          @comps.comments("cmntPS", qKit.dbData.parentId, qKit.dbData.version, loc.map(_.getLanguage), "meta", "policy-space")
+          @comps.comments("cmntPS", qKit.md.id.modelId, qKit.md.id.version, loc.map(_.getLanguage), "meta", "policy-space")
           </div>}
         Policy Space</h3>
-      @comps.tagType(qKit.model.getSpaceRoot, loc )
+      @comps.tagType(qKit.model.get.getSpaceRoot, loc )
     </div>
   </div>
 <div class="row">
   <div class="col-md-12">
     <div class="text-center" style="padding: 1em">
-      <a href="@routes.InterviewCtrl.startInterviewPostReadme(qKit.id.modelId, qKit.id.version)" class="btn btn-primary btn-lg">Start</a>
+      <a href="@routes.InterviewCtrl.startInterviewPostReadme(qKit.md.id.modelId, qKit.md.id.version)" class="btn btn-primary btn-lg">Start</a>
     </div>
   </div>
 </div>

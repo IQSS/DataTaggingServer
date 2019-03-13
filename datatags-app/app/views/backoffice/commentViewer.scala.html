@@ -2,13 +2,14 @@
 @import edu.harvard.iq.datatags.externaltexts.MarkupString
 @import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 @import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
-@(cmt:Comment, qKit:PolicyModelVersionKit, locOpt:Option[Localization], readmeOpt:Option[MarkupString])
+@import edu.harvard.iq.datatags.model.PolicyModel
+@(cmt:Comment, kit:VersionKit, locOpt:Option[Localization], readmeOpt:Option[MarkupString])
 
 @templates.backend("Version Viewer", 'backOffice ) {
   <div class="row my-2">
     <div class="col">
-      <a href="@routes.PolicyKitManagementCtrl.showVersionPage(qKit.id.modelId, qKit.id.version)">
-        <i class="fa fa-arrow-left"></i> @{Option(qKit.model).map(_.getMetadata.getTitle ).getOrElse(qKit.id.modelId + "/" + qKit.id.version)}
+      <a href="@routes.ModelCtrl.showVersionPage(kit.md.id.modelId, kit.md.id.version)">
+        <i class="fa fa-arrow-left"></i> @{kit.model.map(_.getMetadata.getTitle ).getOrElse(kit.md.id.modelId + "/" + kit.md.id.version)}
       </a>
       <h3>
         <div class="float-right">
@@ -16,7 +17,7 @@
                   onclick="Comments.setResolved(this, 'commentStatus', @cmt.id, @if(cmt.resolved){false}else{true})">
                   Mark as @if(cmt.resolved){Unresolved}else{Resolved}</button>
           <button class="btn btn-danger"
-                  onclick="Comments.deleteComment('@cmt.id', '@qKit.id.modelId', '@qKit.id.version')">
+                  onclick="Comments.deleteComment('@cmt.id', '@kit.md.id.modelId', '@kit.md.id.version')">
                   Delete Comment</button>
         </div>
         Comment @comps.commentStatus(cmt, Some("commentStatus"))
@@ -39,7 +40,7 @@
       <div class="commentSubjectCtnr">
         @if(cmt.targetType.trim == "meta"){
           @cmt.targetContent.trim match {
-            case "policy-space" => {@comps.tagType(qKit.model.getSpaceRoot, locOpt)}
+            case "policy-space" => {@comps.tagType(kit.model.get.getSpaceRoot, locOpt)}
             case "readme" => {
               @if(readmeOpt.isDefined) {
                 @Helpers.render(readmeOpt.get)
@@ -49,12 +50,12 @@
             }
           }
         } else {
-          @defining(qKit.model.getDecisionGraph.getNode(cmt.targetContent)) {
+          @defining(kit.model.get.getDecisionGraph.getNode(cmt.targetContent)) {
             case ask: AskNode => {
-              @comps.questionPanel(ask, qKit, locOpt, Seq(), enableComments=false, interactive=false, showId = true, false, None)
+              @comps.questionPanel(ask, kit, locOpt, Seq(), enableComments=false, interactive=false, showId = true, false, None)
             }
             case rej: RejectNode => {
-              @comps.rejectPanel(rej, qKit, locOpt, Seq(), enableComments=false)
+              @comps.rejectPanel(rej, kit.md.id, locOpt, Seq(), enableComments=false)
             }
           }
         }

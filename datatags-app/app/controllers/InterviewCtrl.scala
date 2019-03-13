@@ -13,8 +13,9 @@ import _root_.util.Jsonizer
 import javax.inject.Inject
 import com.ibm.icu.text.SimpleDateFormat
 import edu.harvard.iq.datatags.externaltexts.MarkupString
+import edu.harvard.iq.datatags.model.PolicyModel
 import edu.harvard.iq.datatags.model.graphs.Answer
-import persistence.{InterviewHistoryDAO, NotesDAO, PolicyModelsDAO}
+import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager, NotesDAO}
 import play.api.{Configuration, Logger}
 import play.api.mvc.Results.Redirect
 import views.Helpers
@@ -31,77 +32,75 @@ object InterviewCtrl {
 /**
  * Controller for the interview part of the application.
  */
-class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:NotesDAO,
-                              models:PolicyModelsDAO, cc:ControllerComponents, interviewHistories: InterviewHistoryDAO) extends InjectedController {
+class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelManager, locs:LocalizationManager,
+                              cc:ControllerComponents, interviewHistories: InterviewHistoryDAO) extends InjectedController {
 
   private implicit val ec = cc.executionContext
   private val logger = Logger( classOf[InterviewCtrl] )
-  
+
   def interviewIntroDirect(modelId:String, versionNum:Int) = Action {
     TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, versionNum).url )
   }
-  
+
   def interviewIntro(modelId:String, versionNum:Int) = Action.async { implicit request =>
     for {
-      kitOpt <- Future(kits.get(KitKey(modelId,versionNum)))
-      pmvOpt <- models.getModelVersion(modelId, versionNum)
-      vpmOpt <- models.getVersionedModel(modelId)
+      modelOpt   <- models.getModel(modelId)
+      versionOpt <- modelOpt.map(model => models.getVersionKit(KitKey(modelId, versionNum))).getOrElse(Future(None))
     } yield {
-      kitOpt match {
-        case Some(kit) => {
-          pmvOpt.map( pmv => {
-            // ensure viewing permissions
-            if ( canView(request, pmv) ) {
-              val userSession = InterviewSession.create( kit, vpmOpt.exists(vpm => vpm.saveStat), vpmOpt.exists(vpm => vpm.notesAllowed) )
-              cache.set(userSession.key.toString, userSession)
-
-              //Add to DB InterviewHistory
-                if(request.headers.get("Referer").isDefined && request.headers.get("Referer").get.endsWith("/accept")) {
-                  interviewHistories.addInterviewHistory(
-                    InterviewHistory(userSession.key, kit.id.modelId, kit.id.version, "", "restart", request.headers.get("User-Agent").get))
-                } else {
-                  interviewHistories.addInterviewHistory(
-                    InterviewHistory(userSession.key, kit.id.modelId, kit.id.version, "", "website", request.headers.get("User-Agent").get))
-                }
-
-              Ok( views.html.interview.intro(kit, None) ).
-                addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
-              
+      versionOpt match {
+        case Some(version) => {
+          if( canView(request, version.md)) {
+            val userSession = InterviewSession.create( version, modelOpt.exists(model => model.saveStat), modelOpt.exists(model => model.notesAllowed) )
+            cache.set(userSession.key.toString, userSession)
+            //Add to DB InterviewHistory
+            if(request.headers.get("Referer").isDefined && request.headers.get("Referer").get.endsWith("/accept")) {
+              interviewHistories.addInterviewHistory(
+                InterviewHistory(userSession.key, version.md.id.modelId, version.md.id.version, "", "restart", request.headers.get("User-Agent").get))
             } else {
-              NotFound("Model not found.") // really that's a NotAuthorized, but that would give away the fact that the version exists.
+              interviewHistories.addInterviewHistory(
+                InterviewHistory(userSession.key, version.md.id.modelId, version.md.id.version, "", "website", request.headers.get("User-Agent").get))
             }
-            
-          }).getOrElse(NotFound("ModelVersion not found."))
+
+            Ok( views.html.interview.intro(version, None) ).
+              addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
+          } else {
+            NotFound("Model not found.") // really that's a NotAuthorized, but that would give away the fact that the version exists.
+          }
         }
         case None => NotFound("Model not found.")
       }
     }
    }
 
-  def viewAllQuestions(modelId:String, versionNum:Int, localizationName:Option[String]) = Action { implicit req =>
+  def viewAllQuestions(modelId:String, versionNum:Int, localizationName:Option[String]) = Action.async { implicit req =>
     val kitId = KitKey(modelId, versionNum)
-    kits.get(kitId) match {
-      case Some(pmvk) => {
-        val loc = localizationName.flatMap(lName => kits.localization(kitId, lName))
-        Ok(views.html.interview.allQuestions(pmvk, loc))
+    for{
+      verOpt <- models.getVersionKit(kitId)
+    } yield {
+      verOpt match {
+        case Some(versionKit) => {
+          val loc = localizationName.flatMap(lName => locs.localization(kitId, lName))
+          Ok(views.html.interview.allQuestions(versionKit, loc))
+        }
+        case None => NotFound("Model not found")
       }
-      case None => NotFound("Model not found")
     }
   }
   
   def startInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None ) = InterviewSessionAction(cache, cc) { implicit req =>
+    logger.info("start interview")
     import util.JavaOptionals.toRichOptional
     val kitId = KitKey(modelId, versionNum)
-    kits.get(kitId) match {
-      case Some(kit) => {
+    models.getPolicyModel(kitId) match {
+      case Some(pm) => {
         val l10n = localizationName match {
-          case None       => if ( kit.model.getLocalizations.size==1 ) kits.localization(kitId, kit.model.getLocalizations.iterator().next()) else None
-          case Some(name) => kits.localization(kitId,name)
+          case None       => if ( pm.getLocalizations.size==1 ) locs.localization(kitId, pm.getLocalizations.iterator().next()) else None
+          case Some(name) => locs.localization(kitId,name)
         }
         val readmeOpt:Option[MarkupString] = l10n.map( loc =>
           loc.getLocalizedModelData).map(mdl => mdl.getBestReadmeFormat.toOption.map(mdl.getReadme)
-        ).getOrElse(kit.model.getMetadata.getBestReadmeFormat.toOption.map(kit.model.getMetadata.getReadme(_)))
-        
+        ).getOrElse(pm.getMetadata.getBestReadmeFormat.toOption.map(pm.getMetadata.getReadme(_)))
+
         if ( l10n isDefined ) {
           val updated = req.userSession.copy(localization = l10n)
           cache.set(req.userSession.key.toString, updated)
@@ -110,19 +109,22 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
         interviewHistories.changeLoc(req.userSession.key, l10n.map(_.getLanguage).getOrElse(""))
 
         // if there's a readme present, we show it first. Else, we start the interview.
-        readmeOpt.map( readMe => Ok(views.html.interview.showReadme(kit, readMe,
-                                                                     l10n.map(_.getLocalizedModelData.getTitle).getOrElse(kit.model.getMetadata.getTitle),
-                                                                     l10n.map(_.getLocalizedModelData.getSubTitle).getOrElse(kit.model.getMetadata.getSubTitle),
-                                                                     l10n))
+        readmeOpt.map( readMe => {
+          val verKitFut = models.getVersionKit(kitId)
+          val verKit = Await.result(verKitFut, 10 seconds)
+          Ok(views.html.interview.showReadme(verKit.get, readMe,
+            l10n.map(_.getLocalizedModelData.getTitle).getOrElse(pm.getMetadata.getTitle),
+            l10n.map(_.getLocalizedModelData.getSubTitle).getOrElse(pm.getMetadata.getSubTitle),
+            l10n))
+        }
         ).getOrElse({
             // No readme, perform the first decision graph traversal.
             val rte = new RuntimeEngine
-            rte.setModel(kit.model)
+            rte.setModel(pm)
             val l = rte.setListener(new TaggingEngineListener)
             rte.start()
             val updated = req.userSession.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
             cache.set(req.userSession.key.toString, updated)
-
             //Add Record to DB
           if(updated.saveStat){
             interviewHistories.addRecord(
@@ -131,7 +133,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
               InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "q: " + rte.getCurrentNode.getId))
           }
 
-            Ok(views.html.interview.question( req.userSession,
+            Ok(views.html.interview.question( updated,
               rte.getCurrentNode.asInstanceOf[AskNode],
               None))
           })
@@ -143,7 +145,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
 
   def startInterviewPostReadme(modelId:String, versionNum:Int) = InterviewSessionAction( cache, cc ) { implicit req =>
     val rte = new RuntimeEngine
-    rte.setModel(req.userSession.kit.model)
+    rte.setModel(req.userSession.kit.model.get)
     val l = rte.setListener(new TaggingEngineListener)
     rte.start()
     val updatedSession = req.userSession.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
@@ -166,24 +168,24 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
   
   def askNode( modelId:String, versionNum:Int, reqNodeId:String) = InterviewSessionAction(cache, cc).async { implicit req =>
     val kitId = KitKey(modelId, versionNum)
-    kits.get(kitId) match {
-      case Some(kit) => {
+    models.getPolicyModel(kitId) match {
+      case Some(pm) => {
         // TODO validate questionnaireId fits the one in the engine state
         val stateNodeId = req.userSession.engineState.getCurrentNodeId
-  
+
         val session = if ( stateNodeId != reqNodeId ) {
           // re-run to reqNodeId
           val answers = req.userSession.answerHistory.slice(0, req.userSession.answerHistory.indexWhere( _.question.getId == reqNodeId) )
-          val rerunResult = runUpToNode( kit, reqNodeId, answers )
+          val rerunResult = runUpToNode( pm, reqNodeId, answers )
           val updatedSession = req.userSession.setHistory(rerunResult.traversed, answers).copy(engineState=rerunResult.state )
           cache.set( req.userSession.key.toString, updatedSession )
           updatedSession
-    
+
         } else {
           req.userSession
         }
-        
-        val askNode = kit.model.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
+
+        val askNode = pm.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
         if(session.saveStat){
           interviewHistories.addRecord(
             InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "q: " + askNode.getId))
@@ -236,7 +238,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
 
         // now, submit the new answer and feed it to the engine.
         val answer = Answer.get( answerReq.text )
-        val ansRec = AnswerRecord( currentAskNode(session.kit, session.engineState), answer )
+        val ansRec = AnswerRecord( currentAskNode(session.kit.model.get, session.engineState), answer )
         val runRes = advanceEngine( session.kit, session.engineState, answer )
 
         //Add Record to DB
@@ -303,7 +305,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
   def reject( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc) { implicit request =>
     val session = request.userSession
     val state = request.userSession.engineState
-    val node = session.kit.model.getDecisionGraph.getNode( state.getCurrentNodeId )
+    val node = session.kit.model.get.getDecisionGraph.getNode( state.getCurrentNodeId )
 
     //Add Record to DB
     if(request.userSession.saveStat){
@@ -328,7 +330,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
   
   def downloadTags = InterviewSessionAction(cache, cc) { implicit request =>
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
-    val filename =  request.userSession.kit.model.getMetadata.getTitle + "-" + dateFormat.format(request.userSession.sessionStart)
+    val filename =  request.userSession.kit.model.get.getMetadata.getTitle + "-" + dateFormat.format(request.userSession.sessionStart)
     Ok(request.userSession.tags.accept(Jsonizer))
       .withHeaders( "Content-disposition" -> "attachment; filename=\"%s\"".format(filename) )
   }
@@ -336,14 +338,14 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
   def accessByLink(accessLink:String) = Action.async{ implicit req =>
     models.getModelVersionByAccessLink(accessLink).map({
       case None => NotFound("Link no longer active")
-      case Some(pmv) => Redirect(routes.InterviewCtrl.interviewIntro(pmv.parentId, pmv.version))
-                            .addingToSession( InterviewCtrl.INVITED_INTERVIEW_KEY->KitKey(pmv.parentId, pmv.version).encode)
+      case Some(version) => Redirect(routes.InterviewCtrl.interviewIntro(version.id.modelId, version.id.version))
+                            .addingToSession( InterviewCtrl.INVITED_INTERVIEW_KEY->KitKey(version.id.modelId, version.id.version).encode)
     })
   }
   
-  def advanceEngine(kit:PolicyModelVersionKit, state: RuntimeEngineState, ans: Answer ) : EngineRunResult = {
+  def advanceEngine(kit:VersionKit, state: RuntimeEngineState, ans: Answer ) : EngineRunResult = {
     val rte = new RuntimeEngine
-    rte.setModel( kit.model )
+    rte.setModel( kit.model.get )
     val l = rte.setListener( new TaggingEngineListener )
 
     rte.applySnapshot( state )
@@ -353,9 +355,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
 
   }
 
-  def runUpToNode(kit:PolicyModelVersionKit, nodeId: String, answers:Seq[AnswerRecord] ) : EngineRunResult = {
+  def runUpToNode(model:PolicyModel, nodeId: String, answers:Seq[AnswerRecord] ) : EngineRunResult = {
     val rte = new RuntimeEngine
-    rte.setModel( kit.model )
+    rte.setModel( model )
     val l = rte.setListener( new TaggingEngineListener )
     val ansItr = answers.iterator
     
@@ -373,9 +375,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
   /**
    * Run the engine, from the start, through all the answer sequence passed.
    */
-  def replayAnswers(kit:PolicyModelVersionKit, answers:Seq[AnswerRecord] ) : EngineRunResult = {
+  def replayAnswers(kit:VersionKit, answers:Seq[AnswerRecord] ) : EngineRunResult = {
     val rte = new RuntimeEngine
-    rte.setModel( kit.model )
+    rte.setModel( kit.model.get )
     val l = rte.setListener( new TaggingEngineListener )
     
     rte.start()
@@ -386,8 +388,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
 
   }
 
-  def currentAskNode(kit:PolicyModelVersionKit, engineState: RuntimeEngineState ) = {
-    kit.model.getDecisionGraph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
+  def currentAskNode(kit:PolicyModel, engineState: RuntimeEngineState ) = {
+    kit.getDecisionGraph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
   }
   
   
@@ -395,19 +397,19 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, kits:PolicyModelKits, notes:No
     * Logged in users can view any model. Anyone can view a published model. People with the correct link
     * can view only what their link allows.
     * @param r request asking for the model version
-    * @param pmv model version to be views
+    * @param ver model version to be views
     * @return can the request view the model
     */
-  private def canView( r:Request[_], pmv:PolicyModelVersion ):Boolean = {
+  private def canView(r:Request[_], ver:VersionMD ):Boolean = {
     if ( LoggedInAction.userPresent(r) ) return true
-    if ( pmv.publicationStatus == PublicationStatus.Published ) return true
-    
-    if ( pmv.publicationStatus == PublicationStatus.LinkOnly ) {
+    if ( ver.publicationStatus == PublicationStatus.Published ) return true
+
+    if ( ver.publicationStatus == PublicationStatus.LinkOnly ) {
       val linkSessionStringOpt = r.session.get(InterviewCtrl.INVITED_INTERVIEW_KEY)
       if (linkSessionStringOpt.isEmpty) return false;
       val linkSessionString = linkSessionStringOpt.get
       val allowedKitKey = KitKey.parse(linkSessionString)
-      allowedKitKey == KitKey.of(pmv)
+      allowedKitKey == ver.id
     } else {
       false
     }

@@ -1,13 +1,13 @@
-@( models:Seq[VersionedPolicyModel], message:Option[String] )
+@( models:Seq[Model], message:Option[String] )
 
-@templates.backend("Versioned Policy Model Editor", 'backOffice ) {
+@templates.backend("Model Editor", 'backOffice ) {
   <div class="row">
     <div class="col-md-12">
       <h1>
         <div class="float-right">
-          <a href="@routes.PolicyKitManagementCtrl.showNewVpmPage()" class="btn btn-large btn-secondary"><i class="fa fa-plus-circle"></i> Add</a>
+          <a href="@routes.ModelCtrl.showNewModelPage()" class="btn btn-large btn-secondary"><i class="fa fa-plus-circle"></i> Add</a>
         </div>
-        Versioned Policy Models</h1>
+        Models</h1>
     </div>
   </div>
   @for( m <- message ){
@@ -24,13 +24,13 @@
     <div class="col-md-12">
       @if( models.isEmpty ){
         <div class="noData">
-          No models available. You can <a href="@routes.PolicyKitManagementCtrl.showNewVpmPage">add one</a>.
+          No models available. You can <a href="@routes.ModelCtrl.showNewModelPage">add one</a>.
         </div>
       } else {
         <ul>
-          @for( vpm <- models ) {
+          @for( model <- models ) {
             <li>
-              <a href="@routes.PolicyKitManagementCtrl.showVpmPage(vpm.id)">@vpm.title (<code>@vpm.id</code>)</a>
+              <a href="@routes.ModelCtrl.showModelPage(model.id)">@model.title (<code>@model.id</code>)</a>
             </li>
           }
         </ul>

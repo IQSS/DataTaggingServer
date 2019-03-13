@@ -22,11 +22,21 @@ object Mappers {
     (r:CommentingStatus.Value) => r.toString,
     (s:String) => CommentingStatus.withName(s)
   )
+
+  implicit val runningStatus = MappedColumnType.base[RunningStatus.Value, String](
+    (r:RunningStatus.Value) => r.toString,
+    (s:String) => RunningStatus.withName(s)
+  )
+
+  implicit val availableVisualizations = MappedColumnType.base[Map[String,Set[String]], String](
+    (r:Map[String,Set[String]]) => r.map(e => e._2.mkString("/")).mkString("\n"),
+    (s:String) => s.split("\n").map(l => (l.split("-")(0), l.split("-")(1).split("/").toSet)).toMap
+  )
 }
 
 
-class VersionedPolicyModelTable(tag:Tag) extends Table[VersionedPolicyModel](tag, "versioned_policy_models") {
-  
+class ModelTable(tag:Tag) extends Table[Model](tag, "models") {
+
   def id = column[String]("id", O.PrimaryKey)
   def title = column[String]("title")
   def note = column[String]("note")
@@ -34,27 +44,38 @@ class VersionedPolicyModelTable(tag:Tag) extends Table[VersionedPolicyModel](tag
   def saveStat = column[Boolean]("save_stat")
   def noteOpt = column[Boolean]("note_opt")
 
-  def * = (id, title, created, note, saveStat, noteOpt) <> (VersionedPolicyModel.tupled, VersionedPolicyModel.unapply)
+  def * = (id, title, created, note, saveStat, noteOpt) <> (Model.tupled, Model.unapply)
 }
 
-class PolicyModelVersionTable(tag:Tag) extends Table[PolicyModelVersion](tag, "policy_model_versions") {
-  
-  def version  = column[Int]("version_num")
-  def modelId  = column[String]("model_id")
+class VersionsTable(tag:Tag) extends Table[VersionMD](tag, "versions_md") {
+  def modelId           = column[String]("model_id")
+  def version           = column[Int]("version_num")
   def publicationStatus = column[String]("publication_status")
   def commentingStatus  = column[String]("commenting_status")
   def lastUpdate        = column[Timestamp]("last_update")
-  def note = column[String]("note")
-  def accessLink = column[String]("access_link")
-  
+  def note              = column[String]("note")
+  def accessLink        = column[String]("access_link")
+  def runningStatus     = column[String]("running_status")
+  def messages          = column[String]("messages")
+  def visualizations    = column[String]("visualizations")
+  def pmTitle           = column[String]("pm_title")
+  def pmSubTitle        = column[String]("pm_subtitle")
+
   def pk = primaryKey("policy_model_versions_pkey", (version, modelId))
-  
-  def * = (version, modelId, lastUpdate, publicationStatus, commentingStatus, note, accessLink) <> (
-    (t:(Int,String,Timestamp,String,String,String, String)) => PolicyModelVersion(t._1,t._2,t._3,PublicationStatus.withName(t._4), CommentingStatus.withName(t._5), t._6, t._7),
-    (pmv:PolicyModelVersion) => Some((pmv.version, pmv.parentId, pmv.lastUpdate, pmv.publicationStatus.toString, pmv.commentingStatus.toString, pmv.note, pmv.accessLink))
+
+  def * = (modelId, version, lastUpdate, publicationStatus, commentingStatus, note, accessLink, runningStatus, messages, visualizations, pmTitle, pmSubTitle
+  ) <> (
+    (t:(String, Int, Timestamp, String, String, String, String, String, String, String, String, String)) =>
+      VersionMD(KitKey(t._1, t._2), t._3, PublicationStatus.withName(t._4), CommentingStatus.withName(t._5), t._6, t._7, RunningStatus.withName(t._8), t. _9,
+        if (t._10.trim.isEmpty) Map[String,Set[String]]() else t._10.split("\n").map(l => (l.split("~")(0), l.split("~")(1).split("/").toSet)).toMap,
+        t._11, t._12),
+    (versionMD:VersionMD) => Some((versionMD.id.modelId, versionMD.id.version, versionMD.lastUpdate, versionMD.publicationStatus.toString, versionMD.commentingStatus.toString,
+      versionMD.note, versionMD.accessLink, versionMD.runningStatus.toString, versionMD.messages, versionMD.visualizations.map(e => e._1 + "~" + e._2.mkString("/")).mkString("\n"),
+      versionMD.pmTitle, versionMD.pmSubTitle))
   )
-  
+
 }
+
 
 class UserTable(tag:Tag) extends Table[User](tag,"users") {
   
@@ -73,7 +94,7 @@ class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
   def id = column[Long]("id", O.PrimaryKey, O.AutoInc)
   def writer = column[String]("writer")
   def comment = column[String]("comment")
-  def versionPolicyModelID = column[String]("version_policy_model_id")
+  def modelID = column[String]("version_policy_model_id")
   def localization = column[Option[String]]("localization")
   def version = column[Int]("version")
   def targetType = column[String]("target_type")
@@ -82,9 +103,9 @@ class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
   def time  = column[Timestamp]("time")
 
   def fk_version = foreignKey("comments_version_num_fkey", version, TableClasses.policyModelVersions)(_.version)
-  def fk_model = foreignKey("comments_model_fkey", versionPolicyModelID, TableClasses.policyModelVersions)(_.modelId)
+  def fk_model = foreignKey("comments_model_fkey", modelID, TableClasses.policyModelVersions)(_.modelId)
 
-  def * = (writer, comment, versionPolicyModelID, version, localization,
+  def * = (writer, comment, modelID, version, localization,
            targetType, targetContent, resolved, time, id) <> (Comment.tupled, Comment.unapply)
 }
 class SettingTable(tag:Tag) extends Table[Setting](tag, "settings") {
@@ -150,5 +171,5 @@ class NotesTable(tag:Tag) extends Table[Note](tag, "notes"){
 
 object TableClasses {
   val interviewHistories = TableQuery[InterviewHistoryTable]
-  val policyModelVersions = TableQuery[PolicyModelVersionTable]
+  val policyModelVersions = TableQuery[VersionsTable]
 }

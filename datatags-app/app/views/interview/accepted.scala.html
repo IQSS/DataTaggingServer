@@ -42,7 +42,7 @@
             <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
               <i class="fa fa-download"></i>&nbsp;Download Policy as JSON
             </a>
-            <a href="@routes.InterviewCtrl.transcript(session.kit.id.modelId, session.kit.id.version, None)" class="btn btn-primary">
+            <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None)" class="btn btn-primary">
               <i class="fa fa-book"></i>&nbsp;Interview Transcript
             </a>
           </div>
@@ -57,7 +57,7 @@
           Answer History
         </div>
         <div class="card-body">
-        @comps.answerHistory(session.answerHistory, session.kit.id, false, session.kit.serializer, session.localization)
+        @comps.answerHistory(session.answerHistory, session.kit.md.id, false, session.kit.serializer, session.localization)
         </div>
       </div></div></div>
   <div class="row my-2">
@@ -70,7 +70,7 @@
           </form>
         }
         case None => {
-          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.id.modelId, session.kit.id.version)" class="btn btn-primary">Start Again</a>
+          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.md.id.modelId, session.kit.md.id.version)" class="btn btn-primary">Start Again</a>
         }
       }
     </div>

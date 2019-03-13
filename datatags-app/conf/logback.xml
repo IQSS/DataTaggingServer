@@ -16,9 +16,9 @@
         </encoder>
     </appender>
 
-    <appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="FILE"/>
-    </appender>
+    <!--<appender name="ASYNCFILE" class="ch.qos.logback.classic.AsyncAppender">-->
+        <!--<appender-ref ref="FILE"/>-->
+    <!--</appender>-->
 
     <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
         <appender-ref ref="STDOUT"/>
@@ -27,6 +27,8 @@
     <logger name="play" level="INFO"/>
     <logger name="controllers" level="INFO"/>
     <logger name="models" level="INFO"/>
+    <logger name="actors" level="INFO"/>
+    <logger name="persistence" level="INFO"/>
 
     <!-- Log slick SQL statements
     <logger name="slick.jdbc.JdbcBackend.statement" level="DEBUG"/>

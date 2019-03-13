@@ -209,8 +209,8 @@ object Helpers {
   def transcriptAsXml(session:InterviewSession, noteMap:Map[String,Note]):scala.xml.Elem = {
     val head = <metadata>
           <model>
-            <id>{session.kit.id.modelId}</id>
-            <version>{session.kit.id.modelId}</version>
+            <id>{session.kit.md.id.modelId}</id>
+            <version>{session.kit.md.id.modelId}</version>
             <localization>{session.localization.map(l=>l.getLanguage).getOrElse("-NONE-")}</localization>
           </model>
         </metadata>
@@ -245,5 +245,7 @@ object Helpers {
     val rtlLangs = Set("he", "ar")
     rtlLangs.contains(lang.toLowerCase)
   }
+
+  def vizNames = Map("decision-graph" -> "Decision Graph", "policy-space"-> "Policy Space")
   
 }

@@ -9,7 +9,7 @@ var Comments = (function(){
         var uploadObj = {
             writer: $("#"+formID + " [data-role='name']").val(),
             comment : $("#"+formID + " [data-role='comment']").val(),
-            versionedPolicyModelID : $("#"+formID + " [data-role='versionPolicyModelID']").val(),
+            modelID : $("#"+formID + " [data-role='modelID']").val(),
             version : Number($("#"+formID + " [data-role='version']").val()),
             targetType: $("#"+formID + " [data-role='targetType']").val(),
             targetContent: $("#"+formID + " [data-role='targetContent']").val()
@@ -118,7 +118,7 @@ var Comments = (function(){
                     type: call.type,
                     contentType: "application/json; charset=utf-8"
                 }).done(function (data, status, jqXhr) {
-                    window.location = jsRoutes.controllers.PolicyKitManagementCtrl.showVersionPage(modelId, version).url;
+                    window.location = jsRoutes.controllers.ModelCtrl.showVersionPage(modelId, version).url;
                 });
             } else {
                 swal.close();

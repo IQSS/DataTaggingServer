@@ -13,12 +13,12 @@ var DeleteVersion = (function(){
             },
             function(isConfirm) {
                 if (isConfirm) {
-                    var call = jsRoutes.controllers.PolicyKitManagementCtrl.deleteVersion(modelId, version);
+                    var call = jsRoutes.controllers.ModelCtrl.deleteVersion(modelId, version);
                     $.ajax(call.url, {
                         type: call.type,
                         contentType: "application/json; charset=utf-8"
                     }).done(function (data, status, jqXhr) {
-                        window.location = jsRoutes.controllers.PolicyKitManagementCtrl.showVpmPage(modelId).url;
+                        window.location = jsRoutes.controllers.ModelCtrl.showModelPage(modelId).url;
                     });
                 } else {
                     swal.close();

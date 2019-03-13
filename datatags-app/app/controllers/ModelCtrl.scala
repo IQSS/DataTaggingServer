@@ -1,0 +1,296 @@
+package controllers
+
+import java.sql.Timestamp
+import java.util.UUID
+import java.nio.file.{Files, Paths}
+
+import javax.inject.Inject
+import models._
+import persistence.{CommentsDAO, LocalizationManager, ModelManager}
+import play.api.{Configuration, Logger}
+import play.api.cache.SyncCacheApi
+import play.api.data.Form
+import play.api.data.Forms._
+import play.api.libs.json.Json
+import play.api.mvc.{ControllerComponents, InjectedController}
+import scala.collection.JavaConverters._
+
+import scala.concurrent.Future
+
+case class ModelFormData( id:String, title:String, note:String, saveStat:Boolean, noteOpt:Boolean) {
+  def this(model:Model ) = this(model.id, model.title, model.note, model.saveStat, model.notesAllowed)
+
+  def toModel = Model(id, title, new Timestamp(System.currentTimeMillis()), note, saveStat, noteOpt)
+}
+
+case class VersionFormData( publicationStatus:String,
+                        commentingStatus:String,
+                        note:String
+                      )
+
+object VersionFormData {
+  def from(verKit:VersionKit) = VersionFormData( verKit.md.publicationStatus.toString, verKit.md.commentingStatus.toString, verKit.md.note)
+}
+
+class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager,
+                           comments:CommentsDAO, config:Configuration ) extends InjectedController {
+
+  implicit private val ec = cc.executionContext
+  private val logger = Logger(classOf[ModelCtrl])
+  private val uploadPath = Paths.get(config.get[String]("taggingServer.model-uploads.folder"))
+  private val visualizationsPath = Paths.get(config.get[String]("taggingServer.visualize.folder"))
+  private val MIME_TYPES = Map("svg"->"image/svg+xml", "pdf"->"application/pdf", "png"->"image/png")
+  private val validModelId = "^[-._a-zA-Z0-9]+$".r
+  val modelForm = Form(
+    mapping(
+      "id" -> text(minLength = 1, maxLength = 64)
+        .verifying( "Illegal characters found. Use letters, numbers, and -_. only.",
+          s=>s.isEmpty || validModelId.findFirstIn(s).isDefined),
+      "title" -> nonEmptyText,
+      "note" -> text,
+      "saveStat" -> boolean,
+      "noteOpt" -> boolean
+    )(ModelFormData.apply)(ModelFormData.unapply)
+  )
+
+  val versionForm = Form(
+    mapping(
+      "publicationStatus" -> text,
+      "commentingStatus"  -> text,
+      "note" -> text
+    )(VersionFormData.apply)(VersionFormData.unapply)
+  )
+
+  def showNewModelPage = LoggedInAction(cache,cc){ req =>
+    Ok( views.html.backoffice.modelEditor(modelForm, true) )
+  }
+
+  def showEditModelPage(id:String)= LoggedInAction(cache,cc).async { req =>
+    models.getModel(id).map({
+      case None => NotFound("Model does not exist.")
+      case Some(model) => Ok( views.html.backoffice.modelEditor(modelForm.fill(new ModelFormData(model)), false) )
+    })
+  }
+
+  def doSaveNewModel = LoggedInAction(cache,cc).async { implicit req =>
+    modelForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future( Ok(views.html.backoffice.modelEditor(formWithErrors, true)) )
+      },
+      modelFd => models.getModel(modelFd.id).flatMap({
+        case None => {
+          models.add(modelFd.toModel).map(model => Redirect(routes.ModelCtrl.showModelPage(model.id)).flashing("message"->"Model '%s' created.".format(modelFd.id)))
+        }
+        case Some(_) => {
+          Future( Ok(views.html.backoffice.modelEditor(modelForm.fill(modelFd).withError("id","Id must be unique"), true)) )
+        }
+      })
+    )
+  }
+
+  def doSaveModel(id:String) = LoggedInAction(cache,cc).async { implicit req =>
+    modelForm.bindFromRequest.fold(
+      formWithErrors => {
+        Future( BadRequest(views.html.backoffice.modelEditor(formWithErrors, false)) )
+      },
+      modelFd => models.getModel(modelFd.id).flatMap({
+        case None => {
+          models.add(modelFd.toModel).map(_ =>
+            Redirect(routes.ModelCtrl.showModelPage(id)).flashing("message"->"Model '%s' created.".format(modelFd.id)))
+
+        }
+        case Some(model) => {
+          models.update( modelFd.toModel.copy(created=model.created) )
+            .map( _ => Redirect(routes.ModelCtrl.showModelPage(model.id)).flashing("message"->"Model '%s' updated.".format(model.id)) )
+
+        }
+      })
+    )
+  }
+
+  def showModelPage(id:String) = LoggedInAction(cache, cc).async { req =>
+    for {
+      modelOpt <- models.getModel(id)
+      versions <- models.listVersionFor(id)
+    } yield {
+      modelOpt match {
+        case None => NotFound("Model does not exist.")
+        case Some(model) => Ok(
+          views.html.backoffice.modelViewer(model, versions,
+          true, req.flash.get("message")))
+      }
+    }
+  }
+
+  def showModelsList = LoggedInAction(cache,cc).async{ implicit req =>
+    for {
+                                           models <- models.listAllModels()
+    } yield {
+      Ok(views.html.backoffice.modelList(models.sortBy(_.title), req.flash.get("message")))
+    }
+  }
+
+  def apiDoDeleteModel( id:String ) = LoggedInAction(cache,cc).async {
+    models.getModel(id).flatMap({
+      case None => Future(NotFound(Json.obj("result"->false)))
+      case Some(_) => {
+        models.deleteModel(id).map( _ => Ok(Json.obj("result"->true)).flashing("message"->("Model " + id + " deleted")) )
+      }
+    })
+
+  }
+
+
+  def showNewVersionPage(modelId:String) = LoggedInAction(cache,cc).async{ implicit req =>
+    models.getModel(modelId).map({
+      case None => NotFound("Can't find model")
+      case Some(_) => Ok( views.html.backoffice.versionEditor(
+        versionForm.fill(VersionFormData(PublicationStatus.Private.toString, CommentingStatus.Everyone.toString, "")),
+        modelId,
+        None))
+    })
+  }
+
+  def showVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>
+    for {
+      mdlOpt <- models.getModel(modelId)
+      verKitOpt <- models.getVersionKit(KitKey(modelId, vNum))
+      comments <- comments.listForModelVersion(modelId,vNum)
+    } yield {
+      mdlOpt.flatMap{ mdl =>
+        verKitOpt.map( vkit=> Ok(views.html.backoffice.versionViewer(vkit, mdl, comments) ))
+      }.getOrElse( NotFound("model or version not found."))
+    }
+  }
+
+  def showEditVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>
+    models.getVersionKit(KitKey(modelId, vNum)).map({
+      case None => NotFound("Cannot find model version")
+      case Some(v) => Ok(views.html.backoffice.versionEditor(
+        versionForm.fill( VersionFormData.from(v) ),
+        modelId,
+        Some(vNum)
+      ))
+    })
+  }
+
+  def uploadNewVersion(modelId:String) = LoggedInAction(cache, cc)(parse.multipartFormData).async{ implicit req =>
+    versionForm.bindFromRequest.fold(
+      formWithErrors => Future(BadRequest(views.html.backoffice.versionEditor(formWithErrors, modelId, None))),
+      mfd => req.body.file("zippedModel").map(file => {
+        val md = new VersionMD(KitKey(modelId, -1), new Timestamp(System.currentTimeMillis()), PublicationStatus.withName(mfd.publicationStatus), CommentingStatus.withName(mfd.commentingStatus),
+          mfd.note, UUID.randomUUID().toString, RunningStatus.Processing, "", Map[String, Set[String]](), "", "")
+        models.addNewVersion(md).map(nv => {
+          val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
+          file.ref.moveFileTo( destFile, replace=false )
+          models.ingestSingleVersion(nv, destFile)
+          Redirect(routes.ModelCtrl.showModelPage(modelId)).flashing( "message"->"Created new version." )
+        })
+      }).getOrElse(
+        Future(Ok( views.html.backoffice.versionEditor(
+          versionForm.fill(mfd),
+          modelId,
+          None)))
+      )
+    )
+  }
+
+  def saveVersion(modelId:String, vNum:Int) = LoggedInAction(cache, cc)(parse.multipartFormData).async{ implicit req =>
+    versionForm.bindFromRequest.fold(
+      formWithErrors => Future(BadRequest(views.html.backoffice.versionEditor(formWithErrors, modelId, None))),
+      mfd => {
+        models.getModelVersion(modelId, vNum).flatMap({
+          case None => Future(NotFound("Model version does not exist"))
+          case Some(ver) => {
+            val md = new VersionMD(KitKey(modelId, vNum), new Timestamp(System.currentTimeMillis()), PublicationStatus.withName(mfd.publicationStatus),
+              CommentingStatus.withName(mfd.commentingStatus), mfd.note, ver.accessLink, ver.runningStatus, ver.messages, ver.visualizations, ver.pmTitle, ver.pmSubTitle)
+            req.body.file("zippedModel").foreach( file => {
+             //validate the file is non-empty
+              if ( Files.size(file.ref.path) > 0 ) {
+                val destFile = uploadPath.resolve(UUID.randomUUID().toString + ".zip")
+                file.ref.moveFileTo(destFile, replace = false)
+                models.removeModelLoaded(KitKey(modelId, vNum))
+                locs.removeLocalizations(KitKey(modelId, vNum))
+                models.updateVersion(md).map(nv => models.ingestSingleVersion(md, destFile))
+              }
+            })
+            Future(Redirect(routes.ModelCtrl.showModelPage(modelId)).flashing( "message"->"Version '%d' updated.".format(vNum) ))
+          }
+        })
+      })
+  }
+
+  def deleteVersion(modelId:String, version:Int) = LoggedInAction(cache,cc).async{ implicit req =>
+    models.getModelVersion(modelId, version).map({
+      case None => NotFound("Link no longer active")
+      case Some(ver) =>{
+        models.deleteVersion(modelId, version)
+        models.removeModelLoaded(KitKey(modelId, version))
+        locs.removeLocalizations(KitKey(modelId, version))
+        Ok("Deleted version %d".format(version))}
+    })
+  }
+
+  def showLatestVersion(modelId:String) = Action.async { implicit req =>
+    models.latestPublicVersion(modelId).map( {
+      case None => NotFound("No public version was found")
+      case Some(ver) => TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, ver.id.version).url )
+    })
+  }
+
+  def visualizationFile(modelId:String, version:Int, suffix:String, fileType:String) = Action{ req =>
+    val destPath = visualizationsPath.resolve("%s/%d/viz/%s.%s".format(modelId, version, fileType, suffix))
+    if ( Files.exists(destPath) ) {
+      val content = Files.readAllBytes(destPath)
+      Ok( content ).withHeaders(
+        ("Content-Disposition", "inline; filename=\"Visualization.pdf\"")
+      ).as(MIME_TYPES.getOrElse(suffix.toLowerCase, "application/octet-stream"))
+    } else {
+      NotFound("Visualization not found.")
+    }
+  }
+
+  def refactorApi = Action.async { implicit req =>
+    if ( req.connection.remoteAddress.isLoopbackAddress ) {
+      val modelsPath = Paths.get(config.get[String]("taggingServer.models.folder"))
+      val vizPath = Paths.get(config.get[String]("taggingServer.visualizations.folder"))
+      Files.list(modelsPath).iterator().asScala.foreach(modelName => {
+        Files.list(modelName).iterator().asScala.foreach(ver => {
+          val listOfDir = Files.list(ver).iterator().asScala.toSet
+          val modelDir = Files.createDirectory(ver.resolve("model-temp-dir"))
+          listOfDir.foreach(file => Files.move(file, modelDir.resolve(file.getFileName)))
+          Files.move(modelDir, modelDir.getParent.resolve("model"))
+        })
+      })
+      Files.list(vizPath).iterator().asScala.foreach(viz => {
+        val vizSuffix = viz.getFileName.toString.split('.')(1)
+        val vizDet = viz.getFileName.toString.split('.')(0).split('~')
+        if(Files.exists(modelsPath.resolve(vizDet(0)).resolve(vizDet(1)))){ // check if the model exists
+          if(!Files.exists(modelsPath.resolve(vizDet(0)).resolve(vizDet(1)).resolve("viz"))){ // create the viz dir for the first time
+            Files.createDirectory(modelsPath.resolve(vizDet(0)).resolve(vizDet(1)).resolve("viz"))
+          }
+          Files.move(viz, modelsPath.resolve(vizDet(0)).resolve(vizDet(1)).resolve("viz").resolve(vizDet(2) + '.' + vizSuffix))
+        }
+      })
+      for{
+        processingVersion <- models.listProcessingVersion
+      } yield {
+        processingVersion.foreach(ver => models.loadVersion(ver, modelsPath.resolve(ver.id.modelId).resolve(ver.id.version.toString + "/model")))
+      }
+      Future(Ok("Refactor finish"))
+    }
+    else {
+      Future( Unauthorized("This endpoint available from localhost only") )
+    }
+  }
+
+  def recreateViz = Action.async { implicit req =>
+    if ( req.connection.remoteAddress.isLoopbackAddress ) {
+      models.recreateAllViz
+      Future(Ok("Recreating all visualization files"))
+    } else {
+      Future( Unauthorized("This endpoint available from localhost only") )
+    }
+  }
+}
+
