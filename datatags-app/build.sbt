@@ -21,6 +21,7 @@ libraryDependencies ++= Seq(
   openId,
 //  "org.scalatestplus" % "scalatestplus-play" % "3.1.2" % "test",
   "org.webjars" % "bootstrap" % "4.2.1",
+  "org.webjars.bower" % "sweetalert" % "2.0.3" ,
   "com.typesafe.play" %% "play-json" % "2.6.10",
   "com.vladsch.flexmark" % "flexmark-all" % "0.40.0",
   "org.postgresql" % "postgresql" % "42.0.0",
