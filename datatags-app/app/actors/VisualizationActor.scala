@@ -9,7 +9,7 @@ import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationF
 import akka.actor.{Actor, Props}
 import edu.harvard.iq.datatags.cli.ProcessOutputDumper
 import edu.harvard.iq.datatags.model.PolicyModel
-import edu.harvard.iq.datatags.visualizers.graphviz.{AbstractGraphvizDecisionGraphVisualizer, GraphvizDecisionGraphClusteredVisualizer, GraphvizDecisionGraphF11Visualizer, GraphvizTagSpacePathsVizualizer}
+import edu.harvard.iq.datatags.visualizers.graphviz.{AbstractGraphvizDecisionGraphVisualizer, GraphvizDecisionGraphClusteredVisualizer, GraphvizDecisionGraphF11Visualizer, GraphvizPolicySpacePathsVisualizer}
 import models.{KitKey, VersionKit}
 import persistence.ModelManager
 import play.api.{Configuration, Logger}
@@ -122,7 +122,7 @@ class VisualizationActor @Inject()(configuration:Configuration, modelManager:Mod
     val outputPath = folder.resolve( fileName + "." + fileExtension)
 
     val pb = new ProcessBuilder(pathToDot.toString, "-T" + fileExtension)
-    val viz = new GraphvizTagSpacePathsVizualizer(model.getSpaceRoot)
+    val viz = new GraphvizPolicySpacePathsVisualizer(model.getSpaceRoot)
     
     
     val gv: Process = pb.start

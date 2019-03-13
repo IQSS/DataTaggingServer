@@ -29,6 +29,10 @@ class TaggingEngineListener extends edu.harvard.iq.datatags.runtime.RuntimeEngin
   override def sectionStarted(runtimeEngine: RuntimeEngine, node: Node): Unit = {}
   
   override def sectionEnded(runtimeEngine: RuntimeEngine, node: Node): Unit = {}
-  
+
+  override def partEnded(runtimeEngine: RuntimeEngine, node: Node): Unit = {}
+
+  override def partStarted(runtimeEngine: RuntimeEngine, node: Node): Unit = {}
+
   def sectionStack:Seq[SectionNode] = sections
 }

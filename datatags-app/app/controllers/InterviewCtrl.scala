@@ -237,7 +237,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         }
 
         // now, submit the new answer and feed it to the engine.
-        val answer = Answer.get( answerReq.text )
+        val answer = Answer.withName( answerReq.text )
         val ansRec = AnswerRecord( currentAskNode(session.kit.model.get, session.engineState), answer )
         val runRes = advanceEngine( session.kit, session.engineState, answer )
 
