@@ -20,6 +20,7 @@ libraryDependencies ++= Seq(
   guice,
   openId,
 //  "org.scalatestplus" % "scalatestplus-play" % "3.1.2" % "test",
+  "org.webjars" % "jquery" % "3.3.1-2",
   "org.webjars" % "bootstrap" % "4.2.1",
   "org.webjars" % "sweetalert" % "2.1.0" ,
   "com.typesafe.play" %% "play-json" % "2.6.10",
