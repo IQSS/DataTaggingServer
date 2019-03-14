@@ -4,7 +4,7 @@
     @if( tp.getNote!=null && tp.getNote.nonEmpty ) {
       @defining(loc.flatMap(l=>Helpers.o2o(l.getSlotText(tp))) ){ locOpt =>
         <span data-toggle="popover" data-trigger="hover" data-html="true"
-        title="@tp.getName" data-content="@locOpt.map( Helpers.renderMinimalMarkdown _ ).getOrElse( Html(tp.getNote))"
+        title="@tp.getName" data-content="@locOpt.map( Helpers.renderMinimalMarkdown ).getOrElse( Html(tp.getNote.replaceAll("\"","\\\"")))"
         data-placement="top">
             <span class="typeName">@tp.getName
                 <i class="fa fa-info-circle"></i>

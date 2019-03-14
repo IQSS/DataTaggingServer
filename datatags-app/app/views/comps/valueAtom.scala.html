@@ -4,7 +4,8 @@
   <span class="valueAtom">@value.getName</span>
 } else {
   <span class="valueAtom" data-toggle="popover" data-trigger="hover" 
-     title="@value.getName" data-html="true" data-content="@loc.flatMap(l=>Helpers.o2o(l.getSlotValueText(value))).map( Helpers.renderMinimalMarkdown _ ).getOrElse(Html(value.getNote))"
+     title="@value.getName" data-html="true"
+     data-content="@loc.flatMap(l=>Helpers.o2o(l.getSlotValueText(value))).map( t=>Helpers.renderMinimalMarkdown(t.replaceAll("\"","\\\"")) ).getOrElse(Html(value.getNote.replaceAll("\"","")))"
      data-placement="top">
     @value.getName
     <i class="fa fa-info-circle"></i>

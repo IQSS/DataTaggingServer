@@ -1,12 +1,5 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
-@import edu.harvard.iq.datatags.model.graphs.nodes.CallNode
-@import edu.harvard.iq.datatags.model.graphs.nodes.SectionNode
-@import edu.harvard.iq.datatags.model.graphs.nodes.ConsiderNode
-@import edu.harvard.iq.datatags.model.graphs.nodes.EndNode
-@import edu.harvard.iq.datatags.model.graphs.nodes.ThroughNode
-@import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
-@import edu.harvard.iq.datatags.model.graphs.nodes.Node
+@import edu.harvard.iq.datatags.model.graphs.nodes._
 @import collection.mutable.Set
 
 @(verKit: VersionKit,
@@ -25,21 +18,28 @@ loc:Option[Localization]
 }
 
 @visitCallNode( cn:CallNode, baseLevel:Boolean, visited:Set[String] ) = {
-  @visitNode(cn.getCalleeNode, false, visited)
+  <div class="node call">
+    <strong>Call</strong>
+    <a href="#part-@cn.getCalleeNode.getId">@cn.getCalleeNode.asInstanceOf[PartNode].getTitle <code>@cn.getCalleeNode.getId</code></a>
+  </div>
   @visitNode(cn.getNextNode, baseLevel, visited)
 }
 
 @visitSectionNode( nd:SectionNode, baseLevel:Boolean, visited:Set[String] ) = {
-  <div>
-    <div class="section">
-      <h4>Section: @nd.getTitle</h4>
-      @visitNode(nd.getStartNode, baseLevel, visited)
-    </div>
-    @if(baseLevel) {
-      @visitNode(nd.getNextNode, baseLevel, visited)
-    }
+  <div class="node section">
+    <h4>Section: @nd.getTitle</h4>
+    @visitNode(nd.getStartNode, baseLevel, visited)
+  </div>
+  @visitNode(nd.getNextNode, baseLevel, visited)
+}
+
+@visitPartNode( nd:PartNode, baseLevel:Boolean, visited:Set[String] ) = {
+  <div class="node part" id="part-@nd.getId()">
+    <h4>Part: @nd.getTitle</h4>
+    @visitNode(nd.getStartNode, baseLevel, visited)
   </div>
 }
+
 
 @visitConsiderNode( c:ConsiderNode, baseLevel:Boolean, visited:Set[String] ) = {
     @for( a <- c.getAnswers ) {
@@ -63,8 +63,10 @@ loc:Option[Localization]
       case c:ConsiderNode => {@visitConsiderNode(c, baseLevel, visited)}
       case ca:CallNode => {@visitCallNode(ca, baseLevel, visited)}
       case t:ThroughNode => {@visitThroughNode(t, baseLevel, visited)}
+      case p:PartNode => {@visitPartNode(p,baseLevel,visited)}
       case n:EndNode => {}
       case n:RejectNode => {}
+      case n:ContinueNode => {}
   }}
 }
 
@@ -92,6 +94,9 @@ loc:Option[Localization]
     <div class="col-md-12">
       <div class="allQuestions">
         @visitNode( verKit.model.get.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
+        @for( nd <- verKit.model.get.getDecisionGraph.nodes.asScala.filter(_.isInstanceOf[PartNode]) ) {
+          @visitPartNode(nd.asInstanceOf[PartNode], true, Set() )
+        }
       </div>
     </div>
   </div>
