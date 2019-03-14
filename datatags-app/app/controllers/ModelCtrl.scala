@@ -254,8 +254,8 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     if ( req.connection.remoteAddress.isLoopbackAddress ) {
       val modelsPath = Paths.get(config.get[String]("taggingServer.models.folder"))
       val vizPath = Paths.get(config.get[String]("taggingServer.visualizations.folder"))
-      Files.list(modelsPath).iterator().asScala.foreach(modelName => {
-        Files.list(modelName).iterator().asScala.foreach(ver => {
+      Files.list(modelsPath).iterator().asScala.filter( Files.isDirectory(_) ).foreach(modelName => {
+        Files.list(modelName).iterator().asScala.filter( Files.isDirectory(_) ).foreach( ver => {
           val listOfDir = Files.list(ver).iterator().asScala.toSet
           val modelDir = Files.createDirectory(ver.resolve("model-temp-dir"))
           listOfDir.foreach(file => Files.move(file, modelDir.resolve(file.getFileName)))
@@ -263,14 +263,19 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
         })
       })
       Files.list(vizPath).iterator().asScala.foreach(viz => {
-        val vizSuffix = viz.getFileName.toString.split('.')(1)
-        val vizDet = viz.getFileName.toString.split('.')(0).split('~')
-        if(Files.exists(modelsPath.resolve(vizDet(0)).resolve(vizDet(1)))){ // check if the model exists
-          if(!Files.exists(modelsPath.resolve(vizDet(0)).resolve(vizDet(1)).resolve("viz"))){ // create the viz dir for the first time
-            Files.createDirectory(modelsPath.resolve(vizDet(0)).resolve(vizDet(1)).resolve("viz"))
-          }
-          Files.move(viz, modelsPath.resolve(vizDet(0)).resolve(vizDet(1)).resolve("viz").resolve(vizDet(2) + '.' + vizSuffix))
-        }
+        val comps = viz.getFileName.toString.split('.')
+        if ( comps.length > 1 ) {
+          val vizSuffix = comps(1)
+          val vizDet = viz.getFileName.toString.split('.')(0).split('~')
+          if ( vizDet.length > 2 ) {
+            if(Files.exists(modelsPath.resolve(vizDet(0)).resolve(vizDet(1)))){ // check if the model exists
+              if(!Files.exists(modelsPath.resolve(vizDet(0)).resolve(vizDet(1)).resolve("viz"))){ // create the viz dir for the first time
+                Files.createDirectory(modelsPath.resolve(vizDet(0)).resolve(vizDet(1)).resolve("viz"))
+              }
+              Files.move(viz, modelsPath.resolve(vizDet(0)).resolve(vizDet(1)).resolve("viz").resolve(vizDet(2) + '.' + vizSuffix))
+            }
+          } else logger.info("Skipping vizDet" + viz.toString )
+        } else logger.info("Skipping " + viz.toString )
       })
       for{
         processingVersion <- models.listProcessingVersion
