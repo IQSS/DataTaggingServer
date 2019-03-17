@@ -20,8 +20,7 @@ GET     /models/:modelId/:versionNum/reject      controllers.InterviewCtrl.rejec
 POST    /models/:modelId/:versionNum/revisit     controllers.InterviewCtrl.revisit(modelId, versionNum:Int)
 GET     /models/:modelId/:versionNum/allQuestions controllers.InterviewCtrl.viewAllQuestions(modelId, versionNum:Int, localizationName:Option[String]?=None)
 
-
-GET    /visualizations/                          controllers.ModelCtrl.visualizationFile(model:String, version:Int, suffix:String, fileType:String)
+GET    /:model/:version/visualizations/:fileType/:format controllers.ModelCtrl.visualizationFile(model:String, version:Int, format:String, fileType:String)
 GET    /admin/localApi/visualizations/recreate   controllers.ModelCtrl.recreateViz
 GET    /admin/localApi/refactor                  controllers.ModelCtrl.refactorApi
 
