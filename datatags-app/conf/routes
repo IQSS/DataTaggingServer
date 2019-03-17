@@ -19,10 +19,7 @@ GET     /models/:modelId/:versionNum/transcript  controllers.InterviewCtrl.trans
 GET     /models/:modelId/:versionNum/reject      controllers.InterviewCtrl.reject(modelId, versionNum:Int)
 POST    /models/:modelId/:versionNum/revisit     controllers.InterviewCtrl.revisit(modelId, versionNum:Int)
 GET     /models/:modelId/:versionNum/allQuestions controllers.InterviewCtrl.viewAllQuestions(modelId, versionNum:Int, localizationName:Option[String]?=None)
-
-GET    /:model/:version/visualizations/:fileType/:format controllers.ModelCtrl.visualizationFile(model:String, version:Int, format:String, fileType:String)
-GET    /admin/localApi/visualizations/recreate   controllers.ModelCtrl.recreateViz
-GET    /admin/localApi/refactor                  controllers.ModelCtrl.refactorApi
+GET     /models/:modelId/:versionNum/visualizations/:fileType/:format controllers.ModelCtrl.visualizationFile(modelId:String, versionNum:Int, format:String, fileType:String)
 
 # Link to access a model with no login
 GET  /access/models/:accessLink                  controllers.InterviewCtrl.accessByLink(accessLink)
@@ -79,6 +76,9 @@ POST    /admin/changePassword        controllers.UsersCtrl.doChangePassword
 POST    /admin/api/comments/             controllers.CommentsCtrl.apiAddComment
 PUT     /admin/api/comments/:id/status   controllers.CommentsCtrl.apiSetCommentStatus(id:Long)
 DELETE  /admin/api/comments/:id/delete   controllers.CommentsCtrl.deleteComment(id:Long)
+
+GET    /admin/localApi/visualizations/recreate   controllers.ModelCtrl.recreateViz
+GET    /admin/localApi/refactor                  controllers.ModelCtrl.refactorApi
 
 
 # Map static resources from the /public folder to the /assets URL path

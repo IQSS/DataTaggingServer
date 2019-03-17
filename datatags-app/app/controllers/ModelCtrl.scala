@@ -38,7 +38,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
   implicit private val ec = cc.executionContext
   private val logger = Logger(classOf[ModelCtrl])
   private val uploadPath = Paths.get(config.get[String]("taggingServer.model-uploads.folder"))
-  private val visualizationsPath = Paths.get(config.get[String]("taggingServer.visualize.folder"))
+  private val modelFolderPath = Paths.get(config.get[String]("taggingServer.models.folder"))
   private val MIME_TYPES = Map("svg"->"image/svg+xml", "pdf"->"application/pdf", "png"->"image/png")
   private val validModelId = "^[-._a-zA-Z0-9]+$".r
   val modelForm = Form(
@@ -240,7 +240,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
   }
 
   def visualizationFile(modelId:String, version:Int, suffix:String, fileType:String) = Action{ req =>
-    val destPath = visualizationsPath.resolve("%s/%d/viz/%s.%s".format(modelId, version, fileType, suffix))
+    val destPath = modelFolderPath.resolve("%s/%d/viz/%s.%s".format(modelId, version, fileType, suffix))
     logger.info("absolute path -" + destPath.toAbsolutePath)
     if ( Files.exists(destPath) ) {
       val content = Files.readAllBytes(destPath)
