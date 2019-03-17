@@ -242,7 +242,7 @@ object Helpers {
   }
 
   def isRtl(lang:String):Boolean = {
-    val rtlLangs = Set("he", "ar")
+    val rtlLangs = Set("he", "ar", "he_il", "ar_il")
     rtlLangs.contains(lang.toLowerCase)
   }
 

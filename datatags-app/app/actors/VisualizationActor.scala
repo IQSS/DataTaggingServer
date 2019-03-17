@@ -90,7 +90,11 @@ class VisualizationActor @Inject()(configuration:Configuration, modelManager:Mod
     val viz: AbstractGraphvizDecisionGraphVisualizer = if (style.contains("f11")) {
         new GraphvizDecisionGraphF11Visualizer(style.contains("-show-ends"))
       } else  {
-        new GraphvizDecisionGraphClusteredVisualizer
+        val gvv = new GraphvizDecisionGraphClusteredVisualizer
+        gvv.setConcentrate(!style.contains("--no-concentrate"))
+        gvv.setDrawEndNodes(style.contains("--show-ends"))
+        gvv.setDrawCallLinks(style.contains("--call-links"))
+        gvv
       }
     
     viz.setDecisionGraph(model.getDecisionGraph)
