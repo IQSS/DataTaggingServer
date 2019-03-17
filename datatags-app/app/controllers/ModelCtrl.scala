@@ -240,6 +240,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
 
   def visualizationFile(modelId:String, version:Int, suffix:String, fileType:String) = Action{ req =>
     val destPath = visualizationsPath.resolve("%s/%d/viz/%s.%s".format(modelId, version, fileType, suffix))
+    logger.info("absolute path -" + destPath.toAbsolutePath)
     if ( Files.exists(destPath) ) {
       val content = Files.readAllBytes(destPath)
       Ok( content ).withHeaders(

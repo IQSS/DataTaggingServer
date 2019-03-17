@@ -5,6 +5,7 @@ import edu.harvard.iq.datatags.externaltexts.MarkupString
 import models.{CommentDTO, KitKey, VersionKit}
 import play.api.libs.json._
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
+import play.api.Logger
 import play.api.cache.SyncCacheApi
 import play.api.mvc.{ControllerComponents, InjectedController}
 
@@ -17,6 +18,7 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
   import JSONFormats.commentDTOFmt
 
   implicit private val ec = cc.executionContext
+  private val logger = Logger(classOf[CommentsCtrl])
 
   def apiAddComment = Action(parse.tolerantJson).async { implicit req =>
     req.body.validate[CommentDTO] match {
@@ -33,16 +35,15 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
   def showComment(id: Long) = LoggedInAction(cache, cc).async { implicit req =>
     for {
       commentOpt <- comments.get(id)
-      modelOpt:Option[VersionKit] <- commentOpt.map(cmt => models.getVersionKit(KitKey(cmt.modelID, cmt.version))).getOrElse(Future(None))
+      modelOpt:Option[VersionKit] <- commentOpt.map(cmt => models.getVersionKit(KitKey(cmt.modelId, cmt.version))).getOrElse(Future(None))
     } yield {
       modelOpt match {
-        case None => NotFound("Cannot find model " + id)
+        case None => NotFound("Cannot find model for comment " + id)
         case Some(aKit) => {
           val loc = commentOpt.get.localization.flatMap(ln => locs.localization(aKit.md.id, ln.trim))
           val readmeOpt: Option[MarkupString] = loc.map(loc =>
             loc.getLocalizedModelData.getBestReadmeFormat.asScala.map(loc.getLocalizedModelData.getReadme(_))
           ).getOrElse(aKit.model.get.getMetadata.getBestReadmeFormat.asScala.map(aKit.model.get.getMetadata.getReadme(_)))
-
           Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, loc, readmeOpt))
         }
       }
