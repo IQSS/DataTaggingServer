@@ -40,6 +40,6 @@ case class CommentDTO(id:Option[Long],
 
 object CommentDTO {
   def of(c:Comment):CommentDTO = CommentDTO(Some(c.id), c.writer, c.comment,
-                                            c.modelID, c.version, c.localization,
+                                            c.modelId, c.version, c.localization,
                                             c.targetType, c.targetContent)
 }
