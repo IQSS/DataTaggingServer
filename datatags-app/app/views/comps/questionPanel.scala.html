@@ -13,7 +13,7 @@
     }
     @if( enableComments ){
       <div class="ml-2">
-      @comps.comments("cmnt", versionKit.md.id.modelId, versionKit.md.id.version, None, "node", questionNode.getId, "btn-outline-light")
+      @comps.comments("cmnt_" + questionNode.getId.filter(Character.isLetterOrDigit), versionKit.md.id.modelId, versionKit.md.id.version, None, "node", questionNode.getId, "btn-outline-light")
       </div>
     }
   </div>

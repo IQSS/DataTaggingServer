@@ -31,7 +31,7 @@ var Comments = (function(){
             swal({
                 title:"Comment added.",
                 text:"Thank you!",
-                type:"success",
+                icon:"success",
                 timer: 2500
             });
 
@@ -103,7 +103,7 @@ var Comments = (function(){
         swal({
             title: "Are you sure?",
             text: "You will not be able to recover this comment!",
-            type: "warning",
+            icon: "warning",
             showCancelButton: true,
             confirmButtonClass: "btn-danger",
             confirmButtonText: "Delete comment",

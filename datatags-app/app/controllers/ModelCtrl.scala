@@ -243,7 +243,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     if ( Files.exists(destPath) ) {
       val content = Files.readAllBytes(destPath)
       Ok( content ).withHeaders(
-        ("Content-Disposition", "inline; filename=\"Visualization.pdf\"")
+        ("Content-Disposition", "inline; filename=\"Visualization.%s\"".format(suffix))
       ).as(MIME_TYPES.getOrElse(suffix.toLowerCase, "application/octet-stream"))
     } else {
       NotFound("Visualization not found.")
