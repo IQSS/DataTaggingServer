@@ -204,6 +204,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
           case Some(ver) => {
             val md = new VersionMD(KitKey(modelId, vNum), new Timestamp(System.currentTimeMillis()), PublicationStatus.withName(mfd.publicationStatus),
               CommentingStatus.withName(mfd.commentingStatus), mfd.note, ver.accessLink, ver.runningStatus, ver.messages, ver.visualizations, ver.pmTitle, ver.pmSubTitle)
+            models.updateVersion(md)
             req.body.file("zippedModel").foreach( file => {
              //validate the file is non-empty
               if ( Files.size(file.ref.path) > 0 ) {
@@ -211,7 +212,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
                 file.ref.moveFileTo(destFile, replace = false)
                 models.removeModelLoaded(KitKey(modelId, vNum))
                 locs.removeLocalizations(KitKey(modelId, vNum))
-                models.updateVersion(md).map(nv => models.ingestSingleVersion(md, destFile))
+                models.ingestSingleVersion(md, destFile)
               }
             })
             Future(Redirect(routes.ModelCtrl.showModelPage(modelId)).flashing( "message"->"Version '%d' updated.".format(vNum) ))
