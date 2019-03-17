@@ -17,20 +17,19 @@ var ModelEditor = (function(){
     return {
         confirmDelete: function(name, id) {
             swal({
-                    title: "Delete Model '"+name+"'?",
-                    text: "This operation cannot be undone. External links referring to this model will be broken.",
-                    type: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes, delete it",
-                    cancelButtonText: "Cancel",
-                    closeOnConfirm: false,
-                    closeOnCancel: true
-                },
-                function(isConfirm){
-                    if (isConfirm) {
-                        deleteFile(id);
-                    }
-                });
+                title: "Delete Model '"+name+"'?",
+                text: "This operation cannot be undone. External links referring to this model will be broken.",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, delete it",
+                cancelButtonText: "Cancel",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            }).then(function(isConfirm) {
+                if (isConfirm) {
+                    deleteFile(id);
+                }
+            });
         }
     };
 })();

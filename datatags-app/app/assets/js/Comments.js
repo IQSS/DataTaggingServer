@@ -110,8 +110,7 @@ var Comments = (function(){
             cancelButtonText: "Cancel",
             closeOnConfirm: false,
             closeOnCancel: false
-        },
-        function(isConfirm) {
+        }).then(function(isConfirm) {
             if (isConfirm) {
                 var call = jsRoutes.controllers.CommentsCtrl.deleteComment(cmtId);
                 $.ajax(call.url, {
