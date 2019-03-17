@@ -1,7 +1,7 @@
 package controllers
 
 import javax.inject.Inject
-import edu.harvard.iq.datatags.externaltexts.MarkupString
+import edu.harvard.iq.datatags.externaltexts.{Localization, MarkupString, TrivialLocalization}
 import models.{CommentDTO, KitKey, VersionKit}
 import play.api.libs.json._
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
@@ -40,14 +40,22 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
       modelOpt match {
         case None => NotFound("Cannot find model for comment " + id)
         case Some(aKit) => {
-          val loc = commentOpt.get.localization.flatMap(ln => locs.localization(aKit.md.id, ln.trim))
-          val readmeOpt: Option[MarkupString] = loc.map(loc =>
-            loc.getLocalizedModelData.getBestReadmeFormat.asScala.map(loc.getLocalizedModelData.getReadme(_))
-          ).getOrElse(aKit.model.get.getMetadata.getBestReadmeFormat.asScala.map(aKit.model.get.getMetadata.getReadme(_)))
-          Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, loc, readmeOpt))
+          commentOpt match {
+            case None => NotFound("Comment not found")
+            case Some(comment) => {
+              aKit.model match {
+                case None => NotFound("Model not found")
+                case Some( model ) => {
+                  val l10n = comment.localization.flatMap( locCode=>locs.localization(aKit.md.id, locCode.trim) ).
+                                      getOrElse( new TrivialLocalization(model) )
+                  val readmeOpt = l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
+                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, Some(l10n), readmeOpt))
+                }
+              }
+            }
+          }
         }
       }
-
     }
   }
 
