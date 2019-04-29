@@ -71,7 +71,7 @@ loc:Option[Localization]
 }
 
 @extraHead = {
-  @if(Helpers.isRtl(loc.map(_.getLanguage).getOrElse(""))){
+  @if(loc.exists(_.isRtl)){
     <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
   }
 }

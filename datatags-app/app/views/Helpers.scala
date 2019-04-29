@@ -8,18 +8,15 @@ import java.util.{Date, Optional}
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
 import com.vladsch.flexmark.ext.tables.TablesExtension
-import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.options.MutableDataSet
 import edu.harvard.iq.datatags.externaltexts.{Localization, MarkupFormat, MarkupString}
 
 import scala.collection.mutable.ArrayBuffer
-import play.api.templates._
 import play.twirl.api.Html
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import controllers.LoggedInAction
 import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
-import edu.harvard.iq.datatags.model.values.AbstractValue
 import models.{CommentingStatus, InterviewSession, Note, PublicationStatus}
 import play.api.data.{Field, FormError}
 import play.api.mvc.Request
@@ -239,11 +236,6 @@ object Helpers {
       {head}
       {body}
     </transcript>
-  }
-
-  def isRtl(lang:String):Boolean = {
-    val rtlLangs = Set("he", "ar", "he_il", "ar_il")
-    rtlLangs.contains(lang.toLowerCase)
   }
 
   def vizNames = Map("decision-graph" -> "Decision Graph", "policy-space"-> "Policy Space")

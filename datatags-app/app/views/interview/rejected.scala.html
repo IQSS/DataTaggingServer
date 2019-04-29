@@ -7,9 +7,9 @@
 
 
 @extraHead = {
-  @if(Helpers.isRtl(session.localization.map(_.getLanguage).getOrElse(""))){
-    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
-  }
+@if(session.localization.exists(_.isRtl)){
+  <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+}
 }
 
 @templates.bsNavBar("Dataset Rejected", 'tag, extraHead = extraHead) {

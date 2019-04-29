@@ -7,8 +7,13 @@
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
   <script type="text/javascript" src="@routes.Assets.at("js/Question.js")"></script>
 }
+@extraHead = {
+@if(session.localization.exists(_.isRtl)){
+  <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+}
+}
 
-@templates.bsNavBar("Interview Transcript", 'ask, scripts) {
+@templates.bsNavBar("Interview Transcript", 'ask, scripts, extraHead) {
   <div class="row my-2">
     <div class="col">
       <h2>

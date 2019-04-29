@@ -8,9 +8,9 @@
 }
 
 @extraHead = {
-  @if(Helpers.isRtl(loc.map(_.getLanguage).getOrElse(""))){
-    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
-  }
+@if(loc.exists(_.isRtl)){
+  <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+}
 }
 
 @import views.Helpers
