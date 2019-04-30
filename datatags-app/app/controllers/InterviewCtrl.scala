@@ -12,7 +12,7 @@ import models._
 import _root_.util.Jsonizer
 import javax.inject.Inject
 import com.ibm.icu.text.SimpleDateFormat
-import edu.harvard.iq.datatags.externaltexts.MarkupString
+import edu.harvard.iq.datatags.externaltexts.{MarkupString, TrivialLocalization}
 import edu.harvard.iq.datatags.model.PolicyModel
 import edu.harvard.iq.datatags.model.graphs.Answer
 import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager, NotesDAO}
@@ -88,14 +88,18 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   }
   
   def startInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None ) = InterviewSessionAction(cache, cc) { implicit req =>
-    logger.info("start interview")
     import util.JavaOptionals.toRichOptional
     val kitId = KitKey(modelId, versionNum)
     models.getPolicyModel(kitId) match {
+      case None => NotFound("Model not found.")
       case Some(pm) => {
         val l10n = localizationName match {
-          case None       => if ( pm.getLocalizations.size==1 ) locs.localization(kitId, pm.getLocalizations.iterator().next()) else None
-          case Some(name) => locs.localization(kitId,name)
+          case None       => if ( pm.getLocalizations.size==1 ) {
+            locs.localization(kitId, pm.getLocalizations.iterator().next())
+          } else {
+            Some(new TrivialLocalization(pm))
+          }
+          case Some(name) => locs.localization(kitId,name) // TODO: complain if not found
         }
         val readmeOpt:Option[MarkupString] = l10n.map( loc =>
           loc.getLocalizedModelData).map(mdl => mdl.getBestReadmeFormat.toOption.map(mdl.getReadme)
@@ -138,8 +142,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
               None))
           })
       }
-      
-      case None => NotFound("Model not found.")
     }
   }
 

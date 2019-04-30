@@ -18,10 +18,6 @@ loc:Option[Localization]
 }
 
 @visitCallNode( cn:CallNode, baseLevel:Boolean, visited:Set[String] ) = {
-  <div class="node call">
-    <strong>Call</strong>
-    <a href="#part-@cn.getCalleeNode.getId">@cn.getCalleeNode.asInstanceOf[PartNode].getTitle <code>@cn.getCalleeNode.getId</code></a>
-  </div>
   @visitNode(cn.getNextNode, baseLevel, visited)
 }
 

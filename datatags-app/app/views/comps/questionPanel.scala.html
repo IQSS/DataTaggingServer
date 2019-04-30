@@ -9,10 +9,10 @@
       Question: Please select one answer
     </div>
     @if( showId ){
-      <div><span class="badge badge-light">@questionNode.getId</span></div>
+      <div class="mx-2"><span class="nodeIdBadge">@questionNode.getId</span></div>
     }
     @if( enableComments ){
-      <div class="ml-2">
+      <div>
       @comps.comments("cmnt_" + questionNode.getId.filter(Character.isLetterOrDigit), versionKit.md.id.modelId, versionKit.md.id.version, None, "node", questionNode.getId, "btn-outline-light")
       </div>
     }
