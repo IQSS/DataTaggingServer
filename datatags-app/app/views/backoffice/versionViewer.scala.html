@@ -139,7 +139,7 @@
           @for(cmt <- comments) {
             <tr>
               <td>@cmt.writer</td>
-              <td>@cmt.targetType.trim/@cmt.targetContent @cmt.localization.map(l => " (Localization " + l + ")").getOrElse("")
+              <td>@cmt.targetType.trim/@cmt.targetContent @if(cmt.localization != "model") { (Localization: @cmt.localization ) }
               </td>
               <td>@Helpers.dateTimeFormat(cmt.time)</td>
               <td>@comps.commentStatus(cmt, Some("cmtsts"+cmt.id))</td>

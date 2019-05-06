@@ -1,5 +1,5 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@(answerHistory: Seq[AnswerRecord], kitKey:KitKey, reverse:Boolean, serializer:Serialization, loc:Option[Localization])
+@(answerHistory: Seq[AnswerRecord], kitKey:KitKey, reverse:Boolean, serializer:Serialization, loc:Localization)
 @import views.Helpers
 @helper.form( action=routes.InterviewCtrl.revisit(kitKey.modelId, kitKey.version), 'id->"answerHistory") {
     <ol class="answer-history">
@@ -11,7 +11,7 @@
                           @Helpers.renderMini(ar._1.question, loc)
                         </div>
                         <div class="ar-controls">
-                            <span class="badge">@loc.map( l=>l.localizeAnswer(ar._1.answer.getAnswerText)).getOrElse(Helpers.makeUpper(ar._1.answer.getAnswerText))</span>
+                            <span class="badge">@loc.localizeAnswer(ar._1.answer.getAnswerText)</span>
                             <button class="btn btn-outline-info btn-sm"
                                 data-toggle="tooltip" data-placement="top"
                                 title="Change your answer to this question"

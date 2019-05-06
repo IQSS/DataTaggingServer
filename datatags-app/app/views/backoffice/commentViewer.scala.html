@@ -3,9 +3,9 @@
 @import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 @import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
 @import edu.harvard.iq.datatags.model.PolicyModel
-@(cmt:Comment, kit:VersionKit, locOpt:Option[Localization], readmeOpt:Option[MarkupString])
+@(cmt:Comment, kit:VersionKit, loc:Localization, readmeOpt:Option[MarkupString])
 
-@templates.backend("Version Viewer", 'backOffice ) {
+@templates.backend("Comment Viewer", 'backOffice ) {
   <div class="row my-2">
     <div class="col">
       <a href="@routes.ModelCtrl.showVersionPage(kit.md.id.modelId, kit.md.id.version)">
@@ -25,7 +25,7 @@
       <div>
         <em>@cmt.writer</em> commented at @Helpers.dateTimeFormat(cmt.time)
         on <code>@cmt.targetType.trim/@cmt.targetContent.trim</code>
-        @locOpt.map( loc=>"(localization: "+ loc.getLanguage + ")")
+        @for(loc<-cmt.localization) { (Localization: @loc ) }
       </div>
       <div class="commentContent">
         @cmt.comment
@@ -40,7 +40,7 @@
       <div class="commentSubjectCtnr">
         @if(cmt.targetType.trim == "meta"){
           @cmt.targetContent.trim match {
-            case "policy-space" => {@comps.tagType(kit.model.get.getSpaceRoot, locOpt)}
+            case "policy-space" => {@comps.tagType(kit.model.get.getSpaceRoot, loc)}
             case "readme" => {
               @if(readmeOpt.isDefined) {
                 @Helpers.render(readmeOpt.get)
@@ -52,10 +52,10 @@
         } else {
           @defining(kit.model.get.getDecisionGraph.getNode(cmt.targetContent)) {
             case ask: AskNode => {
-              @comps.questionPanel(ask, kit, locOpt, Seq(), enableComments=false, interactive=false, showId = true, false, None)
+              @comps.questionPanel(ask, kit, loc, Seq(), enableComments=false, interactive=false, showId = true, false, None)
             }
             case rej: RejectNode => {
-              @comps.rejectPanel(rej, kit.md.id, locOpt, Seq(), enableComments=false)
+              @comps.rejectPanel(rej, kit.md.id, loc, Seq(), enableComments=false)
             }
           }
         }

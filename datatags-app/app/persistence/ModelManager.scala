@@ -38,7 +38,6 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
   private val Versions = TableQuery[VersionsTable]
   private val Comments = TableQuery[CommentTable]
   private val modelStorage = Paths.get(conf.get[String]("taggingServer.models.folder"))
-  private val visualizationStorage = Paths.get(conf.get[String]("taggingServer.visualize.folder"))
 
   def add(model: Model):Future[Model] = {
     val nc = model.copy(created = new Timestamp(System.currentTimeMillis()))
@@ -245,7 +244,7 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
     md
   }
 
-  def modelLoaded(kitKey: KitKey):Boolean = {
+  def isModelLoaded(kitKey: KitKey):Boolean = {
     loadedPM.get(kitKey).orNull != null
   }
 

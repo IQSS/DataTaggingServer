@@ -92,8 +92,8 @@ object Helpers {
     Html(renderer.render(document))
   }
   
-  def renderMini( qNode:AskNode, loc:Option[Localization] ): Html = {
-    val textOpt = loc.map(l=>l.getNodeText(qNode.getId)).getOrElse(java.util.Optional.empty)
+  def renderMini( qNode:AskNode, loc:Localization ): Html = {
+    val textOpt = loc.getNodeText(qNode.getId)
     if ( textOpt isPresent ) {
       val parser = Parser.builder(MARKDOWN_OPTIONS_FULL).build
       val renderer = HtmlRenderer.builder(MARKDOWN_OPTIONS_FULL).build
@@ -208,19 +208,22 @@ object Helpers {
           <model>
             <id>{session.kit.md.id.modelId}</id>
             <version>{session.kit.md.id.modelId}</version>
-            <localization>{session.localization.map(l=>l.getLanguage).getOrElse("-NONE-")}</localization>
+            <localization>{session.localization.getLanguage}</localization>
           </model>
         </metadata>
     
+//    val questionTextMap = session.answerHistory.map( ans =>
+//      ans.question.getId -> session.localization.map(_.getNodeText(ans.question.getId))
+//        .flatMap(jop=>if(jop.isPresent) Some(jop.get) else None)
+//        .getOrElse(Helpers.askNodeToMarkdown(ans.question))
+//    ).toMap
+
     val questionTextMap = session.answerHistory.map( ans =>
-      ans.question.getId -> session.localization.map(_.getNodeText(ans.question.getId))
-        .flatMap(jop=>if(jop.isPresent) Some(jop.get) else None)
-        .getOrElse(Helpers.askNodeToMarkdown(ans.question))
-    ).toMap
-    
+      ans.question.getId -> session.localization.getNodeText(ans.question.getId).orElse(Helpers.askNodeToMarkdown(ans.question))).toMap
+
     val answerMap = session.answerHistory.map( ans => (
       ans.question.getId,
-      session.localization.map( l=>l.localizeAnswer(ans.answer.getAnswerText)).getOrElse(Helpers.makeUpper(ans.answer.getAnswerText))
+      session.localization.localizeAnswer(ans.answer.getAnswerText)
     )
     ).toMap
     

@@ -1,5 +1,6 @@
 package controllers
 
+import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
 import javax.inject.Inject
 import edu.harvard.iq.datatags.model.slots._
 import edu.harvard.iq.datatags.model.values.AbstractValue
@@ -31,7 +32,7 @@ class TestCtrl @Inject()(implicit ec: ExecutionContext, models:ModelManager, loc
     val id = KitKey(modelId, versionNum)
     models.getPolicyModel(id) match {
       case None => NotFound("Can't find interview with id " + id)
-      case Some(model) => Ok(views.html.tagsTree(model.getSpaceRoot, generateInstance(model.getSpaceRoot), locName.flatMap(locs.localization(id,_))) )
+      case Some(model) => Ok(views.html.tagsTree(model.getSpaceRoot, generateInstance(model.getSpaceRoot), locs.localization(id,locName)))
     }
   }
   

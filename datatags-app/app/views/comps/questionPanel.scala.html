@@ -1,6 +1,6 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
-@(questionNode:AskNode, versionKit:VersionKit, loc:Option[Localization],
+@(questionNode:AskNode, versionKit:VersionKit, loc:Localization,
         answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, allowNotes:Boolean, note:Option[String])
 
 <div class="card m-2 border-secondary questionPanel">
@@ -13,14 +13,13 @@
     }
     @if( enableComments ){
       <div>
-      @comps.comments("cmnt_" + questionNode.getId.filter(Character.isLetterOrDigit), versionKit.md.id.modelId, versionKit.md.id.version, None, "node", questionNode.getId, "btn-outline-light")
+      @comps.comments("cmnt_" + questionNode.getId.filter(Character.isLetterOrDigit), versionKit.md.id.modelId, versionKit.md.id.version, loc.getLanguage, "node", questionNode.getId, "btn-outline-light")
       </div>
     }
   </div>
   <div class="card-body">
-    @defining( loc.map(_.getNodeText(questionNode.getId))
-                  .flatMap(jop=>if(jop.isPresent) Some(jop.get) else None)
-                  .getOrElse(Helpers.askNodeToMarkdown(questionNode))){ nodeText =>
+    @defining( loc.getNodeText(questionNode.getId)
+            .orElse(Helpers.askNodeToMarkdown(questionNode))){ nodeText =>
       @Helpers.renderMarkdown( nodeText )
     }
   </div>
@@ -36,7 +35,7 @@
         @for( ans <- questionNode.getAnswers ) {
           <button type="button" @if(interactive){ class="btn btn-primary"
             onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{ class="btn btn-outline-primary" disabled} >
-          @loc.map( l=>l.localizeAnswer(ans.getAnswerText)).getOrElse(Helpers.makeUpper(ans.getAnswerText))</button>
+          @loc.localizeAnswer(ans.getAnswerText)</button>
         }
       </div>
       @if( interactive ) {

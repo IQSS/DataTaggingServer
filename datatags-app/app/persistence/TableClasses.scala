@@ -9,8 +9,6 @@ import java.util.UUID
  * Table classes for Slick live in this file.
  */
 
-
-
 object Mappers {
   
   implicit val publicationStatus = MappedColumnType.base[PublicationStatus.Value, String](

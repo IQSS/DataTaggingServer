@@ -1,7 +1,6 @@
 package controllers
 
 import javax.inject.Inject
-import edu.harvard.iq.datatags.externaltexts.{Localization, MarkupString, TrivialLocalization}
 import models.{CommentDTO, KitKey, VersionKit}
 import play.api.libs.json._
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
@@ -18,7 +17,7 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
   import JSONFormats.commentDTOFmt
 
   implicit private val ec = cc.executionContext
-  private val logger = Logger(classOf[CommentsCtrl])
+//  private val logger = Logger(classOf[CommentsCtrl])
 
   def apiAddComment = Action(parse.tolerantJson).async { implicit req =>
     req.body.validate[CommentDTO] match {
@@ -46,10 +45,9 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
               aKit.model match {
                 case None => NotFound("Model not found")
                 case Some( model ) => {
-                  val l10n = comment.localization.flatMap( locCode=>locs.localization(aKit.md.id, locCode.trim) ).
-                                      getOrElse( new TrivialLocalization(model) )
+                  val l10n = locs.localization(aKit.md.id, comment.localization)
                   val readmeOpt = l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
-                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, Some(l10n), readmeOpt))
+                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, l10n, readmeOpt))
                 }
               }
             }

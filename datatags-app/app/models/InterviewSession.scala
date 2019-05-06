@@ -17,7 +17,7 @@ case class InterviewSession(key:UUID,
                             engineState: RuntimeEngineState,
                             traversed: Seq[Node],
                             kit: VersionKit,
-                            localization: Option[Localization],
+                            localization: Localization,
                             answerHistory: Seq[AnswerRecord],
                             notes: Set[String],
                             sessionStart: Date,
@@ -52,12 +52,12 @@ case class InterviewSession(key:UUID,
 }
 
 object InterviewSession {
-  def create(mKit: VersionKit, saveStat:Boolean, noteOpt:Boolean ) =
+  def create(mKit: VersionKit, saveStat:Boolean, noteOpt:Boolean, loc:Localization ) =
         InterviewSession( java.util.UUID.randomUUID(),
                      null,
                      Seq(),
                      mKit,
-                     None,
+                     loc,
                      Seq(),
                      Set(),
                      new Date,

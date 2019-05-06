@@ -1,13 +1,11 @@
 package controllers
 
-import java.nio.file.{Files, Paths}
-
 import javax.inject.Inject
 import play.api.mvc._
 import play.api.cache.Cached
 import models._
 import persistence.{ModelManager, SettingsDAO}
-import play.api.{Configuration, Logger, routing}
+import play.api.{Configuration, routing}
 
 import scala.concurrent.Future
 
@@ -16,9 +14,6 @@ class Application @Inject()(cached: Cached, models:ModelManager,
                             conf:Configuration, cc:ControllerComponents,
                             settings:SettingsDAO ) extends InjectedController {
   implicit val ec = cc.executionContext
-  
-  private val visualizationsPath = Paths.get(conf.get[String]("taggingServer.visualize.folder"))
-  private val MIME_TYPES = Map("svg"->"image/svg+xml", "pdf"->"application/pdf", "png"->"image/png")
   
   def index = Action.async { implicit req =>
     settings.get( SettingKey.THIS_INSTANCE_TEXT ).map( stng =>
