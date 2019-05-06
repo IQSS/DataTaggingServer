@@ -19,7 +19,7 @@
   <div class="row">
     <div class="col">
       <a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))">
-        <i class="fa fa-arrow-left"></i> Intro
+        @comps.backArrow(session.localization) Intro
       </a>
       <br>
     </div>
