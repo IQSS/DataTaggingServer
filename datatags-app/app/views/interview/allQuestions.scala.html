@@ -75,7 +75,7 @@ loc:Localization)(implicit req:Request[_])
 @templates.bsNavBar("Interview questions: " + verKit.model.get.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
   <div class="row">
     <div class="col-md-12">
-      <a href="@routes.InterviewCtrl.interviewIntro(verKit.md.id.modelId, verKit.md.id.version)"><i class="fa fa-arrow-left"></i> Back</a>
+      <a href="@routes.InterviewCtrl.interviewIntro(verKit.md.id.modelId, verKit.md.id.version)">@comps.backArrow(loc) Back</a>
     </div>
   </div>
   <div class="row">
@@ -86,7 +86,7 @@ loc:Localization)(implicit req:Request[_])
     </div>
   </div>
   <div class="row">
-    <div class="col-md-12">
+    <div class="col">
       <div class="allQuestions">
         @visitNode( verKit.model.get.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
         @for( nd <- verKit.model.get.getDecisionGraph.nodes.asScala.filter(_.isInstanceOf[PartNode]) ) {

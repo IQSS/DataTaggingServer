@@ -108,9 +108,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
           val verKitFut = models.getVersionKit(kitId)
           val verKit = Await.result(verKitFut, 10 seconds)
           Ok(views.html.interview.showReadme(verKit.get, readMe,
-            l10n.getLocalizedModelData.getTitle,
-            l10n.getLocalizedModelData.getSubTitle,
-            l10n))
+                                              l10n.getLocalizedModelData.getTitle,
+                                              l10n.getLocalizedModelData.getSubTitle,
+                                              l10n)
+          )
         }
         ).getOrElse({
             // No readme, perform the first decision graph traversal.

@@ -29,6 +29,14 @@ h1, h2, h3 {
 
   .btn {
     box-shadow: 0 4px 8px rgba(0,0,0,.5);
+    margin: .2em;
+  }
+}
+
+@media (max-width: 576px) {
+  .startButtonsCtnr a.btn-lg {
+    display: block;
+    margin: .5em auto;
   }
 }
 
@@ -120,10 +128,19 @@ h1, h2, h3 {
   border-radius: 3px;
   padding: 3px;
   opacity: 0.6;
+  text-align: center;
+  display: inline-block;
   transition: opacity ease-out 0.5s;
+  vertical-align: sub;
+  margin: 0 .2em;
   &:hover {
     opacity: 1;
   }
+}
+
+.nodeIdBadge-dark{
+  color: #444;
+  border-color: #444;
 }
 
 .transcript {
@@ -309,7 +326,7 @@ table.engine-trace {
     line-height: normal;
     margin: 2px;
     border: 1px solid rgba(0,0,0,0.4);
-    white-space: nowrap;
+    //white-space: nowrap;
     box-shadow: 0 1px 4px rgba(0,0,0,0.25)
   }
 }
@@ -332,9 +349,7 @@ table.engine-trace {
 .tagvalue-container {
   ul {
     list-style: none;
-    li {
-
-    }
+    padding: 0;
   }
   .typeName {
     display: inline-block;
@@ -367,6 +382,7 @@ footer {
   }
 }
 .pre-release-warn {
+  display: inline-block;
   color: red;
   background-color: rgba(255,255,0,0.2);
   padding: 4px;
