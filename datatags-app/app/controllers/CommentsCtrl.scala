@@ -46,10 +46,13 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
               aKit.model match {
                 case None => NotFound("Model not found")
                 case Some( model ) => {
-                  val l10n = comment.localization.flatMap( locCode=>locs.localization(aKit.md.id, locCode.trim) ).
-                                      getOrElse( new TrivialLocalization(model) )
+//                  val l10n = locs.localization(aKit.md.id, comment.localization).getOrElse(new TrivialLocalization(model))
+                  val l10n = {
+                    if(aKit.model.get.getLocalizations.size != 0) locs.localization(aKit.md.id, comment.localization).getOrElse(new TrivialLocalization(model))
+                    else new TrivialLocalization(model)
+                  }
                   val readmeOpt = l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
-                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, Some(l10n), readmeOpt))
+                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, l10n, readmeOpt))
                 }
               }
             }

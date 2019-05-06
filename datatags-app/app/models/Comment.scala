@@ -13,7 +13,7 @@ case class Comment (
                      comment:String,
                      modelID:String,
                      version:Int,
-                     localization:Option[String],
+                     localization:String,
                      targetType:String,
                      targetContent:String,
                      resolved:Boolean,
@@ -22,7 +22,7 @@ case class Comment (
                    ) {
   val modelId = modelID.trim
   def trimmed = copy(writer=writer.trim, comment=comment.trim, modelID=modelID.trim,
-                      localization=localization.map(_.trim), targetType=targetType.trim, targetContent=targetContent.trim)
+                      localization=localization.trim, targetType=targetType.trim, targetContent=targetContent.trim)
 }
 
 case class CommentDTO(id:Option[Long],
@@ -30,7 +30,7 @@ case class CommentDTO(id:Option[Long],
                       comment:String,
                       modelID:String,
                       version:Int,
-                      localization:Option[String],
+                      localization:String,
                       targetType:String,
                       targetContent:String ) {
   def toComment() = Comment(writer, comment, modelID,version, localization,

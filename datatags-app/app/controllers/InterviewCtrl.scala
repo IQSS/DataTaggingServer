@@ -50,7 +50,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       versionOpt match {
         case Some(version) => {
           if( canView(request, version.md)) {
-            val userSession = InterviewSession.create( version, modelOpt.exists(model => model.saveStat), modelOpt.exists(model => model.notesAllowed) )
+            val userSession = InterviewSession.create( version, modelOpt.exists(model => model.saveStat),
+                  modelOpt.exists(model => model.notesAllowed), new TrivialLocalization(version.model.get) )
             cache.set(userSession.key.toString, userSession)
             //Add to DB InterviewHistory
             if(request.headers.get("Referer").isDefined && request.headers.get("Referer").get.endsWith("/accept")) {
@@ -79,7 +80,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     } yield {
       verOpt match {
         case Some(versionKit) => {
-          val loc = localizationName.flatMap(lName => locs.localization(kitId, lName))
+          val loc = localizationName.flatMap(lName => locs.localization(kitId, lName)).getOrElse(new TrivialLocalization(versionKit.model.get))
           Ok(views.html.interview.allQuestions(versionKit, loc))
         }
         case None => NotFound("Model not found")
@@ -95,30 +96,36 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       case Some(pm) => {
         val l10n = localizationName match {
           case None       => if ( pm.getLocalizations.size==1 ) {
-            locs.localization(kitId, pm.getLocalizations.iterator().next())
+            locs.localization(kitId, pm.getLocalizations.iterator().next()).getOrElse(new TrivialLocalization(pm))
           } else {
-            Some(new TrivialLocalization(pm))
+            new TrivialLocalization(pm)
           }
-          case Some(name) => locs.localization(kitId,name) // TODO: complain if not found
+          case Some(name) => {
+            locs.localization(kitId,name).getOrElse({
+              logger.info("can't find localization named " + name)
+              new TrivialLocalization(pm)
+            })
+          }
         }
-        val readmeOpt:Option[MarkupString] = l10n.map( loc =>
-          loc.getLocalizedModelData).map(mdl => mdl.getBestReadmeFormat.toOption.map(mdl.getReadme)
-        ).getOrElse(pm.getMetadata.getBestReadmeFormat.toOption.map(pm.getMetadata.getReadme(_)))
+//        val readmeOpt:Option[MarkupString] = l10n.map( loc =>
+//          loc.getLocalizedModelData).map(mdl => mdl.getBestReadmeFormat.toOption.map(mdl.getReadme)
+//        ).getOrElse(pm.getMetadata.getBestReadmeFormat.toOption.map(pm.getMetadata.getReadme(_)))
 
-        if ( l10n isDefined ) {
-          val updated = req.userSession.copy(localization = l10n)
-          cache.set(req.userSession.key.toString, updated)
-        }
+        val readmeOpt:Option[MarkupString] = l10n.getLocalizedModelData.getBestReadmeFormat.toOption.map(b => l10n.getLocalizedModelData.getReadme(b))
+
+        val updated = req.userSession.copy(localization = l10n)
+        cache.set(req.userSession.key.toString, updated)
+
         //Change loc
-        interviewHistories.changeLoc(req.userSession.key, l10n.map(_.getLanguage).getOrElse(""))
+        interviewHistories.changeLoc(req.userSession.key, l10n.getLanguage)
 
         // if there's a readme present, we show it first. Else, we start the interview.
         readmeOpt.map( readMe => {
           val verKitFut = models.getVersionKit(kitId)
           val verKit = Await.result(verKitFut, 10 seconds)
           Ok(views.html.interview.showReadme(verKit.get, readMe,
-            l10n.map(_.getLocalizedModelData.getTitle).getOrElse(pm.getMetadata.getTitle),
-            l10n.map(_.getLocalizedModelData.getSubTitle).getOrElse(pm.getMetadata.getSubTitle),
+            l10n.getLocalizedModelData.getTitle,
+            l10n.getLocalizedModelData.getSubTitle,
             l10n))
         }
         ).getOrElse({
@@ -136,7 +143,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
             interviewHistories.addRecord(
               InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "q: " + rte.getCurrentNode.getId))
           }
-
             Ok(views.html.interview.question( updated,
               rte.getCurrentNode.asInstanceOf[AskNode],
               None))

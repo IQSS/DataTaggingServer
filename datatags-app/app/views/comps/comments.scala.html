@@ -1,4 +1,4 @@
-@(formID:String, modelID:String, version:Int, locOpt:Option[String], targetType:String, targetContent:String, buttonClass:String="btn-outline-dark")
+@(formID:String, modelID:String, version:Int, loc:String, targetType:String, targetContent:String, buttonClass:String="btn-outline-dark")
 <div class="commentComponent">
   <button type="button" onclick="Comments.toggleForm('@formID')" class="btn btn-sm @buttonClass"><i class="fa fa-edit"></i> Comment</button>
   <div class="commentFormDiv" id="@formID" style="display:none">
@@ -6,9 +6,7 @@
     <input type="hidden" data-role="version" value="@version">
     <input type="hidden" data-role="targetType" value="@targetType">
     <input type="hidden" data-role="targetContent" value="@targetContent">
-    @for( loc <- locOpt ) {
-      <input type="hidden" data-role="localization" value="@loc">
-    }
+    <input type="hidden" data-role="localization" value="@loc">
     <div>
       <input placeholder="Commenter Name" class="form-control" type="text" data-role="name">
     </div>

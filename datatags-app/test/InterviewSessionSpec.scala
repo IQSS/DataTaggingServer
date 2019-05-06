@@ -1,17 +1,14 @@
 
 import org.scalatestplus.play._
-import edu.harvard.iq.datatags.runtime.RuntimeEngineState
-import edu.harvard.iq.datatags.model.charts.nodes._
 import edu.harvard.iq.datatags.model.graphs.Answer
-import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
-import edu.harvard.iq.datatags.model.values._
+import edu.harvard.iq.datatags.model.graphs.nodes.{AskNode, ToDoNode}
 import models._
 
 class InterviewSessionSpec extends PlaySpec {
 
 "A New UserSession" must {
   "Have an empty traversed node history" in {
-    val sut = InterviewSession.create("sample", false, false)
+    val sut = InterviewSession.create(new VersionKit(None, null), false, false, null)
     sut.traversed.size mustBe 0
     sut.answerHistory.size mustBe 0
   }
@@ -19,17 +16,17 @@ class InterviewSessionSpec extends PlaySpec {
 
 "A UserSession" must {
   "be updated when using updatedWith" in {
-    val base = InterviewSession.create("sample", false, false)
-    val ans1 = AnswerRecord( new AskNode("a","AA"), new Answer("indeed") )
-    val history1 = Seq( new TodoNode("a"), new TodoNode("b"), new TodoNode("c") )
+    val base = InterviewSession.create(new VersionKit(None, null), false, false, null)
+    val ans1 = AnswerRecord( new AskNode("a"), Answer.withName("indeed") )
+    val history1 = Seq( new ToDoNode("a","a"), new ToDoNode("b","b"), new ToDoNode("c","c") )
 
     val updated = base.updatedWith( ans1, history1, null )
 
     updated.traversed mustEqual history1
     updated.answerHistory mustEqual Seq(ans1)
     
-    val ans2 = AnswerRecord( new AskNode("b","BB"), new Answer("indeed") )
-    val history2 = Seq( new TodoNode("B"), new TodoNode("BB"), new TodoNode("BBB") )
+    val ans2 = AnswerRecord( new AskNode("b"), Answer.withName("indeed") )
+    val history2 = Seq( new ToDoNode("B","B"), new ToDoNode("BB", "BB"), new ToDoNode("BBB", "BBB") )
 
     val updated2 = updated.updatedWith( ans2, history2, null )
 

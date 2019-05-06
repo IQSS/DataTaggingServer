@@ -8,7 +8,7 @@
   <script type="text/javascript" src="@routes.Assets.at("js/Question.js")"></script>
 }
 @extraHead = {
-@if(session.localization.exists(_.isRtl)){
+@if(session.localization.isRtl){
   <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
 }
 }
@@ -45,9 +45,8 @@
     <div class="col transcript">
       @for( ans <- session.answerHistory ) {
         <div class="question">
-          @defining( session.localization.map(_.getNodeText(ans.question.getId))
-                    .flatMap(jop=>if(jop.isPresent) Some(jop.get) else None)
-                    .getOrElse(Helpers.askNodeToMarkdown(ans.question))
+          @defining( session.localization.getNodeText(ans.question.getId)
+                    .orElse(Helpers.askNodeToMarkdown(ans.question))
           ){ nodeText =>
             <div class="text">
               @Helpers.renderMarkdown( nodeText )
@@ -64,8 +63,7 @@
           <div class="questionSection questionSectionAnswer">
             <h6>Answer</h6>
             <div class="text">
-              @session.localization.map( l=>l.localizeAnswer(ans.answer.getAnswerText)
-                     ).getOrElse(Helpers.makeUpper(ans.answer.getAnswerText))
+              @session.localization.localizeAnswer(ans.answer.getAnswerText)
             </div>
           </div>
         </div>

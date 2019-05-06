@@ -1,6 +1,6 @@
 @import edu.harvard.iq.datatags.externaltexts.MarkupString
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@( qKit:VersionKit, readme:MarkupString, title:String, subTitle:String, loc:Option[Localization])(implicit req:Request[_])
+@( qKit:VersionKit, readme:MarkupString, title:String, subTitle:String, loc:Localization)(implicit req:Request[_])
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -8,9 +8,9 @@
 }
 
 @extraHead = {
-@if(loc.exists(_.isRtl)){
-  <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
-}
+  @if(loc.isRtl){
+    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+  }
 }
 
 @import views.Helpers
@@ -31,7 +31,7 @@
     <div class="mdRender">
       @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
         <div class="float-right">
-        @comps.comments("cmntReadme", qKit.md.id.modelId, qKit.md.id.version, loc.map(_.getLanguage), "meta", "readme")
+          @comps.comments("cmntReadme", qKit.md.id.modelId, qKit.md.id.version, loc.getLanguage, "meta", "readme")
         </div>}
       @Helpers.render(readme)
     </div>
@@ -42,7 +42,7 @@
       <h3>
         @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
           <div class="float-right">
-          @comps.comments("cmntPS", qKit.md.id.modelId, qKit.md.id.version, loc.map(_.getLanguage), "meta", "policy-space")
+          @comps.comments("cmntPS", qKit.md.id.modelId, qKit.md.id.version, loc.getLanguage, "meta", "policy-space")
           </div>}
         Policy Space</h3>
       @comps.tagType(qKit.model.get.getSpaceRoot, loc )

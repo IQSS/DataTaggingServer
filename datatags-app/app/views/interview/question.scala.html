@@ -10,8 +10,10 @@
 }
 
 @extraHead = {
-  @if(session.localization.exists(_.isRtl)){
-    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+  @if(session.localization==null){
+    @if(session.localization.isRtl){
+      <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+    }
   }
 }
 
@@ -20,7 +22,7 @@
 @templates.bsNavBar( "Question", 'tag, scripts, extraHead ) {
   <div class="row">
     <div class="col">
-      <a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, session.localization.map(_.getLanguage))">
+      <a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))">
         <i class="fa fa-arrow-left"></i> Intro
       </a>
       <br>

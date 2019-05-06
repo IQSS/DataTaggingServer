@@ -17,7 +17,6 @@ class Application @Inject()(cached: Cached, models:ModelManager,
                             settings:SettingsDAO ) extends InjectedController {
   implicit val ec = cc.executionContext
   
-  private val visualizationsPath = Paths.get(conf.get[String]("taggingServer.visualize.folder"))
   private val MIME_TYPES = Map("svg"->"image/svg+xml", "pdf"->"application/pdf", "png"->"image/png")
   
   def index = Action.async { implicit req =>

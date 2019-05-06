@@ -10,7 +10,8 @@ import play.api.libs.ws._
 import play.api.libs.json.{JsError, Json}
 import models._
 import _root_.util.Jsonizer
-import persistence.{InterviewHistoryDAO, ModelManager}
+import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
+import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -25,7 +26,7 @@ import scala.concurrent.duration.Duration
   * @param cc
   */
 class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, interviewHistories: InterviewHistoryDAO,
-                                       models:ModelManager, ec:ExecutionContext, cc:ControllerComponents) extends InjectedController {
+                                       models:ModelManager, ec:ExecutionContext, cc:ControllerComponents, locs:LocalizationManager) extends InjectedController {
   private val logger = Logger(classOf[RequestedInterviewCtrl])
 
   def apiRequestInterview(modelId:String, versionNum:Int) = Action(cc.parsers.tolerantJson(maxLength = 1024*1024*10)) { implicit request =>
@@ -58,7 +59,8 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
        } yield {
           verOpt match {
             case Some(ver) => {
-              val userSession = InterviewSession.create(ver, modelOpt.exists(model => model.saveStat), modelOpt.exists(model => model.notesAllowed)).updatedWithRequestedInterview(requestedInterview)
+              val userSession = InterviewSession.create(ver, modelOpt.exists(model => model.saveStat), modelOpt.exists(model => model.notesAllowed),
+                                                        new TrivialLocalization(ver.model.get)).updatedWithRequestedInterview(requestedInterview)
               //Add to DB InterviewHistory
               interviewHistories.addInterviewHistory(
                 InterviewHistory(userSession.key, ver.md.id.modelId, ver.md.id.version, "", "requested", request.headers.get("User-Agent").get))

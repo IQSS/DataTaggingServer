@@ -1,8 +1,8 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@(tp:edu.harvard.iq.datatags.model.slots.AbstractSlot, loc:Option[Localization], explanation:String="")
+@(tp:edu.harvard.iq.datatags.model.slots.AbstractSlot, loc:Localization, explanation:String="")
 <div class="typeName">
     @if( tp.getNote!=null && tp.getNote.nonEmpty ) {
-      @defining(loc.flatMap(l=>Helpers.o2o(l.getSlotText(tp))) ){ locOpt =>
+      @defining(Helpers.o2o(loc.getSlotText(tp))){ locOpt =>
         <span data-toggle="popover" data-trigger="hover" data-html="true"
         title="@tp.getName" data-content="@locOpt.map( Helpers.renderMinimalMarkdown ).getOrElse( Html(tp.getNote.replaceAll("\"","\\\"")))"
         data-placement="top">

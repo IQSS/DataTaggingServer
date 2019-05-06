@@ -95,7 +95,7 @@ class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
   def writer = column[String]("writer")
   def comment = column[String]("comment")
   def modelID = column[String]("version_policy_model_id")
-  def localization = column[Option[String]]("localization")
+  def localization = column[String]("localization")
   def version = column[Int]("version")
   def targetType = column[String]("target_type")
   def targetContent = column[String]("target_content")

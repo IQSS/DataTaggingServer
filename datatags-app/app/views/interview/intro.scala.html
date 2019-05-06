@@ -1,3 +1,4 @@
+@import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
 @(qKit: VersionKit, interviewWelcomeMessage:Option[String])(implicit req:Request[_])
 
 @scripts = {
@@ -32,7 +33,7 @@
             <ul class="localizations">
             @for( locName <- qKit.model.get.getLocalizations ) {
               <li>
-                <a href="@routes.InterviewCtrl.startInterview(qKit.md.id.modelId, qKit.md.id.version, Some(locName))"
+                <a href="@routes.InterviewCtrl. (qKit.md.id.modelId, qKit.md.id.version, Some(locName))"
               class="btn btn-primary">Begin Questionnaire (@locName)</a>
               </li>
             }
@@ -95,7 +96,7 @@
       <h3 class="my-2">
         @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
         <div class="float-right">
-          @comps.comments("cmnt", qKit.md.id.modelId, qKit.md.id.version, None, "meta", "policy-space")
+          @comps.comments("cmnt", qKit.md.id.modelId, qKit.md.id.version, "", "meta", "policy-space")
         </div>}
         Policy Space
       </h3>
@@ -106,7 +107,7 @@
         Hover/touch the <i class="glyphicon glyphicon-info-sign"></i> icons, where available, to see a short explanation about specific values.
       </p>
 
-      @comps.tagType(qKit.model.get.getSpaceRoot, None)
+      @comps.tagType(qKit.model.get.getSpaceRoot, new TrivialLocalization(qKit.model.get))
 
     </div>
   </div>

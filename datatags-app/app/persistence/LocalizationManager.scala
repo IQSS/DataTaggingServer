@@ -13,7 +13,7 @@ import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
 
 @Singleton
-class LocalizationManager@Inject() (conf:Configuration, models:ModelManager){
+class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
   private val allLocalizations: TrieMap[KitKey, mutable.Map[String,Localization]] = TrieMap()
   val logger = Logger(classOf[LocalizationManager])
 

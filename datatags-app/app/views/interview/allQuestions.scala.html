@@ -3,8 +3,7 @@
 @import collection.mutable.Set
 
 @(verKit: VersionKit,
-loc:Option[Localization]
-)(implicit req:Request[_])
+loc:Localization)(implicit req:Request[_])
 
 @visitAskNode( nd:AskNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="question">
@@ -67,7 +66,7 @@ loc:Option[Localization]
 }
 
 @extraHead = {
-  @if(loc.exists(_.isRtl)){
+  @if(loc.isRtl){
     <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
   }
 }

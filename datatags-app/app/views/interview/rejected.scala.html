@@ -7,7 +7,7 @@
 
 
 @extraHead = {
-@if(session.localization.exists(_.isRtl)){
+@if(session.localization.isRtl){
   <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
 }
 }

@@ -1,7 +1,7 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
 @import Helpers.{o2o, renderMarkdown}
-@(node:RejectNode, kitKey: KitKey, loc:Option[Localization],
+@(node:RejectNode, kitKey: KitKey, loc:Localization,
         answerHistory:Seq[AnswerRecord], enableComments:Boolean)
 <div class="card">
   <div class="card-header bg-danger text-white d-flex">
@@ -10,11 +10,11 @@
     </div>
     @if( enableComments ){
       <div>
-      @comps.comments("cmnt", kitKey.modelId, kitKey.version, loc.map(_.getLanguage), "node", node.getId)
+      @comps.comments("cmnt", kitKey.modelId, kitKey.version, loc.getLanguage, "node", node.getId)
       </div>
     }
   </div>
   <div class="card-body">
-     @loc.flatMap( l=>o2o(l.getNodeText(node.getId)).map(renderMarkdown) ).getOrElse( Html(node.getReason))
+     @loc.getNodeText(node.getId)).map(renderMarkdown).getOrElse( Html(node.getReason))
   </div>
 </div>
