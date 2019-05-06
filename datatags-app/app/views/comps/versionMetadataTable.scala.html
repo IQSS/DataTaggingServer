@@ -34,14 +34,15 @@
       <tr>
         <th>References</th>
         <td>
-          <ul>
+          <ul class="p-0">
           @for( ref <- md.getReferences ) {
             <li>
-              @ref.getText @for(doi<-Option(ref.getDoi)){ <small>(doi:<a href="https://doi.org/@doi" target="_blank">@doi</a>)</small>}
-              @for(url<-Option(ref.getUrl)){
-                <br>
-                <a href="@url" target="_blank">@url</a>
+              @if(ref.getUrl != null ) {
+                <a href="@ref.getUrl">@ref.getTitle @ref.getText</a>
+              }else{
+                @ref.getText
               }
+              @for(doi<-Option(ref.getDoi)){ <small>(doi:<a href="https://doi.org/@doi" target="_blank">@doi</a>)</small>}
             </li>
           }
           </ul>
