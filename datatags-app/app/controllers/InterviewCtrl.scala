@@ -105,7 +105,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
           loc.getLocalizedModelData).map(mdl => mdl.getBestReadmeFormat.toOption.map(mdl.getReadme)
         ).getOrElse(pm.getMetadata.getBestReadmeFormat.toOption.map(pm.getMetadata.getReadme(_)))
 
-        if ( l10n isDefined ) {
+        if ( l10n.isDefined ) {
           val updated = req.userSession.copy(localization = l10n)
           cache.set(req.userSession.key.toString, updated)
         }
