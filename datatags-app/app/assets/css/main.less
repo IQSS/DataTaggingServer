@@ -124,10 +124,16 @@ h1, h2, h3 {
   .questionPanel .answerButtonCtnr .btn {
     display: block;
     margin: .5em auto;
-    width: auto;
+    width: 100%;
   }
 }
 
+@media (max-width: 667px) {
+  .questionPanel .nodeIdBadge {
+    margin-right: auto;
+    display: block;
+  }
+}
 
 .nodeIdBadge {
   font-family: "Source Code Pro", "Monaco", "Ubuntu Mono Regular", "Lucida Console", monospace;
@@ -135,16 +141,20 @@ h1, h2, h3 {
   color: white;
   border: 1px solid white;
   border-radius: 3px;
+  vertical-align: bottom;
   padding: 3px;
   opacity: 0.6;
   text-align: center;
   display: inline-block;
   transition: opacity ease-out 0.5s;
-  vertical-align: sub;
   margin: 0 .2em;
   &:hover {
     opacity: 1;
   }
+}
+
+.questionPanel .nodeIdBadge {
+  margin-right: 1em;
 }
 
 .nodeIdBadge-dark{
@@ -374,9 +384,7 @@ table.engine-trace {
     box-shadow: none;
     border: 1px solid @theme5;
   }
-  .valueAtom {
-    box-shadow: none;
-  }
+
 }
 .tagvalue-container > .value {
   background-color: @theme5;
@@ -391,13 +399,14 @@ table.engine-trace {
   transition: all .5s ease-out;
   cursor: pointer;
   &:hover {
-    color: @theme1;
-    background-color: @theme2;
+    color: #000;
+    background-color: #FFF;
   }
 }
 
+
+
 .detailedValue-container > .detailedValue {
-  border: 1px solid @theme1;
   margin: .5em 0;
   background-color: white;
 
@@ -420,8 +429,7 @@ table.engine-trace {
 
   .bigNote {
     color: @theme1;
-    background-color: @theme2;
-    border: 1px solid @theme1;
+    background-color: @theme3;
     border-radius: 1em;
     padding: 1em;
     margin: 1em;
@@ -436,7 +444,25 @@ table.engine-trace {
   padding: .5em;
 }
 
+.detailedValue .detailedSlotTitle {
+  h3 {
+    font-size: 12pt;
+    text-shadow: none;
+  }
+}
+
+.detailedValue-compound {
+  ul {
+  }
+
+  li {
+    //border: 1px solid @theme4;
+    padding: 5px;
+  }
+}
+
 footer {
+  direction: ltr;
   margin-top: 2em;
   padding: 1em 0;
   background-color: #E8E8E8;

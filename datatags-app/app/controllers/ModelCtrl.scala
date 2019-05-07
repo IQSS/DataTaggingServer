@@ -178,7 +178,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     versionForm.bindFromRequest.fold(
       formWithErrors => Future(BadRequest(views.html.backoffice.versionEditor(formWithErrors, modelId, None))),
       mfd => req.body.file("zippedModel").map(file => {
-        val md = new VersionMD(KitKey(modelId, -1), new Timestamp(System.currentTimeMillis()), PublicationStatus.withName(mfd.publicationStatus), CommentingStatus.withName(mfd.commentingStatus),
+        val md = VersionMD(KitKey(modelId, -1), new Timestamp(System.currentTimeMillis()), PublicationStatus.withName(mfd.publicationStatus), CommentingStatus.withName(mfd.commentingStatus),
           mfd.note, UUID.randomUUID().toString, RunningStatus.Processing, "", Map[String, Set[String]](), "", "")
         models.addNewVersion(md).map(nv => {
           val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
@@ -239,6 +239,13 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     })
   }
 
+  def startLatestVersion(modelId:String, localizationName:Option[String]) = Action.async {
+    models.latestPublicVersion(modelId).map( {
+      case None => NotFound("No public version was found")
+      case Some(ver) => TemporaryRedirect( routes.InterviewCtrl.startInterview(modelId, ver.id.version, localizationName).url )
+    })
+  }
+  
   def visualizationFile(modelId:String, version:Int, suffix:String, fileType:String) = Action{ req =>
     val destPath = modelFolderPath.resolve("%s/%d/viz/%s.%s".format(modelId, version, fileType, suffix))
     logger.info("absolute path -" + destPath.toAbsolutePath)

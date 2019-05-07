@@ -1,6 +1,6 @@
 package persistence
 
-import edu.harvard.iq.datatags.externaltexts.{Localization, LocalizationLoader, TrivialLocalization}
+import edu.harvard.iq.datatags.externaltexts.{Localization, LocalizationException, LocalizationLoader, TrivialLocalization}
 import javax.inject.{Inject, Named, Singleton}
 import models.KitKey
 import play.api.{Configuration, Logger}
@@ -47,21 +47,28 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
         val locMap = allLocalizations(kitId)
   
         val locLoad = new LocalizationLoader()
-        val loc = locLoad.load(models.getPolicyModel(kitId).get, localizationName)
-        if ( ! locLoad.getMessages.isEmpty ) {
-          logger.warn("Messages on localization «" + localizationName + "» for model «" + kitId + "»")
-          for ( m <- locLoad.getMessages.asScala ) {
-            logger.warn(m.getLevel.toString + ": " + m.getMessage)
+        try {
+          val loc = locLoad.load(models.getPolicyModel(kitId).get, localizationName)
+          if ( ! locLoad.getMessages.isEmpty ) {
+            logger.warn("Messages on localization «" + localizationName + "» for model «" + kitId + "»")
+            for ( m <- locLoad.getMessages.asScala ) {
+              logger.warn(m.getLevel.toString + ": " + m.getMessage)
+            }
           }
-        }
-  
-        if ( locLoad.isHasErrors ) {
-          logger.warn("Errors loading localization «" + localizationName + "» for model «" + kitId + "»" )
-          loadTrivialLocalization(kitId)
-        } else {
-          locMap(localizationName) = loc
-          logger.debug("Loaded localization «" + localizationName + "» for model «" + kitId + "»")
-          loc
+    
+          if ( locLoad.isHasErrors ) {
+            logger.warn("Errors loading localization «" + localizationName + "» for model «" + kitId + "»" )
+            loadTrivialLocalization(kitId)
+          } else {
+            locMap(localizationName) = loc
+            logger.debug("Loaded localization «" + localizationName + "» for model «" + kitId + "»")
+            loc
+          }
+        } catch {
+          case l:LocalizationException => {
+            logger.warn(s"Error while loading localization '$localizationName' for kit $kitId: ${l.getMessage}")
+            loadTrivialLocalization(kitId)
+          }
         }
       }
     }
@@ -70,7 +77,7 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
   def removeLocalizations(kitKey: KitKey) = allLocalizations.remove(kitKey)
   
   /**
-    * Loads the TrivialLocalization of a model to its localization map. *Blocking*.
+    * Loads the TrivialLocalization of a model to its localization map.
     * @param kk: KitKey for the model and version.
     * @return The trivial localization of the model.
     */
@@ -86,7 +93,7 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
         }
         val locs = allLocalizations(kk)
         if ( locs.contains(TrivialLocalization.LANGUAGE_NAME) ) {
-          locs("model")
+          locs(TrivialLocalization.LANGUAGE_NAME)
         } else {
           val tl = new TrivialLocalization(pm)
           locs(tl.getLanguage) = tl

@@ -10,11 +10,11 @@
     </div>
     @if( enableComments ){
       <div>
-      @comps.comments("cmnt", kitKey.modelId, kitKey.version, loc.getLanguage, "node", node.getId)
+      @comps.comments("cmnt", kitKey.modelId, kitKey.version, loc.getLanguage, "node", node.getId, "btn-outline-light")
       </div>
     }
   </div>
   <div class="card-body">
-     @loc.getNodeText(node.getId)).map(renderMarkdown).getOrElse( Html(node.getReason))
+     @Helpers.o2o(loc.getNodeText(node.getId)).map(renderMarkdown).getOrElse(Html(node.getReason))
   </div>
 </div>

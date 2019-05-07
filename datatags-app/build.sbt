@@ -6,6 +6,8 @@ lazy val root = (project in file(".")).enablePlugins(PlayScala, SbtWeb)
 
 organization := "edu.harvard.iq"
 
+maintainer := "mbarsinai@iq.harvard.edu"
+
 scalaVersion := "2.12.8"
 
 routesGenerator := InjectedRoutesGenerator

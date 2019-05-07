@@ -6,7 +6,7 @@
 <div class="card m-2 border-secondary questionPanel">
   <div class="card-header bg-secondary text-white d-flex">
     <div class="flex-grow-1">
-      Question: Please select one answer
+      @if(showId){<span class="nodeIdBadge">@questionNode.getId</span>}Please select a single answer
     </div>
     @if( enableComments ) {
       <div>
@@ -17,7 +17,6 @@
     }
   </div>
   <div class="card-body">
-    @if(showId){<span class="nodeIdBadge nodeIdBadge-dark">@questionNode.getId</span>}
     @defining( loc.getNodeText(questionNode.getId)
             .orElse(Helpers.askNodeToMarkdown(questionNode))){ nodeText =>
       @Helpers.renderMarkdown( nodeText )

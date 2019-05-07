@@ -8,6 +8,7 @@ GET     /models/                                 controllers.Application.publicM
 GET     /models/tagDownload                      controllers.InterviewCtrl.downloadTags
 GET     /models/:modelId                         controllers.Application.showModel(modelId)
 GET     /models/:modelName/latest                controllers.ModelCtrl.showLatestVersion(modelName)
+GET     /models/:modelId/latest/start            controllers.ModelCtrl.startLatestVersion(modelId, localizationName:Option[String]?=None)
 GET     /models/:modelId/:versionNum/            controllers.InterviewCtrl.interviewIntroDirect(modelId, versionNum:Int)
 GET     /models/:modelId/:versionNum/intro       controllers.InterviewCtrl.interviewIntro(modelId, versionNum:Int)
 GET     /models/:modelId/:versionNum/start       controllers.InterviewCtrl.startInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
