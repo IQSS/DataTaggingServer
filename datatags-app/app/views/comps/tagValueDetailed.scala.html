@@ -10,7 +10,7 @@
   Helpers.o2o(loc.getSlotText(slot))
           .getOrElse( new LocalizationTexts(slot.getName, slot.getNote, null))
 ){ texts =>
-  <div class="detailedSlot">
+  <div class="detailedSlotTitle">
     <h3>@texts.name</h3>
     @Helpers.nonEmpty( texts.smallNote ){ note =>
       <div class="smallNote">
@@ -30,7 +30,7 @@
           .getOrElse( new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null))
 ){ texts =>
   <div class="detailedValue">
-    @texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)">+</button>}
+    @texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)"><i class="fa fa-book"></i></button>}
     @Helpers.nonEmpty( texts.smallNote ){ note =>
       <div class="smallNote">
         <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
@@ -57,7 +57,7 @@
     ) { valueText =>
       <span class="slotName">@slotText.name</span> <span class="slotValue">@valueText.name</span>
       @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)">+</button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)"><i class="fa fa-book"></i></button>
       }
       @Helpers.nonEmpty( slotText.smallNote ){ note => <div class="smallNote smallNote-slot">
         <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
