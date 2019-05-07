@@ -49,7 +49,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     } yield {
       versionOpt match {
         case Some(version) => {
-          if( canView(request, version.md)) {
+          if ( canView(request, version.md) ) {
             val userSession = InterviewSession.create( version, modelOpt.exists(model => model.saveStat),
                   modelOpt.exists(model => model.notesAllowed), new TrivialLocalization(version.model.get) )
             cache.set(userSession.key.toString, userSession)
@@ -64,6 +64,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
             Ok( views.html.interview.intro(version, None) ).
               addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
+            
           } else {
             NotFound("Model not found.") // really that's a NotAuthorized, but that would give away the fact that the version exists.
           }

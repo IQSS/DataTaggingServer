@@ -339,21 +339,27 @@ table.engine-trace {
     box-shadow: 0 1px 4px rgba(0,0,0,0.25)
   }
 }
-.tagtype-simple, .value-simple {
+.tagtype-simple {
   .valueAtom {
     background-color: #8df;
   }
 }
-.tagtype-todo, .value-todo {
+.tagtype-todo {
   .valueAtom {
     background-color: #2ba02a;
   }
 }
-.tagtype-aggregate, .value-aggregate {
+.tagtype-aggregate {
   .valueAtom {
     background-color: #82d194;
   }
 }
+
+@theme1: #1C3B54;
+@theme2: #B3DDFF;
+@theme3: #99D1FF;
+@theme4: #B38947;
+@theme5: #FFD799;
 
 .tagvalue-container {
   ul {
@@ -365,15 +371,66 @@ table.engine-trace {
   }
   .value {
     box-shadow: none;
-    border: 1px solid rgba(0,0,0,0.75);
+    border: 1px solid @theme5;
   }
   .valueAtom {
     box-shadow: none;
   }
 }
 .tagvalue-container > .value {
-  background-color: #2bc1e9;
+  background-color: @theme5;
+  .valueAtom{
+    background-color: @theme3;
+    border-color: @theme1;
+    color: #000;
+  }
 }
+
+.tagvalue-container > .value .valueAtom-interactive {
+  transition: all .5s ease-out;
+  cursor: pointer;
+  &:hover {
+    color: @theme1;
+    background-color: @theme2;
+  }
+}
+
+.detailedValue-container > .detailedValue {
+  border: 1px solid @theme1;
+  margin: .5em 0;
+  background-color: white;
+
+  .slotName {
+    color: @theme1;
+  }
+
+  .slotValue {
+    color: @theme4;
+  }
+
+  .smallNote {
+    color: @theme4;
+    font-size: 11pt;
+  }
+
+  .smallNote-slot {
+    color: @theme1;
+  }
+
+  .bigNote {
+    color: @theme1;
+    background-color: @theme2;
+    border: 1px solid @theme1;
+    border-radius: 1em;
+    padding: 1em;
+    margin: 1em;
+  }
+}
+
+.detailedSlot {
+  padding: .5em;
+}
+
 footer {
   margin-top: 2em;
   padding: 1em 0;

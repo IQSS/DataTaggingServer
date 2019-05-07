@@ -1,0 +1,124 @@
+@import edu.harvard.iq.datatags.externaltexts._
+@import edu.harvard.iq.datatags.model.values._
+@import edu.harvard.iq.datatags.model.slots.AbstractSlot
+@import edu.harvard.iq.datatags.util.PolicySpaceHelper
+
+@( aValue: AbstractValue,
+        loc:Localization  )
+@slotTypeTitle(slot:AbstractSlot) = {
+@defining(
+  Helpers.o2o(loc.getSlotText(slot))
+          .getOrElse( new LocalizationTexts(slot.getName, slot.getNote, null))
+){ texts =>
+  <div class="detailedSlot">
+    <h3>@texts.name</h3>
+    @Helpers.nonEmpty( texts.smallNote ){ note =>
+      <div class="smallNote">
+      <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+      </div>
+    }
+    @Helpers.nonEmpty( texts.bigNote ){ note =>
+      <div class="bigNote">
+        @Helpers.renderMarkdown(note)
+      </div>
+    }
+  </div>
+}}
+
+@valueAtom(value:AtomicValue) = {@defining(
+  Helpers.o2o(loc.getSlotValueText(value))
+          .getOrElse( new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null))
+){ texts =>
+  <div class="detailedValue">
+    @texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)">+</button>}
+    @Helpers.nonEmpty( texts.smallNote ){ note =>
+      <div class="smallNote">
+        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+      </div>
+    }
+    @Helpers.nonEmpty( texts.bigNote ){ note =>
+      <div class="bigNote" style="display:none">
+        @Helpers.renderMarkdown(note)
+      </div>
+    }
+  </div>
+}}
+
+
+@atomicValue( value:AtomicValue ) = {
+  <div class="detailedValue detailedValue-simple">
+  @defining(
+    Helpers.o2o(loc.getSlotText(value.getSlot))
+            .getOrElse( new LocalizationTexts(value.getSlot.getName, value.getSlot.getNote, null))
+  ) { slotText =>
+    @defining(
+      Helpers.o2o(loc.getSlotValueText(value))
+              .getOrElse( new LocalizationTexts(value.getName, value.getNote, null))
+    ) { valueText =>
+      <span class="slotName">@slotText.name</span> <span class="slotValue">@valueText.name</span>
+      @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
+        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)">+</button>
+      }
+      @Helpers.nonEmpty( slotText.smallNote ){ note => <div class="smallNote smallNote-slot">
+        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+      </div>}
+      @Helpers.nonEmpty( valueText.smallNote ){ note => <div class="smallNote">
+        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+      </div>}
+      @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
+        <div class="bigNote" style="display:none">
+          @Helpers.nonEmpty(slotText.bigNote){n=>@Helpers.renderMarkdown(n)}
+          @Helpers.nonEmpty(valueText.bigNote){n=>@Helpers.renderMarkdown(n)}
+        </div>
+      }
+    }
+  }
+  </div>
+}
+
+@todoValue( value:ToDoValue ) = {
+  <div class="detailedValue detailedValue-todo">
+    @slotTypeTitle(value.getSlot)
+    <span class="valueAtom">TODO</span>
+  </div>
+}
+
+@aggregateValue( value:AggregateValue ) = {
+  <div class="detailedValue detailedValue-aggregate">
+    @slotTypeTitle(value.getSlot)
+    @if( value.getValues.isEmpty ) {
+      <div class="noData">empty</div>
+    } else {
+      <ul>
+        @for(  sv <- value.getValues ){
+          <li>@valueAtom(sv)</li>
+        }
+      </ul>
+    }
+  </div>
+}
+
+@compoundValue( value:CompoundValue ) = {
+  <div class="detailedValue detailedValue-compound">
+    @slotTypeTitle(value.getSlot)
+    <ul>
+    @for( tp <- value.getNonEmptySubSlots ){
+      <li>@renderValue( value.get(tp) )</li>
+    }
+    </ul>
+  </div>
+}
+
+
+@renderValue( value:AbstractValue ) = {
+@value match {
+  case v:AtomicValue => {@atomicValue(v)}
+  case v:AggregateValue => {@aggregateValue(v)}
+  case v:ToDoValue => {@todoValue(v)}
+  case c:CompoundValue => {@compoundValue(c)}
+}
+}
+
+<div class="detailedValue-container">
+@renderValue( aValue )
+</div>

@@ -1,22 +1,25 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@(tp:edu.harvard.iq.datatags.model.slots.AbstractSlot, loc:Localization, explanation:String="")
+@import edu.harvard.iq.datatags.model.slots.AbstractSlot
+@import edu.harvard.iq.datatags.externaltexts.LocalizationTexts
+@(tp:AbstractSlot, loc:Localization, explanation:String="")
+@defining(
+  Helpers.o2o(loc.getSlotText(tp))
+          .getOrElse( new LocalizationTexts(tp.getName, tp.getNote, null))
+){ texts =>
 <div class="typeName">
-    @if( tp.getNote!=null && tp.getNote.nonEmpty ) {
-      @defining(Helpers.o2o(loc.getSlotText(tp))){ locOpt =>
-        <span data-toggle="popover" data-trigger="hover" data-html="true"
-        title="@tp.getName" data-content="@locOpt.map( Helpers.renderMinimalMarkdown ).getOrElse( Html(tp.getNote.replaceAll("\"","\\\"")))"
-        data-placement="top">
-            <span class="typeName">@tp.getName
-                <i class="fa fa-info-circle"></i>
-            </span>
-        </span>
-      }
+    @if( texts.smallNote!=null && texts.smallNote.nonEmpty ) {
+      <span data-toggle="popover" data-trigger="hover" data-html="true"
+      title="@texts.name.replaceAll("\"","\\\"")" data-content="@Helpers.renderMinimalMarkdown(texts.smallNote).body.replaceAll("\"","\\\"")"
+      data-placement="top">
+          <span class="typeName">@texts.name
+              <i class="fa fa-info-circle"></i>
+          </span>
+      </span>
     } else {
-        <span class="typeName">@tp.getName</span>
+        <span class="typeName">@texts.name</span>
     }
-@if( explanation.nonEmpty ){
-    <small>
-       @explanation
-    </small>
-}
+  @if( explanation.nonEmpty ){
+    <small>@explanation</small>
+  }
 </div>
+}

@@ -85,7 +85,7 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
           allLocalizations(kk) = TrieMap()
         }
         val locs = allLocalizations(kk)
-        if ( locs.contains("model") ) {  // TODO: Use TrivialLocalization.LANGUAGE_NAME
+        if ( locs.contains(TrivialLocalization.LANGUAGE_NAME) ) {
           locs("model")
         } else {
           val tl = new TrivialLocalization(pm)

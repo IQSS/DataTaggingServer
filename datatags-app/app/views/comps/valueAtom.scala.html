@@ -1,13 +1,20 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
+@import edu.harvard.iq.datatags.externaltexts.LocalizationTexts
+@import edu.harvard.iq.datatags.util.PolicySpaceHelper
 @( value : edu.harvard.iq.datatags.model.values.AtomicValue, loc:Localization )
-@if( value.getNote==null || value.getNote.isEmpty ) {
-  <span class="valueAtom">@value.getName</span>
-} else {
-  <span class="valueAtom" data-toggle="popover" data-trigger="hover" 
-     title="@value.getName" data-html="true"
-     data-content="@Helpers.o2o(loc.getSlotValueText(value)).map( t=>Helpers.renderMinimalMarkdown(t.replaceAll("\"","\\\"")) ).getOrElse(Html(value.getNote.replaceAll("\"","")))"
-     data-placement="top">
-    @value.getName
-    <i class="fa fa-info-circle"></i>
-  </span>
+@defining(
+  Helpers.o2o(loc.getSlotValueText(value))
+          .getOrElse( new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null))
+){ texts =>
+  @if( texts.smallNote==null || texts.smallNote.isEmpty ) {
+    <span class="valueAtom">@texts.name</span>
+  } else {
+    <span class="valueAtom valueAtom-interactive" data-toggle="popover" data-trigger="hover"
+    title="@texts.name.replaceAll("\"","\\\"")" data-html="true"
+    data-content="@Helpers.renderMinimalMarkdown(texts.smallNote).body.replaceAll("\"","'")"
+    data-placement="top">
+      @texts.name
+      <i class="fa fa-info-circle"></i>
+    </span>
+  }
 }

@@ -2,6 +2,8 @@ package models
 
 import java.sql.Timestamp
 
+import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
+
 /**
   *
   * A comment made on a question or a metadata item of a model.
@@ -33,7 +35,8 @@ case class CommentDTO(id:Option[Long],
                       localization:String,
                       targetType:String,
                       targetContent:String ) {
-  def toComment() = Comment(writer, comment, modelID,version, Some(localization), // TODO: compare to TrivialLocalization's static name, and return None on match.
+  def toComment() = Comment(writer, comment, modelID,version,
+                            if ( localization == TrivialLocalization.LANGUAGE_NAME ) None else Some(localization),
                             targetType, targetContent, false,
                             new Timestamp(System.currentTimeMillis), id.getOrElse(0) )
 }

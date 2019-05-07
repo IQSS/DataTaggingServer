@@ -8,7 +8,7 @@ import java.util.{Date, Optional}
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
 import com.vladsch.flexmark.ext.tables.TablesExtension
-import com.vladsch.flexmark.util.options.MutableDataSet
+import com.vladsch.flexmark.util.options.{DataKey, MutableDataSet}
 import edu.harvard.iq.datatags.externaltexts.{Localization, MarkupFormat, MarkupString}
 
 import scala.collection.mutable.ArrayBuffer
@@ -38,6 +38,8 @@ object Helpers {
     StrikethroughExtension.create()
   ))
   MARKDOWN_OPTIONS_MINIMAL.set(HtmlRenderer.SOFT_BREAK, "<br />\n")
+  MARKDOWN_OPTIONS_MINIMAL.set(HtmlRenderer.DO_NOT_RENDER_LINKS.asInstanceOf[DataKey[Any]], true)
+  MARKDOWN_OPTIONS_MINIMAL.set(HtmlRenderer.NO_P_TAGS_USE_BR.asInstanceOf[DataKey[Any]], true)
   
   private val TEXT_OPTIONS = new MutableDataSet()
   TEXT_OPTIONS.set(HtmlRenderer.SOFT_BREAK, "<br />\n")
@@ -81,8 +83,9 @@ object Helpers {
   def renderMinimalMarkdown(source:String ): Html = {
     val parser = Parser.builder(MARKDOWN_OPTIONS_MINIMAL).build
     val renderer = HtmlRenderer.builder(MARKDOWN_OPTIONS_MINIMAL).build
-    val document = parser.parse(source)
-    Html(renderer.render(document))
+    val document = parser.parse(source.trim)
+    val html = renderer.render(document).replaceAll("<br />","")
+    Html(html)
   }
   
   def renderMarkdown( source:String ):Html = {

@@ -1,3 +1,4 @@
+@import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
 @(ver:VersionKit, model:Model, comments:Seq[Comment])
 
 @scripts ={
@@ -139,7 +140,7 @@
           @for(cmt <- comments) {
             <tr>
               <td>@cmt.writer</td>
-              <td>@cmt.targetType.trim/@cmt.targetContent @if(cmt.localization != "model") { (Localization: @cmt.localization ) }
+              <td>@cmt.targetType.trim/@cmt.targetContent @for( loc <-cmt.localization.filter( ln=>ln!=TrivialLocalization.LANGUAGE_NAME)) { (Localization: @loc) }
               </td>
               <td>@Helpers.dateTimeFormat(cmt.time)</td>
               <td>@comps.commentStatus(cmt, Some("cmtsts"+cmt.id))</td>
