@@ -38,6 +38,13 @@ h1, h2, h3 {
     display: block;
     margin: .5em auto;
   }
+
+  .buttonsCtnr a.btn {
+    display: block;
+    margin: .5em auto;
+    width: 90%;
+  }
+
 }
 
 // Adjustments for HTML coming from rendered markdown
@@ -419,7 +426,7 @@ table.engine-trace {
   }
 
   .smallNote {
-    color: @theme4;
+    color: darken(@theme4,20%);
     font-size: 11pt;
   }
 
@@ -448,6 +455,15 @@ table.engine-trace {
   h3 {
     font-size: 12pt;
     text-shadow: none;
+  }
+}
+
+@media (max-width: 667px ) {
+  .detailedValue ul {
+    list-style: none;
+    padding: 4px;
+    background-color: rgba(0,0,0,.05);
+    border-radius: 4px;
   }
 }
 

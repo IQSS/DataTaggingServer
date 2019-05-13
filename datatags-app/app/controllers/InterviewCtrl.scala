@@ -398,7 +398,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
     if ( ver.publicationStatus == PublicationStatus.LinkOnly ) {
       val linkSessionStringOpt = r.session.get(InterviewCtrl.INVITED_INTERVIEW_KEY)
-      if (linkSessionStringOpt.isEmpty) return false;
+      if (linkSessionStringOpt.isEmpty) return false
       val linkSessionString = linkSessionStringOpt.get
       val allowedKitKey = KitKey.parse(linkSessionString)
       allowedKitKey == ver.id
