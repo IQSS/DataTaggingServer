@@ -6,16 +6,18 @@
  */
 var Comments = (function(){
     function save(formID) {
+        var $form = $("#"+formID);
+        $form.find(".buttonBar").find("button").attr("disabled",true);
         var uploadObj = {
-            writer: $("#"+formID + " [data-role='name']").val(),
-            comment : $("#"+formID + " [data-role='comment']").val(),
-            modelID : $("#"+formID + " [data-role='modelID']").val(),
-            version : Number($("#"+formID + " [data-role='version']").val()),
-            targetType: $("#"+formID + " [data-role='targetType']").val(),
-            targetContent: $("#"+formID + " [data-role='targetContent']").val()
+            writer: $form.find("[data-role='name']").val(),
+            comment : $form.find("[data-role='comment']").val(),
+            modelID : $form.find("[data-role='modelID']").val(),
+            version : Number($form.find("[data-role='version']").val()),
+            targetType: $form.find("[data-role='targetType']").val(),
+            targetContent: $form.find("[data-role='targetContent']").val()
         };
 
-        var loc = $("#"+formID + " [data-role='localization']").val();
+        var loc = $form.find("[data-role='localization']").val();
         uploadObj.localization = loc;
 
         var call = jsRoutes.controllers.CommentsCtrl.apiAddComment();
@@ -42,7 +44,7 @@ var Comments = (function(){
 
         }).always( function(){
             closeForm(formID);
-
+            $form.find(".buttonBar").find("button").attr("disabled",false);
         });
     }
 
