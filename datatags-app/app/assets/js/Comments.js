@@ -2,7 +2,6 @@
  *
  * Controller for adding comments.
  *
- * Created by mor_vilozni on 24/07/2017.
  */
 var Comments = (function(){
     function save(formID) {
