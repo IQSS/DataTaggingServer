@@ -486,14 +486,26 @@ footer {
   border-top: 1px solid #888;
   text-align: center;
 
-  ul li {
-    color: #888;
-    text-align: left;
-    img {
-      vertical-align: text-bottom;
+  ul {
+    margin: 1em 0;
+    
+    li {
+      color: #888;
+      text-align: left;
+
+      img {
+        vertical-align: text-bottom;
+      }
     }
   }
+
+  .commitTag {
+    font-size: 9pt;
+    font-family: "Source Code Pro", "Monaco", "Ubuntu Mono Regular", "Lucida Console", monospace;
+    color: #888;
+  }
 }
+
 .pre-release-warn {
   display: inline-block;
   color: red;
@@ -748,3 +760,4 @@ ul.localizations {
 .float-eol {
   float:right;
 }
+
