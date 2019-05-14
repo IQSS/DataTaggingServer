@@ -11,14 +11,14 @@
           .getOrElse( new LocalizationTexts(slot.getName, slot.getNote, null))
 ){ texts =>
   <div class="detailedSlotTitle">
-    <h3>@texts.name</h3>
+    <h3>@texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)"><i class="fa fa-book"></i></button>}</h3>
     @Helpers.nonEmpty( texts.smallNote ){ note =>
       <div class="smallNote">
       <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
       </div>
     }
     @Helpers.nonEmpty( texts.bigNote ){ note =>
-      <div class="bigNote">
+      <div class="bigNote" style="display:none">
         @Helpers.renderMarkdown(note)
       </div>
     }

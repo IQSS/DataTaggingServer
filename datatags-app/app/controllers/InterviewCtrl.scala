@@ -70,7 +70,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         case Some(pmKit) => {
           if ( canView(req, pmKit.md) ) {
             pmKit.model match {
-              case None     => Conflict(s"PolicyModel at $kitId contains errors and cannot be loaded.")
+              case None    => Conflict(s"PolicyModel at $kitId contains errors and cannot be loaded.")
               case Some(_) => {
                 //// all good, start the interview flow
                 // setup session

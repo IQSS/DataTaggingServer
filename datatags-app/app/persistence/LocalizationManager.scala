@@ -1,5 +1,7 @@
 package persistence
 
+import java.nio.file.Files
+
 import edu.harvard.iq.datatags.externaltexts.{Localization, LocalizationException, LocalizationLoader, TrivialLocalization}
 import javax.inject.{Inject, Named, Singleton}
 import models.KitKey
@@ -21,9 +23,27 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
     * @return the default localization.
     */
   def defaultLocalization(kk:KitKey):Localization = {
-    val locsOpt = allLocalizations.get(kk)
-    val locOpt = locsOpt.flatMap(locs => if (locs.size == 1) Some(locs.values.iterator.next) else None)
-    locOpt.getOrElse(loadTrivialLocalization(kk))
+    allLocalizations.get(kk) match {
+      case None => {
+        logger.info( s"scanning localizations for $kk")
+        val locNames = availableLocalizations(kk)
+        if (locNames.size == 1) {
+          localization(kk, Some(locNames.head))
+        } else {
+          logger.info(s"Found ${locNames.size} localizations: $locNames")
+          loadTrivialLocalization(kk)
+        }
+      }
+      case Some(locs) => {
+        val locsNoTrivial = locs - TrivialLocalization.LANGUAGE_NAME
+        logger.info( s"locNoTrivials: ${locsNoTrivial.size}")
+        locsNoTrivial.size match {
+          case 0 => loadTrivialLocalization(kk)
+          case 1 => locsNoTrivial.values.iterator.next
+          case _ => loadTrivialLocalization(kk)
+        }
+      }
+    }
   }
   
   /**
@@ -33,7 +53,7 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
     * @return the localization requested, or a trivial localization of the model.
     */
   def localization( kk:KitKey, langOpt:Option[String]):Localization = langOpt match {
-    case None => loadTrivialLocalization(kk)
+    case None => defaultLocalization(kk)
     case Some(lang) => localization(kk,lang)
   }
   
@@ -75,6 +95,12 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
   }
 
   def removeLocalizations(kitKey: KitKey) = allLocalizations.remove(kitKey)
+  
+  private def availableLocalizations( kk:KitKey ):Set[String] = {
+    val kit = models.getPolicyModel(kk).get
+    val folder = kit.getDirectory
+    Files.list(folder.resolve("languages")).iterator().asScala.filter( Files.isDirectory(_) ).map( _.getFileName.toString ).toSet
+  }
   
   /**
     * Loads the TrivialLocalization of a model to its localization map.

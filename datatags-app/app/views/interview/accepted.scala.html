@@ -25,21 +25,23 @@
           Interview Completed - Final Results
         </div>
         <div class="card-body">
-          @for(tag <- codeTag) {
-            <div class="text-center">
-              <span class="lead">Your dataset is tagged as</span>
-              @defining(tag.asInstanceOf[AtomicValue]) { value =>
-                @if(value.getNote == null) {
-                  <div class="tag tag-@value.getName.toLowerCase()">@value.getName</div>
-                } else {
-                  <div class="tag tag-@value.getName.toLowerCase()">@value.getName.capitalize </div>
-                  <div class="tag-info">@value.getNote</div>
-                }
-              }
-            </div>
-          }
-          @comps.tagValueDetailed(session.tags, session.localization)
 
+          <ul class="nav nav-tabs" id="resultTabs" role="tablist" style="justify-content: center">
+            <li class="nav-item">
+              <a class="nav-link active" data-toggle="tab" id="detailedTabTitle" href="#detailedTab">Detailed</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" data-toggle="tab" href="#summaryTab" id="summaryTabTitle">Summary</a>
+            </li>
+          </ul>
+          <div class="tab-content" id="resultTabsContent">
+            <div class="tab-pane show active" id="detailedTab" role="tabpanel" aria-labelledby="detailedTabTitle">
+              @comps.tagValueDetailed(session.tags, session.localization)
+            </div>
+            <div class="tab-pane fade" id="summaryTab" role="tabpanel" aria-labelledby="summaryTabTitle">
+              @comps.tagValue(session.tags, session.localization)
+            </div>
+          </div>
           <div class="text-center mt-2 buttonsCtnr">
             <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
               <i class="fa fa-download"></i>&nbsp;Download Policy as JSON
