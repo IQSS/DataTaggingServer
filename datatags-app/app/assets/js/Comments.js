@@ -16,8 +16,7 @@ var Comments = (function(){
             targetContent: $form.find("[data-role='targetContent']").val()
         };
 
-        var loc = $form.find("[data-role='localization']").val();
-        uploadObj.localization = loc;
+        uploadObj.localization = $form.find("[data-role='localization']").val();
 
         var call = jsRoutes.controllers.CommentsCtrl.apiAddComment();
 
