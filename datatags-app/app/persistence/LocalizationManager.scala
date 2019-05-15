@@ -1,9 +1,7 @@
 package persistence
 
-import java.nio.file.Files
-
 import edu.harvard.iq.datatags.externaltexts.{Localization, LocalizationException, LocalizationLoader, TrivialLocalization}
-import javax.inject.{Inject, Named, Singleton}
+import javax.inject.{Inject, Singleton}
 import models.KitKey
 import play.api.{Configuration, Logger}
 

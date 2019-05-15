@@ -3,8 +3,8 @@
 @(questionNode:AskNode, versionKit:VersionKit, loc:Localization,
         answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, allowNotes:Boolean, note:Option[String])
 
-<div class="card m-2 border-secondary questionPanel">
-  <div class="card-header bg-secondary text-white d-flex">
+<div class="card m-2 border-info questionPanel">
+  <div class="card-header bg-info text-white d-flex">
     <div class="flex-grow-1">
       @if(showId){<span class="nodeIdBadge">@questionNode.getId</span>}Please select a single answer
     </div>
