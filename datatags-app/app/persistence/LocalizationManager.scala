@@ -25,8 +25,7 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
   def defaultLocalization(kk:KitKey):Localization = {
     allLocalizations.get(kk) match {
       case None => {
-        logger.info( s"scanning localizations for $kk")
-        val locNames = availableLocalizations(kk)
+        val locNames = models.getPolicyModel(kk).get.getLocalizations.asScala
         if (locNames.size == 1) {
           localization(kk, Some(locNames.head))
         } else {
@@ -95,12 +94,6 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
   }
 
   def removeLocalizations(kitKey: KitKey) = allLocalizations.remove(kitKey)
-  
-  private def availableLocalizations( kk:KitKey ):Set[String] = {
-    val kit = models.getPolicyModel(kk).get
-    val folder = kit.getDirectory
-    Files.list(folder.resolve("languages")).iterator().asScala.filter( Files.isDirectory(_) ).map( _.getFileName.toString ).toSet
-  }
   
   /**
     * Loads the TrivialLocalization of a model to its localization map.
