@@ -37,7 +37,7 @@
   <div class="row my-2">
     <div class="col">
       <h4>Comment Context</h4>
-      <div class="commentSubjectCtnr">
+      <div class="commentSubjectCtnr" @if(loc.isRtl){style="direction:rtl; text-align:right"}>
         @if(cmt.targetType.trim == "meta"){
           @cmt.targetContent.trim match {
             case "policy-space" => {@comps.tagType(kit.model.get.getSpaceRoot, loc)}

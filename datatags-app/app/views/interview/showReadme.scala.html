@@ -17,7 +17,7 @@
 
 @templates.bsNavBar(qKit.model.get.getMetadata.getTitle + ": README", 'tag, scripts, extraHead) {
 <div class="row">
-  <div class="col-md-12">
+  <div class="col">
     <div>
       <strong>@title</strong>
       @if( Helpers.hasContent(subTitle) ) {
@@ -27,7 +27,7 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-md-12">
+  <div class="col">
     <div class="mdRender">
       @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
         <div class="float-eol">
@@ -37,22 +37,25 @@
     </div>
   </div>
 </div>
+  <div class="row my-2">
+    <div class="col">
+      <div class="text-center">
+        <a href="@routes.InterviewCtrl.startInterviewPostReadme(qKit.md.id.modelId, qKit.md.id.version)" class="btn btn-primary btn-lg">Start</a>
+      </div>
+    </div>
+  </div>
   <div class="row">
-    <div class="col-md-12">
-      <h3>
-        @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
-          <div class="float-eol">
-          @comps.comments("cmntPS", qKit.md.id.modelId, qKit.md.id.version, loc.getLanguage, "meta", "policy-space")
-          </div>}
-        Policy Space</h3>
-      @comps.tagType(qKit.model.get.getSpaceRoot, loc )
+    <div class="col">
+      <details>
+        <summary>Policy Space</summary>
+        <h3>
+          @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
+            <div class="float-eol">
+            @comps.comments("cmntPS", qKit.md.id.modelId, qKit.md.id.version, loc.getLanguage, "meta", "policy-space")
+            </div>}
+          Policy Space</h3>
+        @comps.tagType(qKit.model.get.getSpaceRoot, loc )
+      </details>
     </div>
   </div>
-<div class="row">
-  <div class="col-md-12">
-    <div class="text-center" style="padding: 1em">
-      <a href="@routes.InterviewCtrl.startInterviewPostReadme(qKit.md.id.modelId, qKit.md.id.version)" class="btn btn-primary btn-lg">Start</a>
-    </div>
-  </div>
-</div>
 }
