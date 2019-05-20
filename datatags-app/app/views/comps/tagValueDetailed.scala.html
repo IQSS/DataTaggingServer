@@ -11,14 +11,14 @@
           .getOrElse( new LocalizationTexts(slot.getName, slot.getNote, null))
 ){ texts =>
   <div class="detailedSlotTitle">
-    <h3>@texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)"><i class="fa fa-book"></i></button>}</h3>
+    <h3>@texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('s@slot.hashCode()')"><i class="fa fa-book"></i></button>}</h3>
     @Helpers.nonEmpty( texts.smallNote ){ note =>
       <div class="smallNote">
       <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
       </div>
     }
     @Helpers.nonEmpty( texts.bigNote ){ note =>
-      <div class="bigNote" style="display:none">
+      <div id="s@slot.hashCode()" class="bigNote" style="display:none">
         @Helpers.renderMarkdown(note)
       </div>
     }
@@ -30,14 +30,14 @@
           .getOrElse( new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null))
 ){ texts =>
   <div class="detailedValue">
-    @texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)"><i class="fa fa-book"></i></button>}
+    @texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>}
     @Helpers.nonEmpty( texts.smallNote ){ note =>
       <div class="smallNote">
         <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
       </div>
     }
     @Helpers.nonEmpty( texts.bigNote ){ note =>
-      <div class="bigNote" style="display:none">
+      <div class="bigNote" style="display:none" id="v@value.hashCode()s@value.getSlot.hashCode()">
         @Helpers.renderMarkdown(note)
       </div>
     }
@@ -57,7 +57,7 @@
     ) { valueText =>
       <span class="slotName">@slotText.name</span> <span class="slotValue">@valueText.name</span>
       @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote(this)"><i class="fa fa-book"></i></button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>
       }
       @Helpers.nonEmpty( slotText.smallNote ){ note => <div class="smallNote smallNote-slot">
         <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
@@ -66,7 +66,7 @@
         <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
       </div>}
       @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-        <div class="bigNote" style="display:none">
+        <div id="v@value.hashCode()s@value.getSlot.hashCode()" class="bigNote" style="display:none">
           @Helpers.nonEmpty(slotText.bigNote){n=>@Helpers.renderMarkdown(n)}
           @Helpers.nonEmpty(valueText.bigNote){n=>@Helpers.renderMarkdown(n)}
         </div>
