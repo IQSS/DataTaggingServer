@@ -17,10 +17,13 @@ import scala.collection.JavaConverters._
 
 import scala.concurrent.Future
 
-case class ModelFormData( id:String, title:String, note:String, saveStat:Boolean, noteOpt:Boolean) {
-  def this(model:Model ) = this(model.id, model.title, model.note, model.saveStat, model.notesAllowed)
+case class ModelFormData( id:String, title:String, note:String, saveStat:Boolean,
+                          noteOpt:Boolean, requireAffirmation:Boolean, displayTrivialLocalization:Boolean) {
+  def this(model:Model) = this(model.id, model.title, model.note, model.saveStat, model.notesAllowed,
+    model.requireAffirmationScreen, model.displayTrivialLocalization)
 
-  def toModel = Model(id, title, new Timestamp(System.currentTimeMillis()), note, saveStat, noteOpt)
+  def toModel = Model(id, title, new Timestamp(System.currentTimeMillis()), note, saveStat, noteOpt,
+                                                              requireAffirmation, displayTrivialLocalization)
 }
 
 case class VersionFormData( publicationStatus:String,
@@ -49,7 +52,9 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
       "title" -> nonEmptyText,
       "note" -> text,
       "saveStat" -> boolean,
-      "noteOpt" -> boolean
+      "allowNotes" -> boolean,
+      "requireAffirmation" -> boolean,
+      "displayTrivialLocalization" -> boolean
     )(ModelFormData.apply)(ModelFormData.unapply)
   )
 
@@ -91,6 +96,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
   def doSaveModel(id:String) = LoggedInAction(cache,cc).async { implicit req =>
     modelForm.bindFromRequest.fold(
       formWithErrors => {
+        logger.warn( formWithErrors.errors.map(e=>e.key + ":" + e.message).mkString("\n") )
         Future( BadRequest(views.html.backoffice.modelEditor(formWithErrors, false)) )
       },
       modelFd => models.getModel(modelFd.id).flatMap({

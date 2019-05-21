@@ -41,8 +41,10 @@ class ModelTable(tag:Tag) extends Table[Model](tag, "models") {
   def created = column[Timestamp]("created")
   def saveStat = column[Boolean]("save_stat")
   def noteOpt = column[Boolean]("note_opt")
+  def affirmation = column[Boolean]("require_affirmation")
+  def nativeLocalization = column[Boolean]("display_trivial_localization")
 
-  def * = (id, title, created, note, saveStat, noteOpt) <> (Model.tupled, Model.unapply)
+  def * = (id, title, created, note, saveStat, noteOpt, affirmation, nativeLocalization) <> (Model.tupled, Model.unapply)
 }
 
 class VersionsTable(tag:Tag) extends Table[VersionMD](tag, "versions_md") {

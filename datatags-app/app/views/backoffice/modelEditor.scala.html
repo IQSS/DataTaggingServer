@@ -51,20 +51,31 @@
 
         <div class="form-group row">
           <label for="titleInput" class="col-sm-2 col-form-label">Model Options</label>
-          <div class="col-sm-10">
-            <input class="hidden" type="checkbox" id="statCb" onchange="$('#saveStat')[0].value = $('#statCb')[0].checked" @if(form("saveStat").value.getOrElse(false) == "true") {checked}>
-            <label class="buttonLike" for="statCb">Save Usage Statistics</label>
-            <input type="hidden" name="saveStat" id="saveStat" value="@form("saveStat").value.getOrElse(false)">
+          <div class="col">
+            <input class="hidden" type="checkbox" name="saveStat" value="true" id="statCb" @if(form("saveStat").value.contains("true")){checked}>
+            <label class="buttonLike" style="width:220px" for="statCb">Save Usage Statistics</label>
+            <small class="text-muted">Save statistics about questionnaire usage.</small>
+            <br>
 
-            <input class="hidden" type="checkbox" id="noteCb" onchange="$('#noteOpt')[0].value = $('#noteCb')[0].checked" @if(form("noteOpt").value.getOrElse(false) == "true") {checked}>
-            <label class="buttonLike" for="noteCb">Allow User Notes</label>
-            <input type="hidden" name="noteOpt" id="noteOpt" value="@form("noteOpt").value.getOrElse(false)">
+            <input class="hidden" type="checkbox" name="allowNotes" value="true" id="noteCb" @if(form("allowNotes").value.contains("true")){checked}>
+            <label class="buttonLike"  style="width:220px" for="noteCb">Allow User Notes</label>
+            <small class="text-muted">Allow users to add notes to their answers.</small>
+            <br>
+
+            <input name="requireAffirmation" id="affCb" class="hidden" value="true" type="checkbox" @if(form("requireAffirmation").value.contains("true")){checked}>
+            <label class="buttonLike" style="width:220px" for="affCb">Require Affirmation</label>
+            <small class="text-muted">Users must affirm their answers before they complete the interview.</small>
+            <br>
+            
+            <input name="displayTrivialLocalization" id="trivialLocCb" value="true" class="hidden" type="checkbox" @if(form("displayTrivialLocalization").value.contains("true")){checked}>
+            <label class="buttonLike" style="width:220px" for="trivialLocCb">Allow no localization</label>
+            <small class="text-muted">Allow conducting an interview without localization. Useful for developers, not so much for others..</small>
           </div>
         </div>
 
         <div class="form-group row @Helpers.fieldStatus(form("note"))">
           <label for="noteInput" class="col-sm-2 col-form-label">Note</label>
-          <div class="col-sm-10">
+          <div class="col">
             <textarea id="noteInput" name="note" class="form-control" rows="5">@form("note").value.getOrElse("")</textarea>
           </div>
         </div>
