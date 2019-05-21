@@ -9,10 +9,10 @@
     <div class="col">
       <a href="@routes.Application.showModel(qKit.md.id.modelId)"><i class="fa fa-list"></i> Model Versions</a>
       <h3>
-        @qKit.model.get.getMetadata.getTitle
+        @qKit.policyModel.get.getMetadata.getTitle
       </h3>
-      @if( qKit.model.get.getMetadata.getSubTitle!=null && qKit.model.get.getMetadata.getSubTitle.nonEmpty) {
-        <p>@qKit.model.get.getMetadata.getSubTitle</p>
+      @if( qKit.policyModel.get.getMetadata.getSubTitle!=null && qKit.policyModel.get.getMetadata.getSubTitle.nonEmpty) {
+        <p>@qKit.policyModel.get.getMetadata.getSubTitle</p>
       }
     </div>
   </div>
@@ -29,17 +29,17 @@
     <div class="col">
       @if( qKit.serializer!=null ) {
         <div class="startButtonsCtnr">
-          @if( qKit.model.get.getLocalizations.size>2 ) {
+          @if( qKit.policyModel.get.getLocalizations.size>2 ) {
             <ul class="localizations">
-            @for( locName <- qKit.model.get.getLocalizations ) {
+            @for( locName <- qKit.policyModel.get.getLocalizations ) {
               <li>
                 <a href="@routes.InterviewCtrl. (qKit.md.id.modelId, qKit.md.id.version, Some(locName))"
               class="btn btn-primary">Begin Questionnaire (@locName)</a>
               </li>
             }
             </ul>
-          } else if(qKit.model.get.getLocalizations.size>1 ) {
-            @for( locName <- qKit.model.get.getLocalizations ) {
+          } else if(qKit.policyModel.get.getLocalizations.size>1 ) {
+            @for( locName <- qKit.policyModel.get.getLocalizations ) {
               <a href="@routes.InterviewCtrl.startInterview(qKit.md.id.modelId, qKit.md.id.version, Some(locName))"
                class="btn btn-primary btn-lg">Begin Questionnaire (@locName)</a>
             }
@@ -78,12 +78,12 @@
           <div class="col-md-4">
             <strong>Questions:</strong>
             <ul class="visualizationList">
-            @if(qKit.model.get.getLocalizations.size > 1) {
-              @for(locName <- qKit.model.get.getLocalizations) {
+            @if(qKit.policyModel.get.getLocalizations.size > 1) {
+              @for(locName <- qKit.policyModel.get.getLocalizations) {
                 <li><a href="@routes.InterviewCtrl.viewAllQuestions(qKit.md.id.modelId, qKit.md.id.version, Some(locName))">@locName</a></li>
               }
             } else {
-              <li class="onlyChild"><a href="@routes.InterviewCtrl.viewAllQuestions(qKit.md.id.modelId, qKit.md.id.version, qKit.model.get.getLocalizations.headOption)">
+              <li class="onlyChild"><a href="@routes.InterviewCtrl.viewAllQuestions(qKit.md.id.modelId, qKit.md.id.version, qKit.policyModel.get.getLocalizations.headOption)">
                 List</a></li>
             }
             </ul>
@@ -91,7 +91,7 @@
         }
       </div>
       <h3 class="my-2">Metadata</h3>
-      @comps.versionMetadataTable(qKit.model.get.getMetadata)
+      @comps.versionMetadataTable(qKit.policyModel.get.getMetadata)
 
       <h3 class="my-2">
         @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
@@ -107,7 +107,7 @@
         Hover/touch the <i class="glyphicon glyphicon-info-sign"></i> icons, where available, to see a short explanation about specific values.
       </p>
 
-      @comps.tagType(qKit.model.get.getSpaceRoot, new TrivialLocalization(qKit.model.get))
+      @comps.tagType(qKit.policyModel.get.getSpaceRoot, new TrivialLocalization(qKit.policyModel.get))
 
     </div>
   </div>

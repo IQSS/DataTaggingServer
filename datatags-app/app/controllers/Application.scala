@@ -17,8 +17,7 @@ class Application @Inject()(cached: Cached, models:ModelManager,
   
   def index = Action.async { implicit req =>
     settings.get( SettingKey.THIS_INSTANCE_TEXT ).map( stng =>
-      Ok(
-        views.html.index(stng, TagsTable.rows, routes.Application.publicModelCatalog())
+      Ok(views.html.index(stng, TagsTable.rows, routes.Application.publicModelCatalog())
    ))}
    
   

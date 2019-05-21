@@ -24,7 +24,7 @@
       </a>
       <h3>
         <div class="float-right">
-          @ver.model match {
+          @ver.policyModel match {
             case None      => {<button type="button" class="btn btn-secondary" disabled>Processing...</button>}
             case Some(kit) => {@if(ver.md.runningStatus == RunningStatus.Runnable){<a class="btn btn-primary" href="@routes.InterviewCtrl.interviewIntro(ver.md.id.modelId, ver.md.id.version)"><i class="fa fa-play"></i> Run</a>}}
           }
@@ -35,7 +35,7 @@
             <i class="fa fa-trash-o"></i> Delete
           </button>
         </div>
-        @ver.model.flatMap( k => Option(k)).map(_.getMetadata.getTitle ).getOrElse(model.id + "/" + ver.md.id.version)
+        @ver.policyModel.flatMap( k => Option(k)).map(_.getMetadata.getTitle ).getOrElse(model.id + "/" + ver.md.id.version)
       </h3>
     </div>
   </div>
@@ -86,7 +86,7 @@
     </div>
   </div>
 
-  @for( model <- ver.model ) {
+  @for( model <- ver.policyModel ) {
     <div class="row my-2">
       <div class="col">
         <h4>Model Data</h4>

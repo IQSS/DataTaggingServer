@@ -1,0 +1,70 @@
+@import  edu.harvard.iq.datatags.runtime.RuntimeEngineStatus
+@( session:InterviewSession,
+        notes: Map[String,Note]
+)(implicit req:Request[_])
+
+@scripts = {
+  <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
+  <script type="text/javascript" src="@routes.Assets.at("js/Question.js")"></script>
+}
+@extraHead = {
+@if(session.localization.isRtl){
+  <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+}
+}
+
+@templates.bsNavBar("Interview Transcript", 'ask, scripts, extraHead) {
+  <div class="row my-2">
+    <div class="col">
+      <h2>Interview Transcript - Affirmation</h2>
+      Model <strong>@session.kit.md.id.modelId version @session.kit.md.id.version</strong>
+    </div>
+  </div>
+  <div class="row my-2">
+    <div class="col transcript">
+      @for( ansRec <- session.answerHistory.zipWithIndex ) {
+        <div class="question">
+          @defining( session.localization.getNodeText(ansRec._1.question.getId)
+                    .orElse(Helpers.askNodeToMarkdown(ansRec._1.question))
+          ){ nodeText =>
+            <div class="text">
+              @Helpers.renderMarkdown( nodeText )
+            </div>
+          }
+          @if( notes.contains(ansRec._1.question.getId) ){
+            <div class="questionSection questionSectionNote">
+              <h6>Note</h6>
+              <div class="text">
+                @notes(ansRec._1.question.getId).note
+              </div>
+            </div>
+          }
+          <div class="questionSection questionSectionAnswer">
+            <h6>Answer</h6>
+            <div class="text">
+              @session.localization.localizeAnswer(ansRec._1.answer.getAnswerText)
+              <button class="btn btn-outline-secondary btn-sm"
+              data-toggle="tooltip" data-placement="top"
+              title="Change your answer to this question"
+              onClick="$('#revisitIdx')[0].value='@ansRec._2'; $('#revisitAnswer').submit();">
+                <i class="fa fa-history"></i> Revisit</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <form id="revisitAnswer" method="POST" action="@routes.InterviewCtrl.revisit(session.kit.md.id.modelId, session.kit.md.id.version)">
+        <input type="hidden" name="serializedHistory" id="serializedHistory" value="@session.kit.serializer.encode(session.answerHistory)"/>
+        <input type="hidden" name="revisitIdx" id="revisitIdx" value="" />
+      </form>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col my-2 text-center">
+      <form id="affirmForm" method="POST" action="@routes.InterviewCtrl.doAffirm(session.kit.md.id.modelId, session.kit.md.id.version)">
+        <input type="hidden" name="serializedHistory" id="serializedHistory" value="@session.kit.serializer.encode(session.answerHistory)"/>
+        <button type="submit" class="btn btn-lg btn-primary">I Affirm</button>
+      </form>
+    </div>
+  </div>
+}

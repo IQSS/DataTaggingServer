@@ -6,9 +6,11 @@ import models._
 
 class InterviewSessionSpec extends PlaySpec {
 
+  val mockModel = Model(null, "Mock", null, "", false, false, false, false)
+  
 "A New UserSession" must {
   "Have an empty traversed node history" in {
-    val sut = InterviewSession.create(new VersionKit(None, null), false, false, null)
+    val sut = InterviewSession.create(new VersionKit(None, null), mockModel, null)
     sut.traversed.size mustBe 0
     sut.answerHistory.size mustBe 0
   }
@@ -16,7 +18,7 @@ class InterviewSessionSpec extends PlaySpec {
 
 "A UserSession" must {
   "be updated when using updatedWith" in {
-    val base = InterviewSession.create(new VersionKit(None, null), false, false, null)
+    val base = InterviewSession.create(new VersionKit(None, null), mockModel, null)
     val ans1 = AnswerRecord( new AskNode("a"), Answer.withName("indeed") )
     val history1 = Seq( new ToDoNode("a","a"), new ToDoNode("b","b"), new ToDoNode("c","c") )
 

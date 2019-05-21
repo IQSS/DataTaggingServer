@@ -32,8 +32,8 @@ case class VersionMD(id: KitKey, lastUpdate:Timestamp, publicationStatus:Publica
 /**
   * if the version can run, represent a Policy Model
   */
-class VersionKit(val model:Option[PolicyModel], var md:VersionMD) {
-  val serializer:Serialization = model.map(m => if (m != null && m.getDecisionGraph != null && m.getSpaceRoot != null) {
+class VersionKit(val policyModel:Option[PolicyModel], var md:VersionMD) {
+  val serializer:Serialization = policyModel.map(m => if (m != null && m.getDecisionGraph != null && m.getSpaceRoot != null) {
     Serialization(m.getDecisionGraph, m.getSpaceRoot)
   } else null).orNull
 }

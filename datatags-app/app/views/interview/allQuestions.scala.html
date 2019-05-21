@@ -69,7 +69,7 @@
 }
 
 
-@templates.bsNavBar("Interview questions: " + verKit.model.get.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
+@templates.bsNavBar("Interview questions: " + verKit.policyModel.get.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
   <div class="row">
     <div class="col-md-12">
       <a href="@routes.InterviewCtrl.interviewIntro(verKit.md.id.modelId, verKit.md.id.version)">@comps.backArrow(loc) Back</a>
@@ -85,8 +85,8 @@
   <div class="row">
     <div class="col">
       <div class="allQuestions">
-        @visitNode( verKit.model.get.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
-        @for( nd <- verKit.model.get.getDecisionGraph.nodes.asScala.filter(_.isInstanceOf[PartNode]) ) {
+        @visitNode( verKit.policyModel.get.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
+        @for( nd <- verKit.policyModel.get.getDecisionGraph.nodes.asScala.filter(_.isInstanceOf[PartNode]) ) {
           @visitPartNode(nd.asInstanceOf[PartNode], true, Set() )
         }
       </div>

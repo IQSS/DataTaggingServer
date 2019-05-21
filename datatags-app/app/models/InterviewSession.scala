@@ -23,11 +23,13 @@ case class InterviewSession(key:UUID,
                             sessionStart: Date,
                             requestedInterview: Option[RequestedInterviewSession],
                             saveStat:Boolean,
-                            allowNotes:Boolean) {
+                            allowNotes:Boolean,
+                            requireAffirmation:Boolean
+                           ) {
 
   def tags = {
     val parser = new edu.harvard.iq.datatags.io.StringMapFormat
-    val tagType = kit.model.get.getSpaceRoot
+    val tagType = kit.policyModel.get.getSpaceRoot
     Option(parser.parseCompoundValue(tagType, engineState.getSerializedTagValue )).getOrElse(tagType.createInstance())
   }
 
@@ -41,10 +43,10 @@ case class InterviewSession(key:UUID,
         copy( traversed=history, answerHistory=answers )
 
   def updatedWithRequestedInterview( requestedUserInterview: RequestedInterviewSession) =
-        copy (requestedInterview = Option(requestedUserInterview))
+        copy(requestedInterview = Option(requestedUserInterview))
 
   def updateNote( nodeId: String) =
-    copy (notes = notes+nodeId)
+    copy(notes = notes+nodeId)
 
   def removeNote( nodeId: String ) =
     copy( notes=notes-nodeId)
@@ -52,16 +54,14 @@ case class InterviewSession(key:UUID,
 }
 
 object InterviewSession {
-  def create(mKit: VersionKit, saveStat:Boolean, noteOpt:Boolean, loc:Localization ) =
+  def create(mKit: VersionKit, model:Model, loc:Localization ) =
         InterviewSession( java.util.UUID.randomUUID(),
-                     null,
-                     Seq(),
+                     null, Seq(),
                      mKit,
-                     loc,
-                     Seq(),
-                     Set(),
+                     loc, Seq(), Set(),
                      new Date,
                      None,
-                     saveStat,
-                     noteOpt)
+                     model.saveStat,
+          model.notesAllowed,
+          model.requireAffirmationScreen)
 }

@@ -57,10 +57,9 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
          modelOpt <- models.getModel(requestedInterview.kitId.modelId)
          verOpt <- modelOpt.map(model => models.getVersionKit(requestedInterview.kitId)).getOrElse(Future(None))
        } yield {
-          verOpt match {
-            case Some(ver) => {
-              val userSession = InterviewSession.create(ver, modelOpt.exists(model => model.saveStat), modelOpt.exists(model => model.notesAllowed),
-                                                        new TrivialLocalization(ver.model.get)).updatedWithRequestedInterview(requestedInterview)
+         (modelOpt, verOpt) match {
+            case (Some(model), Some(ver)) => {
+              val userSession = InterviewSession.create(ver, model, new TrivialLocalization(ver.policyModel.get)).updatedWithRequestedInterview(requestedInterview)
               //Add to DB InterviewHistory
               interviewHistories.addInterviewHistory(
                 InterviewHistory(userSession.key, ver.md.id.modelId, ver.md.id.version, "", "requested", request.headers.get("User-Agent").get))
@@ -69,7 +68,7 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
               Ok( views.html.interview.intro(ver, requestedInterview.message) )
                 .withSession( request2session + ("uuid" -> userSession.key.toString)+( InterviewSessionAction.KEY -> userSession.key.toString ))
             }
-            case None => NotFound("Model not found")
+            case _ => NotFound("Model or version not found")
           }
        }
       }

@@ -42,7 +42,7 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
           commentOpt match {
             case None => NotFound("Comment not found")
             case Some(comment) => {
-              aKit.model match {
+              aKit.policyModel match {
                 case None => NotFound("Model not found")
                 case Some( model ) => {
                   val l10n = locs.localization(aKit.md.id, comment.localization)

@@ -37,7 +37,7 @@ class TestCtrl @Inject()(implicit ec: ExecutionContext, models:ModelManager, loc
   }
   
   def addVersionedModel( name:String ) = Action.async{ req =>
-    models.add( Model(name, "model named '"+name+"'", null, "", false, false) )
+    models.add( Model(name, "model named '"+name+"'", null, "", false, false, false, false) )
       .map( mdl => Ok("Added model " + mdl.id) )
   }
   

@@ -65,18 +65,17 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       modelOpt <- models.getModel(modelId)
       pmKitOpt <- models.getVersionKit(kitId)
     } yield {
-      pmKitOpt match {
-        case None => NotFound(s"Model id $kitId not found")
-        case Some(pmKit) => {
+      (modelOpt, pmKitOpt) match {
+        case ( _, None) => NotFound(s"Model id $kitId not found")
+        case (Some(model), Some(pmKit)) => {
           if ( canView(req, pmKit.md) ) {
-            pmKit.model match {
+            pmKit.policyModel match {
               case None    => Conflict(s"PolicyModel at $kitId contains errors and cannot be loaded.")
               case Some(_) => {
                 //// all good, start the interview flow
                 // setup session
                 val l10n = locs.localization(kitId, localizationName)
-                val userSession = InterviewSession.create( pmKit, modelOpt.exists(model => model.saveStat),
-                                                            modelOpt.exists(model => model.notesAllowed), l10n )
+                val userSession = InterviewSession.create( pmKit, model, l10n )
                 cache.set(userSession.key.toString, userSession)
                 
                 // add to DB InterviewHistory
@@ -112,6 +111,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
             NotFound("Model not found.") // really that's a NotAuthorized, but that would give away the fact that the version exists.
           }
         }
+        case _ => NotFound("Model not found.")
       }
     }
   }
@@ -122,7 +122,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   
   private def runFirstQuestion(session:InterviewSession, req:Request[_]) = {
     val rte = new RuntimeEngine
-    rte.setModel(session.kit.model.get)
+    rte.setModel(session.kit.policyModel.get)
     val l = rte.setListener(new TaggingEngineListener)
     rte.start()
     val updated = session.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
@@ -204,9 +204,11 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         }
 
         //add note
-        answerReq.note match {
+        logger.info(s"note: ${answerReq.note}")
+        answerReq.note.map(_.trim).filter(_.nonEmpty) match {
           case None => session = session.removeNote(request.userSession.engineState.getCurrentNodeId)
           case Some(note) => {
+            logger.info(s"Updating note: '$note'")
             session = session.updateNote(session.engineState.getCurrentNodeId)
             notes.updateNote(Note(session.key, note, request.userSession.engineState.getCurrentNodeId))
           }
@@ -214,7 +216,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
         // now, submit the new answer and feed it to the engine.
         val answer = Answer.withName( answerReq.text )
-        val ansRec = AnswerRecord( currentAskNode(session.kit.model.get, session.engineState), answer )
+        val ansRec = AnswerRecord( currentAskNode(session.kit.policyModel.get, session.engineState), answer )
         val runRes = advanceEngine( session.kit, session.engineState, answer )
 
         //Add Record to DB
@@ -227,7 +229,14 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         runRes.state.getStatus match {
           case RuntimeEngineStatus.Running => Redirect( routes.InterviewCtrl.askNode( kitKey.modelId, kitKey.version, runRes.state.getCurrentNodeId ) )
           case RuntimeEngineStatus.Reject  => Redirect( routes.InterviewCtrl.reject( kitKey.modelId, kitKey.version ) )
-          case RuntimeEngineStatus.Accept  => Redirect( routes.InterviewCtrl.accept( kitKey.modelId, kitKey.version ) )
+          case RuntimeEngineStatus.Accept  => {
+            // interview is over, need to display or affirm.
+            if ( session.requireAffirmation ) {
+              Redirect( routes.InterviewCtrl.showAffirm(kitKey.modelId, kitKey.version) )
+            } else {
+              Redirect( routes.InterviewCtrl.accept(kitKey.modelId, kitKey.version) )
+            }
+          }
           case _ => InternalServerError("Bad interview state")
         }
       }
@@ -263,8 +272,45 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       }
     )
   }
-
-  def accept( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc) { implicit request =>
+  
+  def showAffirm( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc).async { implicit request =>
+    val session = request.userSession
+    if(session.saveStat){
+      interviewHistories.addRecord(
+        InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "show affirmation"))
+    }
+    notes.getNotesForInterview(session.key).map( noteMap => Ok(views.html.interview.affirmation(session, noteMap)) )
+  }
+  
+  def doAffirm(modelId:String, versionNum:Int) = InterviewSessionAction(cache, cc) { implicit request =>
+    val sessionOpt = if ( request.userSession.engineState.getStatus == RuntimeEngineStatus.Accept ) {
+      // yes
+      Some(request.userSession)
+      
+    } else {
+      // no, rebuild from serialized history
+      val answerHistoryOpt = request.body.asFormUrlEncoded.flatMap( form => form.get("serializedHistory").flatMap(_.headOption) )
+      answerHistoryOpt match {
+        case None => None
+        case Some(history) => Some(request.userSession.kit.serializer.decode(history, request.userSession))
+      }
+    }
+    
+    sessionOpt match {
+      case None => BadRequest("?")
+      case Some(session) => {
+        if(session.saveStat){
+          interviewHistories.addRecord(
+            InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "affirmed"))
+        }
+        cache.set( session.key.toString, session)
+        Redirect( routes.InterviewCtrl.accept(modelId, versionNum) )
+      }
+    }
+  }
+  
+  
+  def accept(modelId:String, versionNum:Int) = InterviewSessionAction(cache, cc) { implicit request =>
     val session = request.userSession
     val tags = session.tags
     val codeOpt = Option(tags.getSlot.getSubSlot("Code")).map(tags.get)
@@ -281,7 +327,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   def reject( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc) { implicit request =>
     val session = request.userSession
     val state = request.userSession.engineState
-    val node = session.kit.model.get.getDecisionGraph.getNode( state.getCurrentNodeId )
+    val node = session.kit.policyModel.get.getDecisionGraph.getNode( state.getCurrentNodeId )
 
     //Add Record to DB
     if(request.userSession.saveStat){
@@ -322,7 +368,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   
   def downloadTags = InterviewSessionAction(cache, cc) { implicit request =>
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
-    val filename =  request.userSession.kit.model.get.getMetadata.getTitle + "-" + dateFormat.format(request.userSession.sessionStart)
+    val filename =  request.userSession.kit.policyModel.get.getMetadata.getTitle + "-" + dateFormat.format(request.userSession.sessionStart)
     Ok(request.userSession.tags.accept(Jsonizer))
       .withHeaders( "Content-disposition" -> "attachment; filename=\"%s\"".format(filename) )
   }
@@ -337,7 +383,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   
   def advanceEngine(kit:VersionKit, state: RuntimeEngineState, ans: Answer ) : EngineRunResult = {
     val rte = new RuntimeEngine
-    rte.setModel( kit.model.get )
+    rte.setModel( kit.policyModel.get )
     val l = rte.setListener( new TaggingEngineListener )
 
     rte.applySnapshot( state )
@@ -369,7 +415,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
    */
   def replayAnswers(kit:VersionKit, answers:Seq[AnswerRecord] ) : EngineRunResult = {
     val rte = new RuntimeEngine
-    rte.setModel( kit.model.get )
+    rte.setModel( kit.policyModel.get )
     val l = rte.setListener( new TaggingEngineListener )
     
     rte.start()

@@ -15,7 +15,7 @@
 
 @import views.Helpers
 
-@templates.bsNavBar(qKit.model.get.getMetadata.getTitle + ": README", 'tag, scripts, extraHead) {
+@templates.bsNavBar(qKit.policyModel.get.getMetadata.getTitle + ": README", 'tag, scripts, extraHead) {
 <div class="row">
   <div class="col">
     <div>
@@ -54,7 +54,7 @@
             @comps.comments("cmntPS", qKit.md.id.modelId, qKit.md.id.version, loc.getLanguage, "meta", "policy-space")
             </div>}
           Policy Space</h3>
-        @comps.tagType(qKit.model.get.getSpaceRoot, loc )
+        @comps.tagType(qKit.policyModel.get.getSpaceRoot, loc )
       </details>
     </div>
   </div>
