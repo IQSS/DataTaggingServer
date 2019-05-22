@@ -210,7 +210,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
           case Some(note) => {
             logger.info(s"Updating note: '$note'")
             session = session.updateNote(session.engineState.getCurrentNodeId)
-            notes.updateNote(Note(session.key, note, request.userSession.engineState.getCurrentNodeId))
+            notes.updateNote( new Note(session.key, note, request.userSession.engineState.getCurrentNodeId) )
           }
         }
 

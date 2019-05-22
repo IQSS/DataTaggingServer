@@ -1,10 +1,10 @@
 package persistence
 
 import java.util.UUID
-import javax.inject.Inject
 
+import javax.inject.Inject
 import models.Note
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 
@@ -16,6 +16,7 @@ class NotesDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvider,
 
   import profile.api._
   private val notes = TableQuery[NotesTable]
+  val logger = Logger( classOf[NotesDAO] )
 
   def getNote(uuid:UUID, nodeId:String): Future[Option[Note]] = {
     db.run(
