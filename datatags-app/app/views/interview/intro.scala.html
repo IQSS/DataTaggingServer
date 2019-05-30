@@ -33,7 +33,7 @@
             <ul class="localizations">
             @for( locName <- qKit.policyModel.get.getLocalizations ) {
               <li>
-                <a href="@routes.InterviewCtrl. (qKit.md.id.modelId, qKit.md.id.version, Some(locName))"
+                <a href="@routes.InterviewCtrl.startInterview(qKit.md.id.modelId, qKit.md.id.version, Some(locName))"
               class="btn btn-primary">Begin Questionnaire (@locName)</a>
               </li>
             }
