@@ -19,7 +19,7 @@
 
 @visitSectionNode( nd:SectionNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="node section">
-    <h4>Section: @nd.getTitle</h4>
+    <h4>Section: @loc.getNodeText(nd.getId).orElse(nd.getTitle)</h4>
     @visitNode(nd.getStartNode, baseLevel, visited)
   </div>
   @visitNode(nd.getNextNode, baseLevel, visited)
