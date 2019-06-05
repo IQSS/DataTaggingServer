@@ -1,12 +1,12 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.slots.AbstractSlot
 @import edu.harvard.iq.datatags.model.slots._
-@( tagType:AbstractSlot, loc:Localization)
+@( tagType:AbstractSlot, loc:Localization)(implicit msgs:MessagesProvider)
 
 
 @simpleType( tp: AtomicSlot ) = {
   <div class="tagtype tagtype-simple">
-      @slotTypeTitle(tp, loc, "One of:")
+      @slotTypeTitle(tp, loc, Messages("interview.oneOf"))
     <div class="typeValues">
       @for( sv <- tp.values ) {
         @valueAtom( sv, loc )
@@ -17,7 +17,7 @@
 
 @aggregateType( tp: AggregateSlot) = {
   <div class="tagtype tagtype-aggregate">
-      @slotTypeTitle(tp, loc, "Some of:")
+      @slotTypeTitle(tp, loc, Messages("interview.someOf"))
     <div class="typeValues">
       @for( sv <- tp.getItemType.values ) {
         @valueAtom( sv, loc )

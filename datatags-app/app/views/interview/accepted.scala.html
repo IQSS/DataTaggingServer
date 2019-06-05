@@ -2,7 +2,7 @@
 @import edu.harvard.iq.datatags.model.values.AtomicValue
 @( session :InterviewSession,
    codeTag :Option[edu.harvard.iq.datatags.model.values.AbstractValue]
-)(implicit req:Request[_])
+)(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
     <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -22,15 +22,15 @@
     <div class="col">
       <div class="card">
         <div class="card-header bg-info text-white">
-          Interview Completed - Final Results
+          @Messages("interview.completed")
         </div>
         <div class="card-body">
           <ul class="nav nav-tabs" id="resultTabs" role="tablist" style="justify-content: center">
             <li class="nav-item">
-              <a class="nav-link active" data-toggle="tab" id="detailedTabTitle" href="#detailedTab">Report</a>
+              <a class="nav-link active" data-toggle="tab" id="detailedTabTitle" href="#detailedTab">@Messages("interview.report")</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" data-toggle="tab" href="#summaryTab" id="summaryTabTitle">Summary</a>
+              <a class="nav-link" data-toggle="tab" href="#summaryTab" id="summaryTabTitle">@Messages("interview.summary")</a>
             </li>
           </ul>
           <div class="tab-content" id="resultTabsContent">
@@ -43,10 +43,10 @@
           </div>
           <div class="text-center mt-2 buttonsCtnr">
             <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
-              <i class="fa fa-download"></i>&nbsp;Download Policy as JSON
+              <i class="fa fa-download"></i>&nbsp;@Messages("iterview.download.json")
             </a>
             <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None)" class="btn btn-primary">
-              <i class="fa fa-book"></i>&nbsp;Interview Transcript
+              <i class="fa fa-book"></i>&nbsp;@Messages("interview.transcript")
             </a>
           </div>
         </div>
@@ -57,7 +57,7 @@
     <div class="col">
       <div class="card">
         <div class="card-header bg-secondary text-white">
-          Answer History
+          @Messages("interview.answerHistory")
         </div>
         <div class="card-body">
         @comps.answerHistory(session.answerHistory, session.kit.md.id, false, session.kit.serializer, session.localization)
@@ -73,7 +73,7 @@
           </form>
         }
         case None => {
-          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.md.id.modelId, session.kit.md.id.version)" class="btn btn-primary">Start Again</a>
+          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.md.id.modelId, session.kit.md.id.version)" class="btn btn-primary">@Messages("interview.startAgain")</a>
         }
       }
     </div>

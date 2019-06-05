@@ -6,13 +6,14 @@ import play.api.libs.json._
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
 import play.api.Logger
 import play.api.cache.SyncCacheApi
+import play.api.i18n.{I18nSupport, MessagesImpl}
 import play.api.mvc.{ControllerComponents, InjectedController}
 
 import scala.compat.java8.OptionConverters._
 import scala.concurrent.Future
 
 class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:LocalizationManager,
-                             cache:SyncCacheApi, cc:ControllerComponents) extends InjectedController {
+                             cache:SyncCacheApi, cc:ControllerComponents) extends InjectedController with I18nSupport{
 
   import JSONFormats.commentDTOFmt
 
@@ -47,7 +48,7 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
                 case Some( model ) => {
                   val l10n = locs.localization(aKit.md.id, comment.localization)
                   val readmeOpt = l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
-                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, l10n, readmeOpt))
+                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, l10n, readmeOpt)(messagesApi.preferred(req)))
                 }
               }
             }

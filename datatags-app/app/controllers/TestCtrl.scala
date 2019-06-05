@@ -9,12 +9,13 @@ import persistence.{LocalizationManager, ModelManager}
 import play.api.mvc._
 import play.api.libs.json.Json
 import play.api._
+import play.api.i18n.I18nSupport
 
 import scala.collection.JavaConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-class TestCtrl @Inject()(implicit ec: ExecutionContext, models:ModelManager, locs:LocalizationManager) extends InjectedController {
+class TestCtrl @Inject()(implicit ec: ExecutionContext, models:ModelManager, locs:LocalizationManager) extends InjectedController with I18nSupport{
 
   /**
 	 * test server for postBackTo in RequestedInterview
@@ -32,7 +33,7 @@ class TestCtrl @Inject()(implicit ec: ExecutionContext, models:ModelManager, loc
     val id = KitKey(modelId, versionNum)
     models.getPolicyModel(id) match {
       case None => NotFound("Can't find interview with id " + id)
-      case Some(model) => Ok(views.html.tagsTree(model.getSpaceRoot, generateInstance(model.getSpaceRoot), locs.localization(id,locName)))
+      case Some(model) => Ok(views.html.tagsTree(model.getSpaceRoot, generateInstance(model.getSpaceRoot), locs.localization(id,locName))(messagesApi.preferred(req)))
     }
   }
   

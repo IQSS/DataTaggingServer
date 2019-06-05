@@ -1,5 +1,5 @@
 @import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
-@(qKit: VersionKit, interviewWelcomeMessage:Option[String])(implicit req:Request[_])
+@(qKit: VersionKit, interviewWelcomeMessage:Option[String])(implicit req:Request[_], msgs:MessagesProvider)
 
 @scripts = {
   <script type="text/javascript" src="@routes.Assets.at("js/InterviewIntro.js")"></script>

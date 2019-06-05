@@ -1,7 +1,7 @@
 @import  edu.harvard.iq.datatags.runtime.RuntimeEngineStatus
 @( session:InterviewSession,
         notes: Map[String,Note]
-)(implicit req:Request[_])
+)(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>

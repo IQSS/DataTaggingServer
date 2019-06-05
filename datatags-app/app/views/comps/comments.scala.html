@@ -1,6 +1,6 @@
-@(formID:String, modelID:String, version:Int, loc:String, targetType:String, targetContent:String, buttonClass:String="btn-outline-dark")
+@(formID:String, modelID:String, version:Int, loc:String, targetType:String, targetContent:String, buttonClass:String="btn-outline-dark")(implicit msgs:MessagesProvider)
 <div class="commentComponent">
-  <button type="button" onclick="Comments.toggleForm('@formID')" class="btn btn-sm @buttonClass"><i class="fa fa-edit"></i> Comment</button>
+  <button type="button" onclick="Comments.toggleForm('@formID')" class="btn btn-sm @buttonClass"><i class="fa fa-edit"></i> @Messages("interview.comment")</button>
   <div class="commentFormDiv" id="@formID" style="display:none">
     <input type="hidden" data-role="modelID" value="@modelID">
     <input type="hidden" data-role="version" value="@version">
@@ -8,14 +8,14 @@
     <input type="hidden" data-role="targetContent" value="@targetContent">
     <input type="hidden" data-role="localization" value="@loc">
     <div>
-      <input placeholder="Commenter Name" class="form-control" type="text" data-role="name">
+      <input placeholder=@Messages("interview.comment.name") class="form-control" type="text" data-role="name">
     </div>
     <div class="textareaCtnr">
-      <textarea class="form-control" placeholder="Comment text" rows="4" cols="20" data-role="comment"></textarea>
+      <textarea class="form-control" placeholder=@Messages("interview.comment.text") rows="4" cols="20" data-role="comment"></textarea>
     </div>
     <div class="buttonBar">
-        <button class="btn btn-secondary btn-sm" type="button" onclick="Comments.closeForm('@formID')">Cancel</button>
-        <button class="btn btn-primary btn-sm" type="button" onclick="Comments.save('@formID')">Comment</button>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="Comments.closeForm('@formID')">@Messages("interview.cancel")</button>
+        <button class="btn btn-primary btn-sm" type="button" onclick="Comments.save('@formID')">@Messages("interview.comment")</button>
     </div>
   </div>
 </div>

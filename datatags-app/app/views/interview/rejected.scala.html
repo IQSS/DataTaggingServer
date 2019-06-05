@@ -3,7 +3,7 @@
 @import Helpers.{o2o, renderMarkdown}
 @(session:InterviewSession,
   node: RejectNode
-)(implicit req:Request[_])
+)(implicit req:Request[_], msgs: MessagesProvider)
 
 
 @extraHead = {
@@ -12,7 +12,7 @@
 }
 }
 
-@templates.bsNavBar("Dataset Rejected", 'tag, extraHead = extraHead) {
+@templates.bsNavBar(Messages("interview.datasetRejected"), 'tag, extraHead = extraHead) {
   <div class="row my-2">
     <div class="col">
       @comps.rejectPanel(node, session.kit.md.id, session.localization, session.answerHistory, session.kit.md.commentingStatus != CommentingStatus.Closed)
@@ -21,7 +21,7 @@
   <div class="row my-2">
     <div class="col text-center">
       <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None)" class="btn btn-primary">
-        <i class="fa fa-book"></i>&nbsp;Interview Transcript
+        <i class="fa fa-book"></i>&nbsp;@Messages("interview.transcript")
       </a>
     </div>
   </div>
@@ -29,7 +29,7 @@
     <div class="col">
       <div class="card">
         <div class="card-header">
-          Answer History
+          @Messages("interview.answerHistory")
         </div>
         <div class="card-body">
           @comps.answerHistory(session.answerHistory, session.kit.md.id, false, session.kit.serializer, session.localization)
@@ -49,7 +49,7 @@
           </form>
         }
         case None => {
-          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.md.id.modelId, session.kit.md.id.version)" class="btn btn-primary">Start Again</a>
+          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.md.id.modelId, session.kit.md.id.version)" class="btn btn-primary">@Messages("interview.startAgain")</a>
         }
       }
     </div>

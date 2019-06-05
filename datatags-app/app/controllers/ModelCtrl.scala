@@ -11,10 +11,12 @@ import play.api.{Configuration, Logger}
 import play.api.cache.SyncCacheApi
 import play.api.data.Form
 import play.api.data.Forms._
+import play.api.i18n.{I18nSupport, Langs, MessagesImpl}
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, InjectedController}
-import scala.collection.JavaConverters._
+import play.i18n.MessagesApi
 
+import scala.collection.JavaConverters._
 import scala.concurrent.Future
 
 case class ModelFormData( id:String, title:String, note:String, saveStat:Boolean,
@@ -36,7 +38,7 @@ object VersionFormData {
 }
 
 class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager,
-                           comments:CommentsDAO, config:Configuration ) extends InjectedController {
+                           langs:Langs, comments:CommentsDAO, config:Configuration ) extends InjectedController with I18nSupport {
 
   implicit private val ec = cc.executionContext
   private val logger = Logger(classOf[ModelCtrl])
@@ -123,7 +125,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
         case None => NotFound("Model does not exist.")
         case Some(model) => Ok(
           views.html.backoffice.modelViewer(model, versions,
-          true, req.flash.get("message")))
+          true, req.flash.get("message"))(messagesApi.preferred(Seq(langs.availables.head)))).withoutLang
       }
     }
   }

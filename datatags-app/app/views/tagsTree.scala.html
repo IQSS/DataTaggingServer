@@ -1,7 +1,7 @@
 @import edu.harvard.iq.datatags.model.values.AbstractValue
 @import edu.harvard.iq.datatags.model.slots.CompoundSlot
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@(tagType: CompoundSlot, tagValue:AbstractValue, loc:Localization)
+@(tagType: CompoundSlot, tagValue:AbstractValue, loc:Localization)(implicit msgs:MessagesProvider)
 
 @templates.bsBase("Tag trees")(){
     <div class="content">
