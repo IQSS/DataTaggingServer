@@ -64,9 +64,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   }
   
   def startInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None ) = Action.async{ implicit req =>
-    val locName:String = localizationName.map(name => if(name == "__model__") "model" else name).getOrElse("model").split("_")(0)
-    val lang = langs.preferred(Seq(Lang(locName),langs.availables.head))
-    logger.info("lang " + lang.language)
     import util.JavaOptionals.toRichOptional
     val kitId = KitKey(modelId, versionNum)
     for {
@@ -85,7 +82,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                 val l10n = locs.localization(kitId, localizationName)
                 val userSession = InterviewSession.create( pmKit, model, l10n )
                 cache.set(userSession.key.toString, userSession)
-                
+                val lang = l10n.getUiLang.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
+
                 // add to DB InterviewHistory
                 if ( userSession.saveStat ) {
                   if(req.headers.get("Referer").isDefined && req.headers.get("Referer").get.endsWith("/accept")) {
@@ -360,8 +358,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   
   
   def viewAllQuestions(modelId:String, versionNum:Int, localizationName:Option[String]) = Action.async { implicit req =>
-    val locName:String = localizationName.map(name => if(name == "__model__") "model" else name).getOrElse("model").split("_")(0)
-    val lang = langs.preferred(Seq(Lang(locName),langs.availables.head))
     val kitId = KitKey(modelId, versionNum)
     for{
       verOpt <- models.getVersionKit(kitId)
@@ -369,6 +365,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       verOpt match {
         case Some(versionKit) => {
           val loc = locs.localization(kitId, localizationName)
+          val optLang = if (loc.getUiLang.isPresent) Some(loc.getUiLang.get()) else None
+          val lang = optLang.map(l => langs.preferred(Seq(Lang(l), langs.availables.head))).getOrElse(langs.availables.head)
           Ok(views.html.interview.allQuestions(versionKit, loc)(req, messagesApi.preferred(Seq(lang)))).withLang(lang)
         }
         case None => NotFound("Model not found")
