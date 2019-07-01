@@ -1,0 +1,52 @@
+interview.readme=תקראו אותי
+interview.question=שאלה
+interview.model=מודל
+interview.model.error.explain=ולכן איננו יכולים להשתמש בו כדי לנהל ראיון. עיין בהודעות מערכת להלן.
+interview.model.version=גרסת המודל
+
+interview.policySpace=מרחב מדיניות
+interview.decisionGraph=גרף החלטות
+interview.version=גרסה
+
+interview.note=הערה
+interview.answer=תשובה
+interview.start=התחלה
+interview.cancel=ביטול
+interview.datasetRejected=הנתונים נדחו
+interview.unresolved=לא פתור
+interview.resolved=פתור
+interview.markAs=סמן
+
+interview.transcript=תמליל הראיון
+interview.answerHistory=היסטוריית תשובות
+interview.startAgain=התחל שוב
+interview.answerFeed=מעקב תשובות
+interview.answerFeed.explain=שטח זה יכיל את התשובות שלך. ניתן לענות על השאלה מחדש במידת הצורך.
+interview.currentTags=תיוג נוכחי
+interview.currentTags.explain=שטח זה יכיל את המדיניות הנובעת מהשאלון. זה יעודכן ככל שנתקדם.
+interview.allQuestions=כל שאלות הראיון
+interview.download.xml=הורד כ-XML
+iterview.download.json=הורד כ-Json
+interview.result=תוצאה
+interview.rejection=דחייה
+interview.selectAnswer=בחר תשובה יחידה
+interview.note.add=הוסף הערה
+interview.question.change=שנה את התשובה של שאלה זו
+interview.comment.delete=מחק תגובה
+interview.comment.text=טקסט
+interview.comment.name=שם המגיב
+interview.comment=תגובה
+interview.comment.context=הקשר התגובה
+interview.revisit=לחזור
+interview.intro=מבוא
+interview.completed=הראיון הסתיים - תוצאות סופיות
+interview.report=תסקיר
+interview.summary=סיכום
+interview.back=חזור
+interview.allQuestion=כל שאלות הראיון
+interview.questions=שאלות ראיון
+interview.part=חלק
+interview.section=פרק
+
+interview.someOf=כמה מ-
+interview.oneOf=אחד מ-

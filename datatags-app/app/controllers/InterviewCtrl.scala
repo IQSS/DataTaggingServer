@@ -4,8 +4,6 @@ import java.sql.Timestamp
 
 import play.api.mvc._
 import play.api.cache.SyncCacheApi
-import play.api.data._
-import play.api.data.Forms._
 import edu.harvard.iq.datatags.runtime._
 import edu.harvard.iq.datatags.model.graphs.nodes._
 import models._
@@ -18,6 +16,10 @@ import edu.harvard.iq.datatags.model.graphs.Answer
 import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager, NotesDAO}
 import play.api.Logger
 import views.Helpers
+import play.api.data.{Form, _}
+import play.api.data.Forms._
+import play.api.i18n._
+import play.api.i18n.I18nSupport._
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -31,10 +33,13 @@ object InterviewCtrl {
  * Controller for the interview part of the application.
  */
 class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelManager, locs:LocalizationManager,
-                              cc:ControllerComponents, interviewHistories: InterviewHistoryDAO) extends InjectedController {
+                              langs:Langs, cc:ControllerComponents, interviewHistories: InterviewHistoryDAO) extends InjectedController with I18nSupport  {
 
   private implicit val ec = cc.executionContext
   private val logger = Logger( classOf[InterviewCtrl] )
+//  implicit val messagesProvider: MessagesProvider = {
+//    MessagesImpl(langs.availables.head, messagesApi)
+//  }
 
   def interviewIntroDirect(modelId:String, versionNum:Int) = Action {
     TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, versionNum).url )
@@ -48,7 +53,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       versionOpt match {
         case Some(version) => {
           if ( canView(request, version.md) ) {
-            Ok( views.html.interview.intro(version, None) )
+            Ok( views.html.interview.intro(version, None) (request, messagesApi.preferred(Seq(langs.availables.head)))).withoutLang
           } else {
             NotFound("Model not found.") // really that's a NotAuthorized, but that would give away the fact that the version exists.
           }
@@ -77,7 +82,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                 val l10n = locs.localization(kitId, localizationName)
                 val userSession = InterviewSession.create( pmKit, model, l10n )
                 cache.set(userSession.key.toString, userSession)
-                
+                val lang = l10n.getUiLang.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
+
                 // add to DB InterviewHistory
                 if ( userSession.saveStat ) {
                   if(req.headers.get("Referer").isDefined && req.headers.get("Referer").get.endsWith("/accept")) {
@@ -97,12 +103,12 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                     val verKitFut = models.getVersionKit(kitId)
                     val verKit = Await.result(verKitFut, 10.seconds)
                     Ok(views.html.interview.showReadme(verKit.get, readMe, l10n.getLocalizedModelData.getTitle,
-                      l10n.getLocalizedModelData.getSubTitle, l10n)
-                    ).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
+                      l10n.getLocalizedModelData.getSubTitle, l10n)(req, messagesApi.preferred(Seq(lang)))
+                    ).withLang(lang).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
                   }
                   case None => {
                     // No readme, perform the first decision graph traversal.
-                    runFirstQuestion(userSession, req).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
+                    runFirstQuestion(userSession, req, messagesApi.preferred(Seq(lang))).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString ).withLang(lang)(messagesApi)
                   }
                 }
               }
@@ -117,10 +123,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   }
 
   def startInterviewPostReadme(modelId:String, versionNum:Int) = InterviewSessionAction( cache, cc ) { implicit req =>
-    runFirstQuestion(req.userSession, req)
+    runFirstQuestion(req.userSession, req, messagesApi.preferred(req))
   }
   
-  private def runFirstQuestion(session:InterviewSession, req:Request[_]) = {
+  private def runFirstQuestion(session:InterviewSession, req:Request[_], messagesProvider: MessagesProvider) = {
     val rte = new RuntimeEngine
     rte.setModel(session.kit.policyModel.get)
     val l = rte.setListener(new TaggingEngineListener)
@@ -134,7 +140,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       interviewHistories.addRecord(
         InterviewHistoryRecord(session.key, new Timestamp(System.currentTimeMillis()), "q: " + rte.getCurrentNode.getId))
     }
-    Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None)(req))
+    Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None)(req, messagesProvider))
   }
   
   def askNode( modelId:String, versionNum:Int, reqNodeId:String) = InterviewSessionAction(cache, cc).async { implicit req =>
@@ -360,7 +366,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       verOpt match {
         case Some(versionKit) => {
           val loc = locs.localization(kitId, localizationName)
-          Ok(views.html.interview.allQuestions(versionKit, loc))
+          val optLang = if (loc.getUiLang.isPresent) Some(loc.getUiLang.get()) else None
+          val lang = optLang.map(l => langs.preferred(Seq(Lang(l), langs.availables.head))).getOrElse(langs.availables.head)
+          Ok(views.html.interview.allQuestions(versionKit, loc)(req, messagesApi.preferred(Seq(lang)))).withLang(lang)
         }
         case None => NotFound("Model not found")
       }

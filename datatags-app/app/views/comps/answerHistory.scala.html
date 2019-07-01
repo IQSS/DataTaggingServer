@@ -1,5 +1,5 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@(answerHistory: Seq[AnswerRecord], kitKey:KitKey, reverse:Boolean, serializer:Serialization, loc:Localization)
+@(answerHistory: Seq[AnswerRecord], kitKey:KitKey, reverse:Boolean, serializer:Serialization, loc:Localization)(implicit msgs: MessagesProvider)
 @import views.Helpers
 @helper.form( action=routes.InterviewCtrl.revisit(kitKey.modelId, kitKey.version), 'id->"answerHistory") {
     <ol class="answer-history">
@@ -14,9 +14,9 @@
                             <span class="badge">@loc.localizeAnswer(ar._1.answer.getAnswerText)</span>
                             <button class="btn btn-outline-secondary btn-sm"
                                 data-toggle="tooltip" data-placement="top"
-                                title="Change your answer to this question"
+                                title=@Messages("interview.question.change")
                                 onClick="$('#revisitIdx')[0].value='@ar._2'; $('#answerHistory').submit();">
-                                <i class="fa fa-history"></i> Revisit</button>
+                                <i class="fa fa-history"></i> @Messages("interview.revisit")</button>
                         </div>
                     </li>
                 }       

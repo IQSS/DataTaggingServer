@@ -2,7 +2,7 @@
 @import edu.harvard.iq.datatags.model.graphs.nodes._
 @import collection.mutable.Set
 
-@(verKit: VersionKit, loc:Localization)(implicit req:Request[_])
+@(verKit: VersionKit, loc:Localization)(implicit req:Request[_], msgs: MessagesProvider)
 
 @visitAskNode( nd:AskNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="question">
@@ -19,7 +19,7 @@
 
 @visitSectionNode( nd:SectionNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="node section">
-    <h4>Section: @nd.getTitle</h4>
+    <h4>@Messages("interview.section"): @loc.getNodeText(nd.getId).orElse(nd.getTitle)</h4>
     @visitNode(nd.getStartNode, baseLevel, visited)
   </div>
   @visitNode(nd.getNextNode, baseLevel, visited)
@@ -27,7 +27,7 @@
 
 @visitPartNode( nd:PartNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="node part" id="part-@nd.getId()">
-    <h4>Part: @nd.getTitle</h4>
+    <h4>@Messages("interview.part"): @nd.getTitle</h4>
     @visitNode(nd.getStartNode, baseLevel, visited)
   </div>
 }
@@ -69,16 +69,16 @@
 }
 
 
-@templates.bsNavBar("Interview questions: " + verKit.policyModel.get.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
+@templates.bsNavBar(Messages("interview.questions")+":" + verKit.policyModel.get.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
   <div class="row">
     <div class="col-md-12">
-      <a href="@routes.InterviewCtrl.interviewIntro(verKit.md.id.modelId, verKit.md.id.version)">@comps.backArrow(loc) Back</a>
+      <a href="@routes.InterviewCtrl.interviewIntro(verKit.md.id.modelId, verKit.md.id.version)">@comps.backArrow(loc) @Messages("interview.back")</a>
     </div>
   </div>
   <div class="row">
     <div class="col-md-12">
       <h1>
-        All Interview Questions
+        @Messages("interview.allQuestions")
       </h1>
     </div>
   </div>

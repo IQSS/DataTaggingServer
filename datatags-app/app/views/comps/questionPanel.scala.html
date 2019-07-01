@@ -1,12 +1,12 @@
 @import edu.harvard.iq.datatags.externaltexts.Localization
 @import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 @(questionNode:AskNode, versionKit:VersionKit, loc:Localization,
-        answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, allowNotes:Boolean, note:Option[String])
+        answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, allowNotes:Boolean, note:Option[String])(implicit msgs: MessagesProvider)
 
 <div class="card m-2 border-info questionPanel">
   <div class="card-header bg-info text-white d-flex">
     <div class="flex-grow-1">
-      @if(showId){<span class="nodeIdBadge">@questionNode.getId</span>}Please select a single answer
+      @if(showId){<span class="nodeIdBadge">@questionNode.getId</span>}@Messages("interview.selectAnswer")
     </div>
     @if( enableComments ) {
       <div>
@@ -29,7 +29,7 @@
     <div class="card-footer">
       <div class="answerButtonCtnr">
         @if(allowNotes){
-          <button type="button" class="toggleNoteBtn" onclick="$('#noteDiv').slideToggle(); $('#noteDiv textarea').focus()"><i class="fa fa-pencil"></i> Add note</button>
+          <button type="button" class="toggleNoteBtn" onclick="$('#noteDiv').slideToggle(); $('#noteDiv textarea').focus()"><i class="fa fa-pencil"></i> @Messages("interview.note.add")</button>
         }
         @for( ans <- questionNode.getAnswers ) {
           <button type="button" @if(interactive){ class="btn btn-primary"

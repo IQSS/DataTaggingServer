@@ -12,4 +12,4 @@ For more information, visit [datatags.org](http://datatags.org).
 * configuration: see conf/application.conf
 * add user via API from localhost (useful for first user setup):
 
-    echo \{\"username\": \"admin\", \"password\":\"pass\"\} | http POST localhost:9000/admin/api/users/
+    `echo '{"username": "admin", "password":"pass"}' | http POST localhost:9000/admin/api/users/`

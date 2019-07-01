@@ -1,5 +1,5 @@
 @import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
-@(ver:VersionKit, model:Model, comments:Seq[Comment])
+@(ver:VersionKit, model:Model, comments:Seq[Comment])(implicit msgs:MessagesProvider)
 
 @scripts ={
 @if(ver.md.runningStatus == RunningStatus.Processing){

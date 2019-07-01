@@ -1,4 +1,4 @@
-@(model:Model, versions:Seq[VersionMD], enableEdits:Boolean, message:Option[String] )
+@(model:Model, versions:Seq[VersionMD], enableEdits:Boolean, message:Option[String] )(implicit msgs: MessagesProvider)
 
 @scripts ={
   @if(versions.map(_.runningStatus).contains(RunningStatus.Processing)){

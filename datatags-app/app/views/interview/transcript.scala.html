@@ -1,7 +1,7 @@
 @import  edu.harvard.iq.datatags.runtime.RuntimeEngineStatus
 @( session:InterviewSession,
         notes: Map[String,Note]
-)(implicit req:Request[_])
+)(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -20,11 +20,11 @@
         <div class="float-eol">
           <a class="btn btn-sm btn-outline-dark" href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, Some("xml"))">
             <i class="fa fa-code"></i>
-            Download as xml
+            @Messages("interview.download.xml")
           </a>
         </div>
-        Interview Transcript</h2>
-      Model <strong>@session.kit.md.id.modelId version @session.kit.md.id.version</strong>
+        @Messages("interview.transcript")</h2>
+      @Messages("interview.model") <strong>@session.kit.md.id.modelId @Messages("interview.version") @session.kit.md.id.version</strong>
     </div>
   </div>
   <div class="row my-2">
@@ -32,7 +32,7 @@
       <div class="card">
         @defining( session.engineState.getStatus == RuntimeEngineStatus.Accept ) { accepted =>
           <div class="card-header @if(accepted){bg-success}else{bg-danger} text-white">
-            Result @if(!accepted){ - Rejection}
+            @Messages("interview.result") @if(!accepted){ - @Messages("interview.rejection")}
           </div>
           <div class="card-body">
             @comps.tagValue(session.tags, session.localization)
@@ -54,14 +54,14 @@
           }
           @if( notes.contains(ans.question.getId) ){
             <div class="questionSection questionSectionNote">
-              <h6>Note</h6>
+              <h6>@Messages("interview.note")</h6>
               <div class="text">
                 @notes(ans.question.getId).note
               </div>
             </div>
           }
           <div class="questionSection questionSectionAnswer">
-            <h6>Answer</h6>
+            <h6>@Messages("interview.answer")</h6>
             <div class="text">
               @session.localization.localizeAnswer(ans.answer.getAnswerText)
             </div>

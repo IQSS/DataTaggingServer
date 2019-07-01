@@ -2,7 +2,7 @@
 @( session:InterviewSession,
    questionNode: edu.harvard.iq.datatags.model.graphs.nodes.AskNode,
    note:Option[String]
-)(implicit req:Request[_])
+)(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
     <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -15,11 +15,11 @@
 
 @import views.Helpers
 
-@templates.bsNavBar( "Question", 'tag, scripts, extraHead ) {
+@templates.bsNavBar( Messages("interview.question"), 'tag, scripts, extraHead ) {
   <div class="row">
     <div class="col">
       <a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))">
-        @comps.backArrow(session.localization) Intro
+        @comps.backArrow(session.localization) @Messages("interview.intro")
       </a>
       <br>
     </div>
@@ -36,14 +36,14 @@
   <div class="col-md">
       <div class="card m-2">
           <div class="card-header bg-secondary text-white">
-              Answer Feed
+              @Messages("interview.answerFeed")
           </div>
           <div class="card-body">
               @if( session.answerHistory.nonEmpty ) {
                   @comps.answerHistory(session.answerHistory, session.kit.md.id, reverse=true, session.kit.serializer, session.localization)
               } else {
                   <div class="well well-sm text-center">
-                      <span class="muted small">This space will contain your answers, and will allow you to revisit them when needed.</span>
+                      <span class="muted small">@Messages("interview.answerFeed.explain")</span>
                   </div>
               }
           </div>
@@ -52,12 +52,12 @@
   <div class="col-md">
       <div class="card m-2">
           <div class="card-header bg-secondary text-white">
-              Current Tags
+              @Messages("interview.currentTags")
           </div>
           <div class="card-body">
             @if( session.tags.getNonEmptySubSlots.isEmpty ) {
                 <div class="well well-sm text-center">
-                    <span class="muted small">This space will contain the resultant policy. It will be updated as we go along.</span>
+                    <span class="muted small">@Messages("interview.currentTags.explain")</span>
                 </div>
             } else {
                 @comps.tagValue(session.tags, session.localization)

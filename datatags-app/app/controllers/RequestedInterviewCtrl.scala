@@ -12,6 +12,7 @@ import models._
 import _root_.util.Jsonizer
 import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
 import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager}
+import play.api.i18n.{Langs, MessagesApi, MessagesImpl, MessagesProvider}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -26,8 +27,12 @@ import scala.concurrent.duration.Duration
   * @param cc
   */
 class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, interviewHistories: InterviewHistoryDAO,
-                                       models:ModelManager, ec:ExecutionContext, cc:ControllerComponents, locs:LocalizationManager) extends InjectedController {
+                                       langs:Langs, messagesApi:MessagesApi, models:ModelManager, ec:ExecutionContext, cc:ControllerComponents, locs:LocalizationManager) extends InjectedController {
   private val logger = Logger(classOf[RequestedInterviewCtrl])
+
+  implicit val messagesProvider: MessagesProvider = {
+    MessagesImpl(langs.availables.head, messagesApi)
+  }
 
   def apiRequestInterview(modelId:String, versionNum:Int) = Action(cc.parsers.tolerantJson(maxLength = 1024*1024*10)) { implicit request =>
     val kitKey = KitKey(modelId,versionNum)

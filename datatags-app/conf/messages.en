@@ -1,0 +1,51 @@
+interview.readme=README
+interview.question=Question
+interview.model=Model
+interview.model.error.explain=and thus we cannot use it to conduct an interview. See the System Messages section below.
+interview.model.version=Model Version
+
+interview.policySpace=Policy Space
+interview.decisionGraph=Decision Graph
+interview.version=version
+
+interview.note=Note
+interview.answer=Answer
+interview.start=Start
+interview.cancel=Cancel
+interview.datasetRejected=Dataset Rejected
+interview.unresolved=Unresolved
+interview.resolved=Resolved
+interview.markAs=Mark as
+
+interview.transcript=Interview Transcript
+interview.answerHistory=Answer History
+interview.startAgain=Start Again
+interview.answerFeed=Answer Feed
+interview.answerFeed.explain=This space will contain your answers, and will allow you to revisit them when needed.
+interview.currentTags=Current Tags
+interview.currentTags.explain=This space will contain the resultant policy. It will be updated as we go along.
+interview.allQuestions=All Interview Questions
+interview.download.xml=Download as xml
+iterview.download.json=Download Policy as JSON
+interview.result=Result
+interview.rejection=Rejection
+interview.selectAnswer=Please select a single answer
+interview.note.add=Add note
+interview.question.change=Change your answer to this question
+interview.comment.delete=Delete Comment
+interview.comment.text=Comment text
+interview.comment.name=Commenter name
+interview.comment=Comment
+interview.comment.context=Comment Context
+interview.revisit=Revisit
+interview.intro=Intro
+interview.completed=Interview Completed - Final Results
+interview.report=Report
+interview.summary=Summary
+interview.back=Back
+interview.questions=Interview questions
+interview.part=Part
+interview.section=Section
+
+interview.someOf=Some of:
+interview.oneOf=One of:
