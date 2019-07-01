@@ -210,11 +210,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         }
 
         //add note
-        logger.info(s"note: ${answerReq.note}")
         answerReq.note.map(_.trim).filter(_.nonEmpty) match {
           case None => session = session.removeNote(request.userSession.engineState.getCurrentNodeId)
           case Some(note) => {
-            logger.info(s"Updating note: '$note'")
             session = session.updateNote(session.engineState.getCurrentNodeId)
             notes.updateNote( new Note(session.key, note, request.userSession.engineState.getCurrentNodeId) )
           }

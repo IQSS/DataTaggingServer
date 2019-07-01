@@ -43,11 +43,19 @@
           </div>
           <div class="text-center mt-2 buttonsCtnr">
             <a href="@routes.InterviewCtrl.downloadTags" class="btn btn-primary">
-              <i class="fa fa-download"></i>&nbsp;@Messages("iterview.download.json")
+              <i class="fa fa-download"></i>&nbsp;@Messages("interview.download.json")
             </a>
-            <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None)" class="btn btn-primary">
-              <i class="fa fa-book"></i>&nbsp;@Messages("interview.transcript")
-            </a>
+            <div class="btn-group">
+              <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None)" class="btn btn-primary">
+                <i class="fa fa-book"></i>&nbsp;@Messages("interview.transcript")
+              </a>
+              <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <span class="sr-only">Toggle Dropdown</span>
+              </button>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, Some("xml"))">@Messages("interview.download.xml")</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>

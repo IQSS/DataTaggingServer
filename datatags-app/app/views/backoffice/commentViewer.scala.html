@@ -15,7 +15,7 @@
         <div class="float-right">
           <button class="btn btn-secondary"
                   onclick="Comments.setResolved(this, 'commentStatus', @cmt.id, @if(cmt.resolved){false}else{true})">
-                  @Messages("interview.markAs") @if(cmt.resolved){Messages("interview.unresolved")}else{Messages("interview.resolved")}</button>
+                  @Messages("interview.markAs") @if(cmt.resolved){@Messages("interview.unresolved")}else{@Messages("interview.resolved")}</button>
           <button class="btn btn-danger"
                   onclick="Comments.deleteComment('@cmt.id', '@kit.md.id.modelId', '@kit.md.id.version')">
                   @Messages("interview.comment.delete")</button>
