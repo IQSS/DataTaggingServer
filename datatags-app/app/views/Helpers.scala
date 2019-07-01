@@ -1,27 +1,26 @@
 package views
 
-
+import scala.xml.{Elem, PCData}
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.JavaConverters._
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Optional}
 
+import play.twirl.api.Html
+import play.api.data.{Field, FormError}
+import play.api.mvc.Request
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
 import com.vladsch.flexmark.ext.tables.TablesExtension
 import com.vladsch.flexmark.util.options.{DataKey, MutableDataSet}
-import edu.harvard.iq.datatags.externaltexts.{Localization, MarkupFormat, MarkupString}
-
-import scala.collection.mutable.ArrayBuffer
-import play.twirl.api.Html
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
-import controllers.LoggedInAction
+import edu.harvard.iq.datatags.externaltexts.{Localization, MarkupFormat, MarkupString}
 import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
+import edu.harvard.iq.datatags.model.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
+import controllers.LoggedInAction
 import models.{CommentingStatus, InterviewSession, Note, PublicationStatus}
-import play.api.data.{Field, FormError}
-import play.api.mvc.Request
-
-import scala.xml.{Elem, NodeBuffer, PCData}
 
 object Helpers {
   
@@ -198,7 +197,7 @@ object Helpers {
     fmt.format(d)
   }
   
-  def nonEmpty( v:String )(f:(String=>Html)):Html = {
+  def nonEmpty( v:String )(f:String=>Html):Html = {
     if ( v != null && v.trim.nonEmpty ) {
       f(v.trim)
     } else {
@@ -206,7 +205,7 @@ object Helpers {
     }
   }
   
-  def transcriptAsXml(session:InterviewSession, noteMap:Map[String,Note]):scala.xml.Elem = {
+  def transcriptAsXml(session:InterviewSession, noteMap:Map[String,Note]):scala.xml.Node = {
     val head = <metadata>
           <model>
             <id>{session.kit.md.id.modelId}</id>
@@ -215,11 +214,7 @@ object Helpers {
           </model>
         </metadata>
     
-//    val questionTextMap = session.answerHistory.map( ans =>
-//      ans.question.getId -> session.localization.map(_.getNodeText(ans.question.getId))
-//        .flatMap(jop=>if(jop.isPresent) Some(jop.get) else None)
-//        .getOrElse(Helpers.askNodeToMarkdown(ans.question))
-//    ).toMap
+    val policyValue = <result>{policyValueAsXml(session.tags)}</result>
 
     val questionTextMap = session.answerHistory.map( ans =>
       ans.question.getId -> session.localization.getNodeText(ans.question.getId).orElse(Helpers.askNodeToMarkdown(ans.question))).toMap
@@ -232,18 +227,33 @@ object Helpers {
     
     val body:Elem = <interview>
       {session.answerHistory.map( ans => <question id={ans.question.getId}>
-        <text>{PCData(questionTextMap(ans.question.getId))}</text>
-        <note>{PCData(noteMap.get(ans.question.getId).map(_.note).getOrElse(""))}</note>
-        <answer>{answerMap(ans.question.getId)}</answer>
+        <text>{PCData(questionTextMap(ans.question.getId))}</text>{
+        noteMap.get(ans.question.getId).map(_.note).map(txt=> <note>{PCData(txt)}</note>).getOrElse(scala.xml.Null)
+        }<answer>{answerMap(ans.question.getId)}</answer>
       </question>)}
     </interview>
-      
-    return <transcript>
-      {head}
-      {body}
-    </transcript>
+    
+    scala.xml.Utility.trim(
+      <transcript>
+        {head}
+        {policyValue}
+        {body}
+      </transcript>
+    )
   }
 
   def vizNames = Map("decision-graph" -> "Decision Graph", "policy-space"-> "Policy Space")
+  
+  
+  def policyValueAsXml( pv:AbstractValue ):scala.xml.Elem = {
+    pv match {
+      case at:AtomicValue    => <atomic slot={at.getSlot.getName} ordinal={at.getOrdinal.toString} outOf={at.getSlot.values().size().toString}>{at.getName}</atomic>
+      case ag:AggregateValue => <aggreate slot={ag.getSlot.getName}>{ag.getValues.asScala.map(v=>v.getName).map( v => <value>{v}</value>)}</aggreate>
+      case cm:CompoundValue  => <compound slot={cm.getSlot.getName}>
+                                    {cm.getNonEmptySubSlots.asScala.map(cm.get).map( policyValueAsXml )}
+                                </compound>
+      case td:ToDoValue      => <todo slot={td.getSlot.getName} />
+    }
+  }
   
 }

@@ -266,7 +266,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
           interviewHistories.addRecord(
             InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "revisit to " + updatedSession.engineState.getCurrentNodeId))
         }
-
+        
         cache.set( updatedSession.key.toString, updatedSession )
         Redirect( routes.InterviewCtrl.askNode( modelId, versionNum, updatedSession.engineState.getCurrentNodeId ) )
       }
@@ -344,7 +344,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       format.map( _.trim.toLowerCase ) match {
         case None         => Ok( views.html.interview.transcript(session, noteMap) )
         case Some("html") => Ok( views.html.interview.transcript(session, noteMap) )
-        case Some("xml")  => Ok( Helpers.transcriptAsXml(session, noteMap) )
+        case Some("xml")  => Ok( Helpers.transcriptAsXml(session, noteMap) ).
+                                    withHeaders( s"Content-disposition"->s"attachment; filename=${session.kit.md.pmTitle.replaceAll(" ", "_")}-Transcript.xml")
         case _ => BadRequest("Unknown format")
       }
     })
