@@ -145,10 +145,8 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
         models.deleteModel(id).map( _ => Ok(Json.obj("result"->true)).flashing("message"->("Model " + id + " deleted")) )
       }
     })
-
   }
-
-
+  
   def showNewVersionPage(modelId:String) = LoggedInAction(cache,cc).async{ implicit req =>
     models.getModel(modelId).map({
       case None => NotFound("Can't find model")
@@ -218,7 +216,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
               if ( Files.size(file.ref.path) > 0 ) {
                 val destFile = uploadPath.resolve(UUID.randomUUID().toString + ".zip")
                 file.ref.moveFileTo(destFile, replace = false)
-                models.removeModelLoaded(KitKey(modelId, vNum))
+                models.removeLoadedModel(KitKey(modelId, vNum))
                 locs.removeLocalizations(KitKey(modelId, vNum))
                 models.ingestSingleVersion(md, destFile)
               }
@@ -228,13 +226,31 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
         })
       })
   }
+  
 
+  def unloadModelVersion( modelId:String, modelVersion:Int ) = Action{ implicit req =>
+    val mvk = KitKey(modelId, modelVersion)
+    if ( req.connection.remoteAddress.isLoopbackAddress ) {
+  
+      if (models.isModelLoaded(mvk)) {
+        models.removeLoadedModel(mvk)
+        locs.removeLocalizations(mvk)
+        Ok(s"Model version $mvk unloaded")
+    
+      } else {
+        Ok(s"Model version $mvk was not loaded")
+      }
+    } else {
+      Unauthorized("Endpoint availabel from localhost only.")
+    }
+  }
+  
   def deleteVersion(modelId:String, version:Int) = LoggedInAction(cache,cc).async{ implicit req =>
     models.getModelVersion(modelId, version).map({
       case None => NotFound("Link no longer active")
       case Some(ver) =>{
         models.deleteVersion(modelId, version)
-        models.removeModelLoaded(KitKey(modelId, version))
+        models.removeLoadedModel(KitKey(modelId, version))
         locs.removeLocalizations(KitKey(modelId, version))
         Ok("Deleted version %d".format(version))}
     })
@@ -299,10 +315,10 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
       } yield {
         processingVersion.foreach(ver => models.loadVersion(ver, modelsPath.resolve(ver.id.modelId).resolve(ver.id.version.toString + "/model")))
       }
-      Future(Ok("Refactor finish"))
+      Future(Ok("Refactor done"))
     }
     else {
-      Future( Unauthorized("This endpoint available from localhost only") )
+      Future( Unauthorized("This endpoint is available from localhost only") )
     }
   }
 
@@ -311,7 +327,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
       models.recreateAllViz
       Future(Ok("Recreating all visualization files"))
     } else {
-      Future( Unauthorized("This endpoint available from localhost only") )
+      Future( Unauthorized("This endpoint is available from localhost only") )
     }
   }
 }

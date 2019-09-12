@@ -61,14 +61,6 @@ class ModelUploadProcessingActor @Inject()(conf:Configuration, @Named("visualize
       Files.delete(path)
       logger.info(ttl + " DONE")
       sender() ! modelPath
-//      // add to kits
-//      logger.info(ttl + "loading...")
-//      logger.info(ttl + "...loading done")
-      
-//      // ping visualizer
-//      if ( newKit.canRun ) {
-//        vizActor ! CreateVisualizationFiles(newKit)
-//      }
     }
     
     case DeleteVersion(kitKey) => {

@@ -80,8 +80,10 @@ POST    /admin/api/comments/             controllers.CommentsCtrl.apiAddComment
 PUT     /admin/api/comments/:id/status   controllers.CommentsCtrl.apiSetCommentStatus(id:Long)
 DELETE  /admin/api/comments/:id/delete   controllers.CommentsCtrl.deleteComment(id:Long)
 
-GET    /admin/localApi/visualizations/recreate   controllers.ModelCtrl.recreateViz
-GET    /admin/localApi/refactor                  controllers.ModelCtrl.refactorApi
+# Local admin API
+POST   /admin/localApi/visualizations/recreate   controllers.ModelCtrl.recreateViz
+POST   /admin/localApi/refactor                  controllers.ModelCtrl.refactorApi
+POST   /admin/localApi/models/:model/:version/unload controllers.ModelCtrl.unloadModelVersion(model, version:Int)
 
 
 # Map static resources from the /public folder to the /assets URL path

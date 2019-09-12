@@ -91,7 +91,12 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
     }
   }
 
-  def removeLocalizations(kitKey: KitKey) = allLocalizations.remove(kitKey)
+  def removeLocalizations(kitKey: KitKey) = {
+    if ( allLocalizations.contains(kitKey)) {
+      allLocalizations.remove(kitKey)
+      true
+    } else false
+  }
   
   /**
     * Loads the TrivialLocalization of a model to its localization map.

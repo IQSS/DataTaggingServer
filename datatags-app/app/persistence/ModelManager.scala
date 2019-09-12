@@ -104,7 +104,6 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
   }
 
   def latestPublicVersion( modelId:String ):Future[Option[VersionMD]] = {
-
     db.run {
       Versions.filter(version => version.modelId===modelId &&  version.publicationStatus === PublicationStatus.Published.toString )
         .sortBy( _.version.desc ).take(1).result
@@ -193,14 +192,14 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
     * @return the kit loading result.
     */
   def ingestSingleVersion(md:VersionMD, path: Path): Future[Unit] = {
-    logger.info( "[PMKs] Reading model %s".format(path.toString))
+    logger.info("Reading model %s".format(path.toString))
     //Actor unzip
     implicit val timeout: Timeout = Timeout(60 seconds)
     (uploadActor ? PrepareModel(path, md)).map(modelPath => {
       //load model, update status
       val loadedVer = loadVersion(md, modelPath.asInstanceOf[Path])
       //Actor viz
-      if(loadedVer.runningStatus == RunningStatus.Runnable) {
+      if ( loadedVer.runningStatus == RunningStatus.Runnable ) {
         vizActor ! VisualizationActor.CreateVisualizationFiles(md.id, loadedPM.get(loadedVer.id).orNull)
       }
     })
@@ -230,7 +229,7 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
         loadRes.getMessages.asScala.foreach( msgs.+= )
       } catch {
         case pmle:PolicyModelLoadingException => {
-          logger.warn("[PMKs] Error loading policy model %s: %s".format(modelPath.asInstanceOf[Path].getFileName.toString, pmle.getMessage) )
+          logger.warn("Error loading policy model %s: %s".format(modelPath.asInstanceOf[Path].getFileName.toString, pmle.getMessage) )
           msgs += new ValidationMessage(Level.ERROR, "Error parsing model metadata: " + pmle.getMessage )
         }
       }
@@ -245,10 +244,10 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
   }
 
   def isModelLoaded(kitKey: KitKey):Boolean = {
-    loadedPM.get(kitKey).orNull != null
+    loadedPM.contains(kitKey)
   }
 
-  def removeModelLoaded(kitKey: KitKey) = loadedPM.remove(kitKey)
+  def removeLoadedModel(kitKey: KitKey) = loadedPM.remove(kitKey)
 
   def recreateAllViz = loadedPM.foreach(tup => {
     logger.info("tup " + tup._1)
