@@ -26,7 +26,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "bootstrap" % "4.2.1",
   "org.webjars" % "sweetalert" % "2.1.0" ,
   "com.typesafe.play" %% "play-json" % "2.6.10",
-  "com.vladsch.flexmark" % "flexmark-all" % "0.40.0",
+  "com.vladsch.flexmark" % "flexmark-all" % "0.50.40",
   "org.postgresql" % "postgresql" % "42.0.0",
   "org.webjars" % "popper.js" % "1.14.6",
   "com.typesafe.play" %% "play-slick" % "4.0.0",

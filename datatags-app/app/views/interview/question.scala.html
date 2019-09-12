@@ -18,14 +18,6 @@
 @templates.bsNavBar( Messages("interview.question"), 'tag, scripts, extraHead ) {
   <div class="row">
     <div class="col">
-      <a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))">
-        @comps.backArrow(session.localization) @Messages("interview.intro")
-      </a>
-      <br>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col">
      @comps.questionPanel(
        questionNode, session.kit, session.localization, session.answerHistory,
        session.kit.md.commentingStatus != CommentingStatus.Closed, interactive=true, showId = false, session.allowNotes, note

@@ -7,6 +7,8 @@ import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Optional}
 
+import com.vladsch.flexmark.ast.AutoLink
+import com.vladsch.flexmark.ext.autolink.AutolinkExtension
 import play.twirl.api.Html
 import play.api.data.{Field, FormError}
 import play.api.mvc.Request
@@ -28,7 +30,8 @@ object Helpers {
   MARKDOWN_OPTIONS_FULL.set(Parser.EXTENSIONS, util.Arrays.asList(
       TablesExtension.create(),
       StrikethroughExtension.create(),
-      FootnoteExtension.create()
+      FootnoteExtension.create(),
+      AutolinkExtension.create()
   ))
   MARKDOWN_OPTIONS_FULL.set(HtmlRenderer.SOFT_BREAK, "<br />\n")
   
