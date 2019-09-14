@@ -20,97 +20,68 @@
   <div class="row">
     <div class="col-md-12">
       <a href="@routes.ModelCtrl.showModelPage(model.id)">
-        <i class="fa fa-arrow-left"></i> @model.title
+        <i class="fa fa-arrow-left"></i> All versions
       </a>
-      <h3>
-        <div class="float-right">
-          @ver.policyModel match {
-            case None      => {<button type="button" class="btn btn-secondary" disabled>Processing...</button>}
-            case Some(kit) => {@if(ver.md.runningStatus == RunningStatus.Runnable){<a class="btn btn-primary" href="@routes.InterviewCtrl.interviewIntro(ver.md.id.modelId, ver.md.id.version)"><i class="fa fa-play"></i> Run</a>}}
-          }
-          <a class="btn btn-secondary" href="@routes.ModelCtrl.showEditVersionPage(ver.md.id.modelId, ver.md.id.version)">
-            <i class="fa fa-edit"></i> Edit
-          </a>
-          <button type="button" class="btn btn-danger" onclick="DeleteVersion.deleteVersion('@ver.md.id.modelId', '@ver.md.id.version')">
-            <i class="fa fa-trash-o"></i> Delete
-          </button>
-        </div>
-        @ver.policyModel.flatMap( k => Option(k)).map(_.getMetadata.getTitle ).getOrElse(model.id + "/" + ver.md.id.version)
-      </h3>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12">
-      <h4>Server Data</h4>
-      <div class="help">
-        This part shows the status of the version in the server. It is editable by clicking the <a href="@routes.ModelCtrl.showEditVersionPage(ver.md.id.modelId, ver.md.id.version)">
-          <i class="fa fa-edit"></i> Edit
-        </a> button.
+  @comps.pageTitleRow(model.title + " (v" + ver.md.id.version + ")"){
+      @ver.policyModel match {
+        case None      => {<button type="button" class="btn btn-secondary" disabled>Processing...</button>}
+        case Some(kit) => {@if(ver.md.runningStatus == RunningStatus.Runnable){<a class="btn btn-primary" href="@routes.InterviewCtrl.interviewIntro(ver.md.id.modelId, ver.md.id.version)"><i class="fa fa-play"></i> Run</a>}}
+      }
+      <a class="btn btn-secondary" href="@routes.ModelCtrl.showEditVersionPage(ver.md.id.modelId, ver.md.id.version)">
+        <i class="fa fa-edit"></i> Edit
+      </a>
+      <button type="button" class="btn btn-danger" onclick="DeleteVersion.deleteVersion('@ver.md.id.modelId', '@ver.md.id.version')">
+        <i class="fa fa-trash-o"></i> Delete
+      </button>
+    }
+  <div class="row my-2">
+    <div class="col">
+      Updated @Helpers.dateTimeFormat(ver.md.lastUpdate)
+        @comps.publicationStatus(ver.md.publicationStatus)
+        @comps.commentingStatus(ver.md.commentingStatus)
+    </div>
+  </div>
+  @if( ver.md.publicationStatus == PublicationStatus.LinkOnly ) {
+    <div class="row">
+      <div class="col">
+        Public link:
+        <a class="publicLink" href="" data-role="accessLink" data-link="@ver.md.accessLink"></a>
       </div>
     </div>
-  </div>
-  <div class="row">
-    <div class="col-md-6">
-      <table class="table">
-        <tbody>
-          <tr>
-            <th>Last Update</th>
-            <td>@Helpers.dateTimeFormat(ver.md.lastUpdate)</td>
-          </tr>
-          <tr>
-            <th>Viewable By</th>
-            <td>
-              @comps.publicationStatus(ver.md.publicationStatus)
-              @if( ver.md.publicationStatus == PublicationStatus.LinkOnly ) {
-                <br>
-                <a class="publicLink" href="" data-role="accessLink" data-link="@ver.md.accessLink"></a>
-              }
-            </td>
-          </tr>
-          <tr>
-            <th>Commenting Status</th>
-            <td>
-              @comps.commentingStatus(ver.md.commentingStatus)
-            </td>
-          </tr>
-        </tbody>
-      </table>
+  }
+  @Helpers.nonEmpty(ver.md.note){ note=>
+    <div class="row my-2">
+      <div class="col">
+        <div class="card border-info">
+          <div class="card-header text-white bg-info">Note</div>
+          <div class="card-body">@note</div>
+        </div>
+      </div>
     </div>
-    <div class="col-md-6">
-      <strong>Note</strong>
-      @if( Helpers.hasContent(ver.md.note) ) {
-        <div class="card bg-info border-info"><div class="card-body">@ver.md.note</div></div>
-      } else {
-        <div class="noData">This version has no note.</div>
-      }
-    </div>
-  </div>
+  }
 
   @for( model <- ver.policyModel ) {
     <div class="row my-2">
       <div class="col">
-        <h4>Model Data</h4>
-        <div class="help">
-        This part shows data about the policy model itself. It cannot be edited in this site; a new model .zip file has to be uploaded
-          in order to change the data here.
-        </div>
-      </div>
-    </div>
-
-    <div class="row my-2">
-      <div class="col-md-6">
-        <h5>Metadata</h5>
+        <h4>PolicyModel Metadata</h4>
         @if( model!=null ) {
-          @comps.versionMetadataTable(model.getMetadata)
+            @comps.versionMetadataTable(model.getMetadata)
         } else {
           <div class="alert alert-danger">Model failed to load. See messages section.</div>
         }
       </div>
-      <div class="col-md-6">
-        <h5>Messages</h5>
-        @comps.kitMessageList(if(ver.md.messages.trim != "") {ver.md.messages.split("\n%%%\n").grouped(2).map(arr => (arr(0), arr(1))).toSeq} else {Seq[(String, String)]()})
-      </div>
     </div>
+
+    @if( ver.md.messages.nonEmpty ) {
+      <div class="row">
+        <div class="col">
+          <h5>Messages</h5>
+          @comps.kitMessageList(if(ver.md.messages.trim != "") {ver.md.messages.split("\n%%%\n").grouped(2).map(arr => (arr(0), arr(1))).toSeq} else {Seq[(String, String)]()})
+        </div>
+      </div>
+    }
   }
 
   <div class="row my-2">

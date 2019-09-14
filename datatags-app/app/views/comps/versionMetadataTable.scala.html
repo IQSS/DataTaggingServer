@@ -2,6 +2,16 @@
 @(md:PolicyModelData)
 <table class="table">
   <tbody>
+    <tr>
+      <th>Title</th>
+      <td>@md.getTitle</td>
+    </tr>
+    @for( version <- Option(md.getVersion) ) {
+      <tr>
+        <th>Version</th>
+        <td>@version</td>
+      </tr>
+    }
     @if( md.getAuthors.size > 0 ) {
       <tr>
         <th>Authors</th>
@@ -10,12 +20,6 @@
           @for( a<-md.getAuthors ){<li> @comps.author(a)</li>}
           </ul>
         </td>
-      </tr>
-    }
-    @for( version <- Option(md.getVersion) ) {
-      <tr>
-        <th>Model Version</th>
-        <td>@version</td>
       </tr>
     }
     @for( rd <- Option(md.getReleaseDate) ) {

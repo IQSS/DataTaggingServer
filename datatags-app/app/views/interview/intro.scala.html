@@ -90,6 +90,16 @@
           </div>
         }
       </div>
+      @Helpers.nonEmpty( qKit.md.note ) { note =>
+        <div class="row my-2">
+          <div class="col">
+            <div class="card border-info">
+              <div class="card-header text-white bg-info">Note</div>
+              <div class="card-body">@note</div>
+            </div>
+          </div>
+        </div>
+      }
       <h3 class="my-2">Metadata</h3>
       @comps.versionMetadataTable(qKit.policyModel.get.getMetadata)
 
