@@ -7,17 +7,16 @@ import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Optional}
 
-import com.vladsch.flexmark.ast.AutoLink
-import com.vladsch.flexmark.ext.autolink.AutolinkExtension
 import play.twirl.api.Html
 import play.api.data.{Field, FormError}
 import play.api.mvc.Request
+import com.vladsch.flexmark.ext.autolink.AutolinkExtension
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
 import com.vladsch.flexmark.ext.tables.TablesExtension
-import com.vladsch.flexmark.util.options.{DataKey, MutableDataSet}
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
+import com.vladsch.flexmark.util.data.{DataKey, MutableDataSet}
 import edu.harvard.iq.datatags.externaltexts.{Localization, MarkupFormat, MarkupString}
 import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
 import edu.harvard.iq.datatags.model.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
@@ -207,6 +206,13 @@ object Helpers {
       Html("")
     }
   }
+  
+  def ifNotEmpty(s:String)(block:String=>Html):Html = {
+    if ( s!=null && s.trim.nonEmpty ) block(s) else Html("")
+  }
+  def ifNotEmpty(so:Option[String])(block:String=>Html):Html = so.map(s=>ifNotEmpty(s)(block)).getOrElse(Html(""))
+  def ifNotEmpty[T]( col:TraversableOnce[T])(block:TraversableOnce[T]=>Html):Html = if(col!=null && col.nonEmpty) block(col) else Html("")
+  
   
   def transcriptAsXml(session:InterviewSession, noteMap:Map[String,Note]):scala.xml.Node = {
     val head = <metadata>

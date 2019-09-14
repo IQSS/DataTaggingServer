@@ -201,7 +201,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         val kitKey = KitKey(modelId, versionNum)
         // See if we can re-use the session data we have.
         // TODO - test index rather than node id, to allow loops.
-        var session = if ( request.userSession.engineState.getCurrentNodeId == reqNodeId ) {
+        var session = if ( request.userSession != null &&
+                           request.userSession.engineState != null &&
+                           request.userSession.engineState.getCurrentNodeId == reqNodeId ) {
           // yes
           request.userSession
         } else {
@@ -211,10 +213,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
         //add note
         answerReq.note.map(_.trim).filter(_.nonEmpty) match {
-          case None => session = session.removeNote(request.userSession.engineState.getCurrentNodeId)
+          case None => session = session.removeNote(session.engineState.getCurrentNodeId)
           case Some(note) => {
             session = session.updateNote(session.engineState.getCurrentNodeId)
-            notes.updateNote( new Note(session.key, note, request.userSession.engineState.getCurrentNodeId) )
+            notes.updateNote( new Note(session.key, note, session.engineState.getCurrentNodeId) )
           }
         }
 

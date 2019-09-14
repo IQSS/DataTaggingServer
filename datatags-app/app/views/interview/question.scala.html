@@ -27,8 +27,9 @@
 <div class="row">
   <div class="col-md">
       <div class="card m-2">
-          <div class="card-header bg-secondary text-white">
-              @Messages("interview.answerFeed")
+          <div class="card-header bg-secondary text-white d-flex">
+            <div class="flex-grow-1">@Messages("interview.answerFeed")</div>
+            <div class="flex-grow-0"><a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))" class="btn btn-sm btn-outline-light">@Messages("interview.restart")</a></div>
           </div>
           <div class="card-body">
               @if( session.answerHistory.nonEmpty ) {

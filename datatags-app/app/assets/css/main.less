@@ -772,3 +772,36 @@ details > summary:focus {
 details:open {
   background-color: #2aabd2;
 }
+
+.pageTitleRow-ctnr {
+  display: flex;
+  flex-direction: row;
+  flex-flow: wrap;
+  background-color: rgba(0,180,180,.05);
+  border-bottom: 3px solid rgba(0,0,0,.4);
+  padding: .5em;
+  margin-bottom: 2em;
+
+  h1 {
+    flex-grow: 1;
+    flex-shrink: 0.5;
+  }
+  .pageTitleRow-component{
+    flex-grow: 1;
+    flex-shrink: 1;
+    text-align: end;
+    .btn {
+      vertical-align: text-top;
+      i {
+        vertical-align: middle;
+      }
+    }
+  }
+  .pageTitleRow-subtitle {
+    width: 100%;
+    flex-grow: 0;
+    flex-shrink: 0;
+    font-size: 0.9em;
+    color: #446;
+  }
+}
