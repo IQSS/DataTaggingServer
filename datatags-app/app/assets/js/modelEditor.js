@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 var ModelEditor = (function(){
     function deleteFile(id) {
         $.ajax( jsRoutes.controllers.ModelCtrl.apiDoDeleteModel(id) )
@@ -33,3 +34,10 @@ var ModelEditor = (function(){
         }
     };
 })();
+
+function changeInput(name, position) {
+    console.log("name", name);
+    console.log("pos", position);
+    // $("[name=slt-" + name + "]")[0].value = position;
+    $("#slt-"+name).val(position);
+}

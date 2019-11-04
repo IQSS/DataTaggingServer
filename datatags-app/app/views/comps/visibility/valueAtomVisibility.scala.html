@@ -1,0 +1,25 @@
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@import edu.harvard.iq.datatags.externaltexts.LocalizationTexts
+@import edu.harvard.iq.datatags.util.PolicySpaceHelper
+@import views.Helpers
+@( value : edu.harvard.iq.datatags.model.values.AtomicValue, loc:Localization, path:String, versionMD:VersionMD )
+@defining(
+  Helpers.o2o(loc.getSlotValueText(value))
+          .getOrElse( new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null))
+){ texts =>
+
+  <input class="hidden" type="checkbox" name="topValues[]" value="@path.@value.getName" id="@path.@value.getName" @if(versionMD.topValues.contains(path + "." + value.getName())) {checked}>
+  <label class="buttonLikeGrayBackground buttonLike" for="@path.@value.getName">
+  @if( texts.smallNote==null || texts.smallNote.isEmpty ) {
+    <span class="valueAtom">@texts.name</span>
+  } else {
+    <span class="valueAtom valueAtom-interactive" data-toggle="popover" data-trigger="hover"
+    title="@texts.name.replaceAll("\"","\\\"")" data-html="true"
+    data-content="@Helpers.renderMinimalMarkdown(texts.smallNote).body.replaceAll("\"","'")"
+    data-placement="top">
+      @texts.name
+      <i class="fa fa-info-circle"></i>
+    </span>
+  }
+  </label>
+}

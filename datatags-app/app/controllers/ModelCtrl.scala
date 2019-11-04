@@ -4,6 +4,8 @@ import java.sql.Timestamp
 import java.util.UUID
 import java.nio.file.{Files, Paths}
 
+import edu.harvard.iq.datatags.externaltexts.{Localization, TrivialLocalization}
+import edu.harvard.iq.datatags.model.slots.AbstractSlot
 import javax.inject.Inject
 import models._
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
@@ -30,11 +32,15 @@ case class ModelFormData( id:String, title:String, note:String, saveStat:Boolean
 
 case class VersionFormData( publicationStatus:String,
                         commentingStatus:String,
-                        note:String
+                        note:String,
+                        topValues:Seq[String]
                       )
 
 object VersionFormData {
-  def from(verKit:VersionKit) = VersionFormData( verKit.md.publicationStatus.toString, verKit.md.commentingStatus.toString, verKit.md.note)
+  def from(verKit:VersionKit) = {
+    VersionFormData( verKit.md.publicationStatus.toString, verKit.md.commentingStatus.toString,
+      verKit.md.note, verKit.md.topValues)
+  }
 }
 
 class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager,
@@ -64,7 +70,8 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     mapping(
       "publicationStatus" -> text,
       "commentingStatus"  -> text,
-      "note" -> text
+      "note" -> text,
+      "topValues" -> seq(text)
     )(VersionFormData.apply)(VersionFormData.unapply)
   )
 
@@ -150,11 +157,32 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
   def showNewVersionPage(modelId:String) = LoggedInAction(cache,cc).async{ implicit req =>
     models.getModel(modelId).map({
       case None => NotFound("Can't find model")
-      case Some(_) => Ok( views.html.backoffice.versionEditor(
-        versionForm.fill(VersionFormData(PublicationStatus.Private.toString, CommentingStatus.Everyone.toString, "")),
+      case Some(model) => Ok( views.html.backoffice.versionEditor(
+        versionForm.fill(VersionFormData(PublicationStatus.Private.toString, CommentingStatus.Everyone.toString, "", Seq())),
         modelId,
-        None))
+        None, None, None, None))
     })
+//    models.getModel(modelId).map({
+//      case None => NotFound("Can't find model")
+//      case Some(model) => {
+//        for {
+//          latestVersion <- models.getLatestVersion(model.id)
+//          latestKit     <- latestVersion.map(ver => models.getVersionKit(ver.id)).getOrElse(Future(None))
+//        } yield {
+//          val (topSlots, collapseSlots, hiddenSlots, topValues) = latestVersion.map(ver =>
+//                  (ver.topSlots, ver.collapseSlots, ver.hiddenSlots, ver.topValues)).getOrElse(Seq(), Seq(), Seq(), Seq())
+//          val (sr, loc):(Option[AbstractSlot], Option[Localization]) = latestKit.map(kit => (kit.policyModel.get.getSpaceRoot, new TrivialLocalization(kit.policyModel.get)))
+//          Ok( views.html.backoffice.versionEditor(
+//            versionForm.fill(VersionFormData(PublicationStatus.Private.toString, CommentingStatus.Everyone.toString, "", topSlots, collapseSlots, hiddenSlots, topValues)),
+//            modelId,
+//            None, sr, loc))
+//        }
+//        Ok( views.html.backoffice.versionEditor(
+//          versionForm.fill(VersionFormData(PublicationStatus.Private.toString, CommentingStatus.Everyone.toString, "", Seq(), Seq(), Seq(), Seq())),
+//          modelId,
+//          None, None, None))
+//      }
+//    })
   }
 
   def showVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>
@@ -172,44 +200,62 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
   def showEditVersionPage(modelId:String, vNum:Int) = LoggedInAction(cache,cc).async{ implicit req =>
     models.getVersionKit(KitKey(modelId, vNum)).map({
       case None => NotFound("Cannot find model version")
-      case Some(v) => Ok(views.html.backoffice.versionEditor(
-        versionForm.fill( VersionFormData.from(v) ),
-        modelId,
-        Some(vNum)
-      ))
+      case Some(v) => {
+        val (sr, loc):(Option[AbstractSlot], Option[Localization]) = v.policyModel.map(pm => (Some(pm.getSpaceRoot), Some(new TrivialLocalization(pm)))).getOrElse((None, None))
+        Ok(views.html.backoffice.versionEditor(
+          versionForm.fill( VersionFormData.from(v) ),
+          modelId,
+          Some(vNum),
+          sr, loc, Some(v.md)
+        ))
+      }
     })
   }
 
   def uploadNewVersion(modelId:String) = LoggedInAction(cache, cc)(parse.multipartFormData).async{ implicit req =>
     versionForm.bindFromRequest.fold(
-      formWithErrors => Future(BadRequest(views.html.backoffice.versionEditor(formWithErrors, modelId, None))),
-      mfd => req.body.file("zippedModel").map(file => {
-        val md = VersionMD(KitKey(modelId, -1), new Timestamp(System.currentTimeMillis()), PublicationStatus.withName(mfd.publicationStatus), CommentingStatus.withName(mfd.commentingStatus),
-          mfd.note, UUID.randomUUID().toString, RunningStatus.Processing, "", Map[String, Set[String]](), "", "")
-        models.addNewVersion(md).map(nv => {
-          val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
-          file.ref.moveFileTo( destFile, replace=false )
-          models.ingestSingleVersion(nv, destFile)
-          Redirect(routes.ModelCtrl.showModelPage(modelId)).flashing( "message"->"Created new version." )
-        })
-      }).getOrElse(
-        Future(Ok( views.html.backoffice.versionEditor(
-          versionForm.fill(mfd),
-          modelId,
-          None)))
-      )
+      formWithErrors => {
+        Future(BadRequest(views.html.backoffice.versionEditor(formWithErrors, modelId, None, None, None, None)))
+      },
+      mfd => {
+        req.body.file("zippedModel").map(file => {
+          val res = for {
+            latestVersion <- models.getLatestVersion(modelId)
+          } yield {
+            val (slotVisibility, topValues) = latestVersion.map(ver =>
+                              (ver.slotsVisibility, ver.topValues)).getOrElse(Map[String, String](), Seq())
+            val md = VersionMD(KitKey(modelId, -1), new Timestamp(System.currentTimeMillis()), PublicationStatus.withName(mfd.publicationStatus), CommentingStatus.withName(mfd.commentingStatus),
+              mfd.note, UUID.randomUUID().toString, RunningStatus.Processing, "", Map[String, Set[String]](), "", "", slotVisibility, topValues)
+            models.addNewVersion(md).map(nv => {
+              val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
+              file.ref.moveFileTo( destFile, replace=false )
+              models.ingestSingleVersion(nv, destFile)
+              Redirect(routes.ModelCtrl.showModelPage(modelId)).flashing( "message"->"Created new version." )
+            })
+          }
+          res.flatten
+        }).getOrElse(
+          Future(Ok( views.html.backoffice.versionEditor(
+            versionForm.fill(mfd),
+            modelId,
+            None, None, None, None)))
+        )
+      }
     )
   }
 
   def saveVersion(modelId:String, vNum:Int) = LoggedInAction(cache, cc)(parse.multipartFormData).async{ implicit req =>
     versionForm.bindFromRequest.fold(
-      formWithErrors => Future(BadRequest(views.html.backoffice.versionEditor(formWithErrors, modelId, None))),
+      formWithErrors => Future(BadRequest(views.html.backoffice.versionEditor(formWithErrors, modelId, None, None, None, None))),
       mfd => {
         models.getModelVersion(modelId, vNum).flatMap({
           case None => Future(NotFound("Model version does not exist"))
           case Some(ver) => {
+//            logger.info(req.body.dataParts.mkString(", "))
+            val slotVisibility = req.body.dataParts.filter( p => (p._1.startsWith("slt-") && p._2.head != "default" )).map(p => (p._1.substring(4), p._2.head))
+            logger.info(slotVisibility.mkString("\n"))
             val md = new VersionMD(KitKey(modelId, vNum), new Timestamp(System.currentTimeMillis()), PublicationStatus.withName(mfd.publicationStatus),
-              CommentingStatus.withName(mfd.commentingStatus), mfd.note, ver.accessLink, ver.runningStatus, ver.messages, ver.visualizations, ver.pmTitle, ver.pmSubTitle)
+              CommentingStatus.withName(mfd.commentingStatus), mfd.note, ver.accessLink, ver.runningStatus, ver.messages, ver.visualizations, ver.pmTitle, ver.pmSubTitle, slotVisibility, mfd.topValues)
             models.updateVersion(md)
             req.body.file("zippedModel").foreach( file => {
              //validate the file is non-empty

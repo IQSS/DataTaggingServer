@@ -35,7 +35,7 @@
           </ul>
           <div class="tab-content" id="resultTabsContent">
             <div class="tab-pane show active" id="detailedTab" role="tabpanel" aria-labelledby="detailedTabTitle">
-              @comps.tagValueDetailed(session.tags, session.localization)
+              @comps.tagValueDetailed(session.tags, session.localization, session.kit.md.slotsVisibility)
             </div>
             <div class="tab-pane fade" id="summaryTab" role="tabpanel" aria-labelledby="summaryTabTitle">
               @comps.tagValue(session.tags, session.localization)

@@ -29,6 +29,7 @@
     <logger name="models" level="INFO"/>
     <logger name="actors" level="INFO"/>
     <logger name="persistence" level="INFO"/>
+    <logger name="util" level="INFO"/>
 
     <!-- Log slick SQL statements
     <logger name="slick.jdbc.JdbcBackend.statement" level="DEBUG"/>

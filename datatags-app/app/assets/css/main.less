@@ -334,6 +334,20 @@ table.engine-trace {
   .typeName {
     color: #000;
     margin: 0.2em 0 0.2em 0.3em;
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
+    small, i {
+      margin: 0 0.5em;
+    }
+    .endOfLine {
+      flex-grow: 1;
+      text-align: right;
+      select {
+        width: 10em;
+        display: inline-block;
+      }
+    }
   }
   .typeValues, .value {
     .popover-content {

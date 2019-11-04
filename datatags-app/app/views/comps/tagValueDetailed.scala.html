@@ -4,8 +4,9 @@
 @import edu.harvard.iq.datatags.util.PolicySpaceHelper
 
 @( aValue: AbstractValue,
-        loc:Localization  )
-@slotTypeTitle(slot:AbstractSlot) = {
+        loc:Localization,
+        slotsVisibility:Map[String,String])
+@slotTypeTitle(slot:AbstractSlot ) = {
 @defining(
   Helpers.o2o(loc.getSlotText(slot))
           .getOrElse( new LocalizationTexts(slot.getName, slot.getNote, null))
@@ -25,7 +26,7 @@
   </div>
 }}
 
-@valueAtom(value:AtomicValue) = {@defining(
+@valueAtom(value:AtomicValue, path:String ) = {@defining(
   Helpers.o2o(loc.getSlotValueText(value))
           .getOrElse( new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null))
 ){ texts =>
@@ -45,7 +46,7 @@
 }}
 
 
-@atomicValue( value:AtomicValue ) = {
+@atomicValue( value:AtomicValue, path:String ) = {
   <div class="detailedValue detailedValue-simple">
   @defining(
     Helpers.o2o(loc.getSlotText(value.getSlot))
@@ -76,14 +77,14 @@
   </div>
 }
 
-@todoValue( value:ToDoValue ) = {
+@todoValue( value:ToDoValue, path:String ) = {
   <div class="detailedValue detailedValue-todo">
     @slotTypeTitle(value.getSlot)
     <span class="valueAtom">TODO</span>
   </div>
 }
 
-@aggregateValue( value:AggregateValue ) = {
+@aggregateValue( value:AggregateValue, path:String ) = {
   <div class="detailedValue detailedValue-aggregate">
     @slotTypeTitle(value.getSlot)
     @if( value.getValues.isEmpty ) {
@@ -91,34 +92,34 @@
     } else {
       <ul>
         @for(  sv <- value.getValues ){
-          <li>@valueAtom(sv)</li>
+          <li>@valueAtom(sv, if(path != "") {path + "-" + sv.getName} else {sv.getName})</li>
         }
       </ul>
     }
   </div>
 }
 
-@compoundValue( value:CompoundValue ) = {
+@compoundValue( value:CompoundValue, path:String ) = {
   <div class="detailedValue detailedValue-compound">
     @slotTypeTitle(value.getSlot)
     <ul>
     @for( tp <- value.getNonEmptySubSlots ){
-      <li>@renderValue( value.get(tp) )</li>
+      <li>@renderValue( value.get(tp), if(path != "") {path + "-" + tp.getName} else {tp.getName} )</li>
     }
     </ul>
   </div>
 }
 
 
-@renderValue( value:AbstractValue ) = {
-@value match {
-  case v:AtomicValue => {@atomicValue(v)}
-  case v:AggregateValue => {@aggregateValue(v)}
-  case v:ToDoValue => {@todoValue(v)}
-  case c:CompoundValue => {@compoundValue(c)}
-}
+@renderValue( value:AbstractValue, path:String ) = {
+  @value match {
+    case v:AtomicValue => {@atomicValue(v, path)}
+    case v:AggregateValue => {@aggregateValue(v, path)}
+    case v:ToDoValue => {@todoValue(v, path)}
+    case c:CompoundValue => {@compoundValue(c, path)}
+  }
 }
 
 <div class="detailedValue-container">
-@renderValue( aValue )
+@renderValue( aValue, "" )
 </div>

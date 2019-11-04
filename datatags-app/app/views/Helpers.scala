@@ -264,5 +264,12 @@ object Helpers {
       case td:ToDoValue      => <todo slot={td.getSlot.getName} />
     }
   }
-  
+
+//  object tagsVisibility {
+    def changeSet(id:String, set:Set[String]):Option[String] = {
+      val ans = if (set.contains(id)) set - id else set + id
+      if(ans.isEmpty) None else Some(ans.mkString(","))
+    }
+//  }
+
 }

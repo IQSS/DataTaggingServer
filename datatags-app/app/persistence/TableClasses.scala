@@ -5,6 +5,8 @@ import slick.lifted.Tag
 import slick.jdbc.PostgresProfile.api._
 import java.sql.Timestamp
 import java.util.UUID
+
+import play.api.Logger
 /*
  * Table classes for Slick live in this file.
  */
@@ -30,6 +32,19 @@ object Mappers {
     (r:Map[String,Set[String]]) => r.map(e => e._2.mkString("/")).mkString("\n"),
     (s:String) => s.split("\n").map(l => (l.split("-")(0), l.split("-")(1).split("/").toSet)).toMap
   )
+
+  implicit val specialSlots = MappedColumnType.base[Seq[String], String](
+    (ss:Seq[String]) => ss.mkString(","),
+    (s:String) => if(s == "") Seq() else s.split(",")
+  )
+
+  def setsToMap(top:Seq[String], collapse:Seq[String], hidden:Seq[String]):Map[String, String] = {
+    top.map( s => s->"topSlots" ).toMap ++ hidden.map( s => s->"hiddenSlots").toMap ++ collapse.map(s => s->"collapseSlots" ).toMap
+  }
+
+  def mapToSets(m:Map[String, String]):Map[String,Seq[String]] = {
+    m.groupBy(_._2).map( t => (t._1, t._2.keys.toSeq))
+  }
 }
 
 
@@ -48,6 +63,7 @@ class ModelTable(tag:Tag) extends Table[Model](tag, "models") {
 }
 
 class VersionsTable(tag:Tag) extends Table[VersionMD](tag, "versions_md") {
+  import Mappers.specialSlots
   def modelId           = column[String]("model_id")
   def version           = column[Int]("version_num")
   def publicationStatus = column[String]("publication_status")
@@ -60,18 +76,26 @@ class VersionsTable(tag:Tag) extends Table[VersionMD](tag, "versions_md") {
   def visualizations    = column[String]("visualizations")
   def pmTitle           = column[String]("pm_title")
   def pmSubTitle        = column[String]("pm_subtitle")
+  def topSlots          = column[Seq[String]]("top_slots")
+  def collapseSlots     = column[Seq[String]]("collapse_slots")
+  def hiddenSlots       = column[Seq[String]]("hidden_slots")
+  def topValues         = column[Seq[String]]("top_values")
 
   def pk = primaryKey("policy_model_versions_pkey", (version, modelId))
 
-  def * = (modelId, version, lastUpdate, publicationStatus, commentingStatus, note, accessLink, runningStatus, messages, visualizations, pmTitle, pmSubTitle
+  def * = (modelId, version, lastUpdate, publicationStatus, commentingStatus, note, accessLink, runningStatus, messages, visualizations, pmTitle, pmSubTitle, topSlots, collapseSlots, hiddenSlots, topValues
   ) <> (
-    (t:(String, Int, Timestamp, String, String, String, String, String, String, String, String, String)) =>
+    (t:(String, Int, Timestamp, String, String, String, String, String, String, String, String, String, Seq[String], Seq[String], Seq[String], Seq[String])) =>
       VersionMD(KitKey(t._1, t._2), t._3, PublicationStatus.withName(t._4), CommentingStatus.withName(t._5), t._6, t._7, RunningStatus.withName(t._8), t. _9,
         if (t._10.trim.isEmpty) Map[String,Set[String]]() else t._10.split("\n").map(l => (l.split("~")(0), l.split("~")(1).split("/").toSet)).toMap,
-        t._11, t._12),
-    (versionMD:VersionMD) => Some((versionMD.id.modelId, versionMD.id.version, versionMD.lastUpdate, versionMD.publicationStatus.toString, versionMD.commentingStatus.toString,
-      versionMD.note, versionMD.accessLink, versionMD.runningStatus.toString, versionMD.messages, versionMD.visualizations.map(e => e._1 + "~" + e._2.mkString("/")).mkString("\n"),
-      versionMD.pmTitle, versionMD.pmSubTitle))
+        t._11, t._12, Mappers.setsToMap(t._13, t._14, t._15), t._16),
+    (versionMD:VersionMD) => {
+      val setsOfSlotVisibility = Mappers.mapToSets(versionMD.slotsVisibility)
+      Some((versionMD.id.modelId, versionMD.id.version, versionMD.lastUpdate, versionMD.publicationStatus.toString, versionMD.commentingStatus.toString,
+        versionMD.note, versionMD.accessLink, versionMD.runningStatus.toString, versionMD.messages, versionMD.visualizations.map(e => e._1 + "~" + e._2.mkString("/")).mkString("\n"),
+        versionMD.pmTitle, versionMD.pmSubTitle, setsOfSlotVisibility.getOrElse("topSlots", Seq()), setsOfSlotVisibility.getOrElse("collapseSlots", Seq()),
+        setsOfSlotVisibility.getOrElse("hiddenSlots", Seq()), versionMD.topValues))
+    }
   )
 
 }

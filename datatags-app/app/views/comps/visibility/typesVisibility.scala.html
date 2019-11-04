@@ -1,0 +1,57 @@
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@import edu.harvard.iq.datatags.model.slots.AbstractSlot
+@import edu.harvard.iq.datatags.model.slots._
+@( tagType:AbstractSlot, loc:Localization, form:Form[VersionFormData], versionMD: VersionMD)(implicit msgs:MessagesProvider)
+
+
+@simpleType( tp: AtomicSlot, path:String ) = {
+  <div class="tagtype tagtype-simple">
+    @slotVisibility(tp, loc, path, Messages("interview.oneOf"))
+    <div class="typeValues">
+    @for( sv <- tp.values ) {
+      @valueAtomVisibility( sv, loc, if(path != "") {path + "-" + tp.getName} else {tp.getName}, versionMD )
+    }
+    </div>
+  </div>
+}
+
+@aggregateType( tp: AggregateSlot, path:String ) = {
+  <div class="tagtype tagtype-aggregate">
+    @slotVisibility(tp, loc, path, Messages("interview.someOf"))
+    <div class="typeValues">
+    @for( sv <- tp.getItemType.values ) {
+      @valueAtomVisibility( sv, loc, if(path != "") {path + "-" + tp.getName} else {tp.getName}, versionMD)
+    }
+    </div>
+  </div>
+}
+
+@compoundType( tp:CompoundSlot, path:String ) = {
+  <div class="tagtype tagtype-compound">
+    @slotVisibility(tp, loc, path)
+    <div class="typeValues">
+    @for( ft <- tp.getSubSlots ) {
+      @renderType( ft, if(path != "") {path + "-" + tp.getName} else {tp.getName} )
+    }
+    </div>
+  </div>
+}
+
+@todoType( tp: ToDoSlot, path:String ) = {
+  <div class="tagtype tagtype-todo">
+    @slotVisibility(tp, loc, if(path != "") {path + "-" + tp.getName} else {tp.getName}, "value placeholder")
+  </div>
+}
+
+@renderType( ft:AbstractSlot, path:String) = {
+  @ft match {
+    case t:AtomicSlot => { @simpleType(t, path) }
+    case t:AggregateSlot => { @aggregateType(t, path) }
+    case t:CompoundSlot => { @compoundType(t, path) }
+    case t:ToDoSlot => { @todoType(t, path) }
+  }
+}
+
+<div class="tagtype-container">
+@renderType( tagType, "" )
+</div>

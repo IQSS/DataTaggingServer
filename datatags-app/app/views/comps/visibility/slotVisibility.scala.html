@@ -1,0 +1,33 @@
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@import edu.harvard.iq.datatags.model.slots.AbstractSlot
+@import edu.harvard.iq.datatags.externaltexts.LocalizationTexts
+@(tp:AbstractSlot, loc:Localization, path:String, explanation:String="")
+@defining(
+  Helpers.o2o(loc.getSlotText(tp))
+          .getOrElse( new LocalizationTexts(tp.getName, tp.getNote, null))
+){ texts =>
+  <div class="typeName">
+    @if( texts.smallNote!=null && texts.smallNote.nonEmpty ) {
+      <span data-toggle="popover" data-trigger="hover" data-html="true"
+      title="@texts.name.replaceAll("\"","\\\"")" data-content="@Helpers.renderMinimalMarkdown(texts.smallNote).body.replaceAll("\"","\\\"")"
+      data-placement="top">
+        <span class="typeName">@texts.name
+          <i class="fa fa-info-circle"></i>
+        </span>
+      </span>
+    } else {
+      <span class="typeName">@texts.name</span>
+    }
+    @if( explanation.nonEmpty ){
+      <small>@explanation</small>
+    }
+    <div class="endOfLine">
+      <select class="custom-select custom-select-sm" name="@if(path != "") {slt-@path-@tp.getName} else {slt-@tp.getName}" id="@if(path != "") {slt-@path-@tp.getName} else {slt-@tp.getName}">
+        <option value="default">Default</option>
+        <option value="topSlots">Top</option>
+        <option value="collapseSlots">Collapse</option>
+        <option value="hiddenSlots">Hidden</option>
+      </select>
+    </div>
+  </div>
+}

@@ -1,8 +1,18 @@
-@(form:Form[VersionFormData], modelId:String, versionNumber:Option[Int])
+@import edu.harvard.iq.datatags.externaltexts.Localization
+@import edu.harvard.iq.datatags.model.slots.AbstractSlot
+@import edu.harvard.iq.datatags.model.slots._
+@(form:Form[VersionFormData], modelId:String, versionNumber:Option[Int], tagType:Option[AbstractSlot], loc:Option[Localization], versionMD:Option[VersionMD])(implicit msgs:MessagesProvider)
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
   <script type="text/javascript" src="@routes.Assets.at("js/modelEditor.js")"></script>
+  <script >
+    $(document).ready(function () {
+      @for((k,v) <- versionMD.map(v=>v.slotsVisibility).getOrElse(Map())) {
+        changeInput('@k','@v');
+      }
+    });
+  </script>
 }
 
 
@@ -63,6 +73,9 @@
             <textarea id="noteInput" name="note" class="form-control" rows="5">@form("note").value.getOrElse("")</textarea>
           </div>
         </div>
+          @if(tagType.isDefined){
+             @comps.visibility.typesVisibility(tagType.get, loc.get, form, versionMD.get)
+          }
 
         <div class="form-group row">
           <div class="col text-right">

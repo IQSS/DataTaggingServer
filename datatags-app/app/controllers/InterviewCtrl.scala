@@ -7,7 +7,7 @@ import play.api.cache.SyncCacheApi
 import edu.harvard.iq.datatags.runtime._
 import edu.harvard.iq.datatags.model.graphs.nodes._
 import models._
-import _root_.util.Jsonizer
+import _root_.util.{Jsonizer, Visibuilder}
 import javax.inject.Inject
 import com.ibm.icu.text.SimpleDateFormat
 import edu.harvard.iq.datatags.externaltexts.MarkupString
@@ -19,7 +19,7 @@ import views.Helpers
 import play.api.data.{Form, _}
 import play.api.data.Forms._
 import play.api.i18n._
-import play.api.i18n.I18nSupport._
+import scala.collection.JavaConverters._
 
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
@@ -326,7 +326,12 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       interviewHistories.addRecord(
         InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "accept"))
     }
-    
+
+    val test = session.tags.accept(new Visibuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
+      session.kit.md.topValues, ""))
+//    logger.info(test._1.mkString(","))
+//    logger.info(test._2.mkString(","))
+
     Ok( views.html.interview.accepted(session, codeOpt) )
   }
 
@@ -461,5 +466,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       false
     }
   }
-  
+
+
+
 }
