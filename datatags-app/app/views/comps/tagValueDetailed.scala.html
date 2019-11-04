@@ -5,7 +5,10 @@
 
 @( aValue: AbstractValue,
         loc:Localization,
-        slotsVisibility:Map[String,String])
+        slotsVisibility:Map[String,String],
+        topValues:Seq[AbstractValue],
+        topSlots:Seq[AbstractSlot]
+)
 @slotTypeTitle(slot:AbstractSlot ) = {
 @defining(
   Helpers.o2o(loc.getSlotText(slot))
@@ -92,7 +95,9 @@
     } else {
       <ul>
         @for(  sv <- value.getValues ){
-          <li>@valueAtom(sv, if(path != "") {path + "-" + sv.getName} else {sv.getName})</li>
+          @if(slotsVisibility.getOrElse(if(path != "") {path + "-" } else {""} + value.getSlot.getName + "-" + sv.getName, "") != "hiddenSlots"){
+            <li>@valueAtom(sv, if(path != "") {path + "-" + value.getSlot.getName} else {value.getSlot.getName})</li>
+          }
         }
       </ul>
     }
@@ -104,7 +109,9 @@
     @slotTypeTitle(value.getSlot)
     <ul>
     @for( tp <- value.getNonEmptySubSlots ){
-      <li>@renderValue( value.get(tp), if(path != "") {path + "-" + tp.getName} else {tp.getName} )</li>
+      @if(slotsVisibility.getOrElse(if(path != "") {path + "-" } else {""} + value.getSlot.getName + "-" + tp.getName, "") != "hiddenSlots"){
+        <li>@renderValue( value.get(tp), if(path != "") {path + "-" + value.getSlot.getName} else {value.getSlot.getName} )</li>
+      }
     }
     </ul>
   </div>
@@ -121,5 +128,8 @@
 }
 
 <div class="detailedValue-container">
+  @for( v <- topValues ) {
+    @renderValue(v, "")
+  }
 @renderValue( aValue, "" )
 </div>

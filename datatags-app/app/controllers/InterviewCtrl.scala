@@ -327,12 +327,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "accept"))
     }
 
-    val test = session.tags.accept(new Visibuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
+    val (topValues, topSlots) = session.tags.accept(new Visibuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
       session.kit.md.topValues, ""))
-//    logger.info(test._1.mkString(","))
-//    logger.info(test._2.mkString(","))
-
-    Ok( views.html.interview.accepted(session, codeOpt) )
+    Ok( views.html.interview.accepted(session, codeOpt, topValues, topSlots) )
   }
 
   def reject( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc) { implicit request =>
