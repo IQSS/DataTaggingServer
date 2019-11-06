@@ -7,7 +7,7 @@
         loc:Localization,
         slotsVisibility:Map[String,String],
         topValues:Seq[AbstractValue],
-        topSlots:Seq[AbstractSlot]
+        topSlotsAsValues:Seq[(String, AbstractValue)]
 )
 @slotTypeTitle(slot:AbstractSlot ) = {
 @defining(
@@ -18,12 +18,12 @@
     <h3>@texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('s@slot.hashCode()')"><i class="fa fa-book"></i></button>}</h3>
     @Helpers.nonEmpty( texts.smallNote ){ note =>
       <div class="smallNote">
-      <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
       </div>
     }
     @Helpers.nonEmpty( texts.bigNote ){ note =>
       <div id="s@slot.hashCode()" class="bigNote" style="display:none">
-        @Helpers.renderMarkdown(note)
+      @Helpers.renderMarkdown(note)
       </div>
     }
   </div>
@@ -42,7 +42,7 @@
     }
     @Helpers.nonEmpty( texts.bigNote ){ note =>
       <div class="bigNote" style="display:none" id="v@value.hashCode()s@value.getSlot.hashCode()">
-        @Helpers.renderMarkdown(note)
+      @Helpers.renderMarkdown(note)
       </div>
     }
   </div>
@@ -60,21 +60,21 @@
               .getOrElse( new LocalizationTexts(value.getName, value.getNote, null))
     ) { valueText =>
       <span class="slotName">@slotText.name</span> <span class="slotValue">@valueText.name</span>
-      @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>
-      }
-      @Helpers.nonEmpty( slotText.smallNote ){ note => <div class="smallNote smallNote-slot">
-        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
-      </div>}
-      @Helpers.nonEmpty( valueText.smallNote ){ note => <div class="smallNote">
-        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
-      </div>}
-      @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-        <div id="v@value.hashCode()s@value.getSlot.hashCode()" class="bigNote" style="display:none">
-          @Helpers.nonEmpty(slotText.bigNote){n=>@Helpers.renderMarkdown(n)}
-          @Helpers.nonEmpty(valueText.bigNote){n=>@Helpers.renderMarkdown(n)}
-        </div>
-      }
+    @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
+      <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>
+    }
+    @Helpers.nonEmpty( slotText.smallNote ){ note => <div class="smallNote smallNote-slot">
+      <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+    </div>}
+    @Helpers.nonEmpty( valueText.smallNote ){ note => <div class="smallNote">
+      <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+    </div>}
+    @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
+      <div id="v@value.hashCode()s@value.getSlot.hashCode()" class="bigNote" style="display:none">
+        @Helpers.nonEmpty(slotText.bigNote){n=>@Helpers.renderMarkdown(n)}
+        @Helpers.nonEmpty(valueText.bigNote){n=>@Helpers.renderMarkdown(n)}
+      </div>
+    }
     }
   }
   </div>
@@ -88,48 +88,73 @@
 }
 
 @aggregateValue( value:AggregateValue, path:String ) = {
-  <div class="detailedValue detailedValue-aggregate">
-    @slotTypeTitle(value.getSlot)
-    @if( value.getValues.isEmpty ) {
-      <div class="noData">empty</div>
-    } else {
-      <ul>
-        @for(  sv <- value.getValues ){
-          @if(slotsVisibility.getOrElse(if(path != "") {path + "-" } else {""} + value.getSlot.getName + "-" + sv.getName, "") != "hiddenSlots"){
-            <li>@valueAtom(sv, if(path != "") {path + "-" + value.getSlot.getName} else {value.getSlot.getName})</li>
-          }
-        }
-      </ul>
+  @defining(if(path != "") {path + "-" } else {""} + value.getSlot.getName) { fullPath =>
+    @defining(slotsVisibility.getOrElse(fullPath + "-" + value.getSlot.getName, "") == "collapseSlots") { collapse =>
+        @if(collapse){<details>}
+            <div class="detailedValue detailedValue-aggregate">
+              @if(collapse){<summary>}
+              @slotTypeTitle(value.getSlot)
+              @if(collapse){</summary>}
+              @if(value.getValues.isEmpty) {
+                <div class="noData">empty</div>
+              } else {
+                <ul>
+                @for(sv <- value.getValues) {
+                  @if(slotsVisibility.getOrElse(fullPath + "-" + sv.getName, "") != "hiddenSlots") {
+                    <li>@valueAtom(sv, fullPath)</li>
+                  }
+                }
+                </ul>
+              }
+            </div>
+      @if(collapse){</details>}
     }
-  </div>
+  }
 }
 
 @compoundValue( value:CompoundValue, path:String ) = {
-  <div class="detailedValue detailedValue-compound">
-    @slotTypeTitle(value.getSlot)
-    <ul>
-    @for( tp <- value.getNonEmptySubSlots ){
-      @if(slotsVisibility.getOrElse(if(path != "") {path + "-" } else {""} + value.getSlot.getName + "-" + tp.getName, "") != "hiddenSlots"){
-        <li>@renderValue( value.get(tp), if(path != "") {path + "-" + value.getSlot.getName} else {value.getSlot.getName} )</li>
-      }
+@defining((if(path != "") {path + "-" } else {""}) + value.getSlot.getName) { fullPath =>
+        @defining(slotsVisibility.getOrElse(fullPath, "") == "collapseSlots") { collapse =>
+          <div class="detailedValue detailedValue-compound">
+            @if(collapse){<details>}
+            @if(collapse){<summary>}
+            @slotTypeTitle(value.getSlot)
+            @if(collapse){</summary>}
+            <ul>
+              @for( tp <- value.getNonEmptySubSlots ){
+                @if(slotsVisibility.getOrElse(fullPath + "-" + tp.getName, "") != "hiddenSlots"){
+                  <li>@renderValue( value.get(tp), fullPath )</li>
+                }
+              }
+            </ul>
+            @if(collapse){</details>}
+          </div>
+        }
     }
-    </ul>
-  </div>
 }
 
 
 @renderValue( value:AbstractValue, path:String ) = {
-  @value match {
-    case v:AtomicValue => {@atomicValue(v, path)}
-    case v:AggregateValue => {@aggregateValue(v, path)}
-    case v:ToDoValue => {@todoValue(v, path)}
-    case c:CompoundValue => {@compoundValue(c, path)}
-  }
+@value match {
+  case v:AtomicValue => {@atomicValue(v, path)}
+  case v:AggregateValue => {@aggregateValue(v, path)}
+  case v:ToDoValue => {@todoValue(v, path)}
+  case c:CompoundValue => {@compoundValue(c, path)}
+}
 }
 
 <div class="detailedValue-container">
   @for( v <- topValues ) {
-    @renderValue(v, "")
+    <div class="alert alert-danger" role="alert">
+      @renderValue(v, "")
+    </div>
   }
-@renderValue( aValue, "" )
+  @if(topSlotsAsValues.nonEmpty){
+    <h2>Important Result</h2>
+  }
+  @for( v <- topSlotsAsValues ) {
+    @renderValue(v._2, v._1)
+  }
+  <h2>All the Result</h2>
+  @renderValue(aValue, "")
 </div>

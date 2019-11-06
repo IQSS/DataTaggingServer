@@ -5,7 +5,7 @@
 @( session :InterviewSession,
    codeTag :Option[edu.harvard.iq.datatags.model.values.AbstractValue],
         topValues:Seq[AbstractValue],
-        topSlots:Seq[AbstractSlot]
+        topSlotsAsValues:Seq[(String, AbstractValue)]
 )(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
@@ -39,7 +39,7 @@
           </ul>
           <div class="tab-content" id="resultTabsContent">
             <div class="tab-pane show active" id="detailedTab" role="tabpanel" aria-labelledby="detailedTabTitle">
-              @comps.tagValueDetailed(session.tags, session.localization, session.kit.md.slotsVisibility, topValues, topSlots)
+              @comps.tagValueDetailed(session.tags, session.localization, session.kit.md.slotsVisibility, topValues, topSlotsAsValues)
             </div>
             <div class="tab-pane fade" id="summaryTab" role="tabpanel" aria-labelledby="summaryTabTitle">
               @comps.tagValue(session.tags, session.localization)
