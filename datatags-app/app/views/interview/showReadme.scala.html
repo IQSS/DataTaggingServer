@@ -1,6 +1,7 @@
 @import edu.harvard.iq.datatags.externaltexts.MarkupString
 @import edu.harvard.iq.datatags.externaltexts.Localization
-@( qKit:VersionKit, readme:MarkupString, title:String, subTitle:String, loc:Localization)(implicit req:Request[_], msgs: MessagesProvider)
+@import sun.util.locale.provider.AvailableLanguageTags
+@( qKit:VersionKit, readme:MarkupString, title:String, subTitle:String, loc:Localization, availableLanguage:Seq[String])(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>

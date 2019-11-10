@@ -49,6 +49,7 @@
     case t:AggregateSlot => { @aggregateType(t, path) }
     case t:CompoundSlot => { @compoundType(t, path) }
     case t:ToDoSlot => { @todoType(t, path) }
+      case _ => {}
   }
 }
 

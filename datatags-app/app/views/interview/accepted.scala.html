@@ -5,7 +5,8 @@
 @( session :InterviewSession,
    codeTag :Option[edu.harvard.iq.datatags.model.values.AbstractValue],
         topValues:Seq[AbstractValue],
-        topSlotsAsValues:Seq[(String, AbstractValue)]
+        topSlotsAsValues:Seq[(String, AbstractValue)],
+        availableLanguage:Seq[String]
 )(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
@@ -29,6 +30,19 @@
           @Messages("interview.completed")
         </div>
         <div class="card-body">
+          @if(availableLanguage.size > 1) {
+            <div class="row">
+              <div class="col">
+                @Messages("interview.changeLang")
+                <select name="locSelect" id="locSelect" onchange="window.location.href = this.value" style="margin-left: 10px">
+                @for(loc <- availableLanguage) {
+                  <option value="@routes.InterviewCtrl.accept(session.kit.md.id.modelId, session.kit.md.id.version, loc)"
+                  @if(session.localization.getLanguage == loc) {selected}>@loc </option>
+                }
+                </select>
+              </div>
+            </div>
+          }
           <ul class="nav nav-tabs" id="resultTabs" role="tablist" style="justify-content: center">
             <li class="nav-item">
               <a class="nav-link active" data-toggle="tab" id="detailedTabTitle" href="#detailedTab">@Messages("interview.report")</a>

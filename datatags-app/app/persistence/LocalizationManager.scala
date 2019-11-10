@@ -97,7 +97,7 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
       true
     } else false
   }
-  
+
   /**
     * Loads the TrivialLocalization of a model to its localization map.
     * @param kk: KitKey for the model and version.

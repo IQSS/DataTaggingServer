@@ -67,7 +67,8 @@ class Application @Inject()(cached: Cached, models:ModelManager,
           routes.javascript.CommentsCtrl.deleteComment,
           routes.javascript.ModelCtrl.deleteVersion,
           routes.javascript.ModelCtrl.showModelPage,
-          routes.javascript.ModelCtrl.showVersionPage
+          routes.javascript.ModelCtrl.showVersionPage,
+          routes.javascript.InterviewCtrl.askNode
         )
       ).as("text/javascript")
     }
