@@ -23,7 +23,7 @@ object KitKey {
 
 case class VersionMD(id: KitKey, lastUpdate:Timestamp, publicationStatus:PublicationStatus.Value, commentingStatus:CommentingStatus.Value,
                      note:String, accessLink:String, runningStatus:RunningStatus.Value, messages:String, visualizations:Map[String, Set[String]],
-                     pmTitle:String, pmSubTitle:String, slotsVisibility:Map[String, String], topValues:Seq[String]) {
+                     pmTitle:String, pmSubTitle:String, slotsVisibility:Map[String, String], topValues:Seq[String], listDisplay:Int) {
   def ofNow = copy(lastUpdate = new Timestamp(System.currentTimeMillis()))
   def withRunningStatus(status:RunningStatus.Value) = copy(runningStatus = status)
   def addMessages(msgs:String) = copy(messages = messages + msgs)

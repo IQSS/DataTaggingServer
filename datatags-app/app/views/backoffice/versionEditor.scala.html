@@ -74,7 +74,16 @@
           </div>
         </div>
           @if(tagType.isDefined){
-             @comps.visibility.typesVisibility(tagType.get, loc.get, form, versionMD.get)
+            <div class="form-group row">
+              <label for="publicationStatusSelect" class="col-sm-2 col-form-label">Move to List Display</label>
+              <div class="col-sm-10">
+                <input type="number" name="listDisplay" value="@form("listDisplay").value.getOrElse('0')">
+                <small class="form-text text-muted">
+                  questions with this selected number of answers or more will display as a list
+                </small>
+            </div>
+          </div>
+            @comps.visibility.typesVisibility(tagType.get, loc.get, form, versionMD.get)
           }
 
         <div class="form-group row">

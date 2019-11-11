@@ -80,21 +80,22 @@ class VersionsTable(tag:Tag) extends Table[VersionMD](tag, "versions_md") {
   def collapseSlots     = column[Seq[String]]("collapse_slots")
   def hiddenSlots       = column[Seq[String]]("hidden_slots")
   def topValues         = column[Seq[String]]("top_values")
+  def listDisplay       = column[Int]("list_display")
 
   def pk = primaryKey("policy_model_versions_pkey", (version, modelId))
 
-  def * = (modelId, version, lastUpdate, publicationStatus, commentingStatus, note, accessLink, runningStatus, messages, visualizations, pmTitle, pmSubTitle, topSlots, collapseSlots, hiddenSlots, topValues
+  def * = (modelId, version, lastUpdate, publicationStatus, commentingStatus, note, accessLink, runningStatus, messages, visualizations, pmTitle, pmSubTitle, topSlots, collapseSlots, hiddenSlots, topValues, listDisplay
   ) <> (
-    (t:(String, Int, Timestamp, String, String, String, String, String, String, String, String, String, Seq[String], Seq[String], Seq[String], Seq[String])) =>
+    (t:(String, Int, Timestamp, String, String, String, String, String, String, String, String, String, Seq[String], Seq[String], Seq[String], Seq[String], Int)) =>
       VersionMD(KitKey(t._1, t._2), t._3, PublicationStatus.withName(t._4), CommentingStatus.withName(t._5), t._6, t._7, RunningStatus.withName(t._8), t. _9,
         if (t._10.trim.isEmpty) Map[String,Set[String]]() else t._10.split("\n").map(l => (l.split("~")(0), l.split("~")(1).split("/").toSet)).toMap,
-        t._11, t._12, Mappers.setsToMap(t._13, t._14, t._15), t._16),
+        t._11, t._12, Mappers.setsToMap(t._13, t._14, t._15), t._16, t._17),
     (versionMD:VersionMD) => {
       val setsOfSlotVisibility = Mappers.mapToSets(versionMD.slotsVisibility)
       Some((versionMD.id.modelId, versionMD.id.version, versionMD.lastUpdate, versionMD.publicationStatus.toString, versionMD.commentingStatus.toString,
         versionMD.note, versionMD.accessLink, versionMD.runningStatus.toString, versionMD.messages, versionMD.visualizations.map(e => e._1 + "~" + e._2.mkString("/")).mkString("\n"),
         versionMD.pmTitle, versionMD.pmSubTitle, setsOfSlotVisibility.getOrElse("topSlots", Seq()), setsOfSlotVisibility.getOrElse("collapseSlots", Seq()),
-        setsOfSlotVisibility.getOrElse("hiddenSlots", Seq()), versionMD.topValues))
+        setsOfSlotVisibility.getOrElse("hiddenSlots", Seq()), versionMD.topValues, versionMD.listDisplay))
     }
   )
 
