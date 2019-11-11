@@ -29,7 +29,7 @@ var Comments = (function(){
         }).done(function (data, status, jqXhr) {
             $("#"+formID + " [data-role='comment']").val("");
             swal({
-                title:"Comment added.",
+                title:"Feedback added.",
                 text:"Thank you!",
                 icon:"success",
                 timer: 2500

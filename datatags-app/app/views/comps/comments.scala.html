@@ -8,10 +8,10 @@
     <input type="hidden" data-role="targetContent" value="@targetContent">
     <input type="hidden" data-role="localization" value="@loc">
     <div>
-      <input placeholder=@Messages("interview.comment.name") class="form-control" type="text" data-role="name">
+      <input placeholder="@Messages("interview.comment.name")" class="form-control" type="text" data-role="name">
     </div>
     <div class="textareaCtnr">
-      <textarea class="form-control" placeholder=@Messages("interview.comment.text") rows="4" cols="20" data-role="comment"></textarea>
+      <textarea class="form-control" placeholder="@Messages("interview.comment.text")" rows="4" cols="20" data-role="comment"></textarea>
     </div>
     <div class="buttonBar">
         <button class="btn btn-secondary btn-sm" type="button" onclick="Comments.closeForm('@formID')">@Messages("interview.cancel")</button>

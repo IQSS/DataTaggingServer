@@ -32,17 +32,17 @@ case class CommentDTO(id:Option[Long],
                       comment:String,
                       modelID:String,
                       version:Int,
-                      localization:String,
+                      localization:Option[String],
                       targetType:String,
                       targetContent:String ) {
   def toComment() = Comment(writer, comment, modelID,version,
-                            if ( localization == TrivialLocalization.LANGUAGE_NAME ) None else Some(localization),
+                            localization,
                             targetType, targetContent, false,
                             new Timestamp(System.currentTimeMillis), id.getOrElse(0) )
 }
 
 object CommentDTO {
   def of(c:Comment):CommentDTO = CommentDTO(Some(c.id), c.writer, c.comment,
-                                            c.modelId, c.version, c.localization.getOrElse(""),
+                                            c.modelId, c.version, c.localization,
                                             c.targetType, c.targetContent)
 }
