@@ -241,6 +241,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
             req.body.file("zippedModel").foreach( file => {
              //validate the file is non-empty
               if ( Files.size(file.ref.path) > 0 ) {
+                models.updateVersion(md.copy(runningStatus = RunningStatus.Processing))
                 val destFile = uploadPath.resolve(UUID.randomUUID().toString + ".zip")
                 file.ref.moveFileTo(destFile, replace = false)
                 models.removeLoadedModel(KitKey(modelId, vNum))

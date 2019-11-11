@@ -73,7 +73,7 @@
             <textarea id="noteInput" name="note" class="form-control" rows="5">@form("note").value.getOrElse("")</textarea>
           </div>
         </div>
-          @if(tagType.isDefined){
+          @if(tagType.isDefined && tagType.get != null){
             <div class="form-group row">
               <label for="publicationStatusSelect" class="col-sm-2 col-form-label">Move to List Display</label>
               <div class="col-sm-10">
