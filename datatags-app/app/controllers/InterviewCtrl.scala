@@ -180,10 +180,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
             for {
               note <- notes.getNoteText(session.key, reqNodeId)
             } yield {
-              Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang))))
+              Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang)))).withLang(lang)(messagesApi)
             }
           } else {
-            Future(Ok( views.html.interview.question( session, askNode, None, availableLocs)(req, messagesApi.preferred(Seq(lang)))))
+            Future(Ok( views.html.interview.question( session, askNode, None, availableLocs)(req, messagesApi.preferred(Seq(lang)))).withLang(lang)(messagesApi))
           }
         }
       }
@@ -335,7 +335,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
     val topVisibility = session.tags.accept(new Visibuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
       session.kit.md.topValues, ""))
-    Ok( views.html.interview.accepted(session, codeOpt, topVisibility.topValues, topVisibility.topSlots, availableLocs)(request, messagesApi.preferred(Seq(lang))) )
+    Ok( views.html.interview.accepted(session, codeOpt, topVisibility.topValues, topVisibility.topSlots, availableLocs)(request, messagesApi.preferred(Seq(lang))) ).withLang(lang)(messagesApi)
   }
 
   def reject( modelId:String, versionNum:Int, loc:String ) = InterviewSessionAction(cache, cc) { implicit request =>
@@ -353,7 +353,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     }
 
     val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
-    Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode], availableLocs)(request, messagesApi.preferred(Seq(lang))) )
+    Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode], availableLocs)(request, messagesApi.preferred(Seq(lang))) ).withLang(lang)(messagesApi)
   }
   
   def transcript( modelId:String, versionNum:Int, format:Option[String] ) = InterviewSessionAction(cache, cc).async { implicit request =>
