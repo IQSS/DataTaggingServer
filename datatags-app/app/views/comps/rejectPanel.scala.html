@@ -1,5 +1,5 @@
-@import edu.harvard.iq.datatags.externaltexts.Localization
-@import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
+@import edu.harvard.iq.policymodels.externaltexts.Localization
+@import edu.harvard.iq.policymodels.model.decisiongraph.nodes.RejectNode
 @import Helpers.{o2o, renderMarkdown}
 @(node:RejectNode, kitKey: KitKey, loc:Localization,
         answerHistory:Seq[AnswerRecord], enableComments:Boolean)(implicit msgs: MessagesProvider)

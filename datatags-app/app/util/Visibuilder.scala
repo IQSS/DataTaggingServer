@@ -1,8 +1,7 @@
 package util
 
-import edu.harvard.iq.datatags.model.slots.AbstractSlot
-import edu.harvard.iq.datatags.model.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
-import play.api.Logger
+import edu.harvard.iq.policymodels.model.policyspace.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
+
 
 import scala.collection.JavaConverters._
 

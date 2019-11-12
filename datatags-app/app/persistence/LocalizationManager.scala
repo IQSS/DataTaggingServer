@@ -1,6 +1,6 @@
 package persistence
 
-import edu.harvard.iq.datatags.externaltexts.{Localization, LocalizationException, LocalizationLoader, TrivialLocalization}
+import edu.harvard.iq.policymodels.externaltexts.{Localization, LocalizationException, LocalizationLoader, TrivialLocalization}
 import javax.inject.{Inject, Singleton}
 import models.KitKey
 import play.api.{Configuration, Logger}
@@ -33,7 +33,6 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
       }
       case Some(locs) => {
         val locsNoTrivial = locs - TrivialLocalization.LANGUAGE_NAME
-        logger.info( s"locNoTrivials: ${locsNoTrivial.size}")
         locsNoTrivial.size match {
           case 0 => loadTrivialLocalization(kk)
           case 1 => locsNoTrivial.values.iterator.next

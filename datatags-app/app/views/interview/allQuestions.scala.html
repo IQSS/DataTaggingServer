@@ -1,7 +1,8 @@
-@import edu.harvard.iq.datatags.externaltexts.Localization
-@import edu.harvard.iq.datatags.model.graphs.nodes._
+@import edu.harvard.iq.policymodels.externaltexts.Localization
+@import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 @import collection.mutable.Set
 
+@import scala.collection.mutable
 @(verKit: VersionKit, loc:Localization)(implicit req:Request[_], msgs: MessagesProvider)
 
 @visitAskNode( nd:AskNode, baseLevel:Boolean, visited:Set[String] ) = {
@@ -17,7 +18,7 @@
   @visitNode(cn.getNextNode, baseLevel, visited)
 }
 
-@visitSectionNode( nd:SectionNode, baseLevel:Boolean, visited:Set[String] ) = {
+@visitSectionNode( nd:SectionNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
   <div class="node section">
     <h4>@Messages("interview.section"): @loc.getNodeText(nd.getId).orElse(nd.getTitle)</h4>
     @visitNode(nd.getStartNode, baseLevel, visited)

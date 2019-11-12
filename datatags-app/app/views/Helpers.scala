@@ -17,9 +17,9 @@ import com.vladsch.flexmark.ext.tables.TablesExtension
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.{DataKey, MutableDataSet}
-import edu.harvard.iq.datatags.externaltexts.{Localization, MarkupFormat, MarkupString}
-import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
-import edu.harvard.iq.datatags.model.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
+import edu.harvard.iq.policymodels.externaltexts.{Localization, MarkupFormat, MarkupString}
+import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
+import edu.harvard.iq.policymodels.model.policyspace.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
 import controllers.LoggedInAction
 import models.{CommentingStatus, InterviewSession, Note, PublicationStatus}
 

@@ -10,7 +10,7 @@ import play.api.libs.ws._
 import play.api.libs.json.{JsError, Json}
 import models._
 import _root_.util.Jsonizer
-import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
+import edu.harvard.iq.policymodels.externaltexts.TrivialLocalization
 import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager}
 import play.api.i18n.{Langs, MessagesApi, MessagesImpl, MessagesProvider}
 

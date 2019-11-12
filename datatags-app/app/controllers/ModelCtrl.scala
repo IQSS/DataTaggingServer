@@ -4,8 +4,8 @@ import java.sql.Timestamp
 import java.util.UUID
 import java.nio.file.{Files, Paths}
 
-import edu.harvard.iq.datatags.externaltexts.{Localization, TrivialLocalization}
-import edu.harvard.iq.datatags.model.slots.AbstractSlot
+import edu.harvard.iq.policymodels.externaltexts.{Localization, TrivialLocalization}
+import edu.harvard.iq.policymodels.model.policyspace.slots.AbstractSlot
 import javax.inject.Inject
 import models._
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
@@ -13,10 +13,9 @@ import play.api.{Configuration, Logger}
 import play.api.cache.SyncCacheApi
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.i18n.{I18nSupport, Langs, MessagesImpl}
+import play.api.i18n.{I18nSupport, Langs}
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, InjectedController}
-import play.i18n.MessagesApi
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future

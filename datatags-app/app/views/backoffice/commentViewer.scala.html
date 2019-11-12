@@ -1,8 +1,8 @@
-@import edu.harvard.iq.datatags.externaltexts.Localization
-@import edu.harvard.iq.datatags.externaltexts.MarkupString
-@import edu.harvard.iq.datatags.model.graphs.nodes.AskNode
-@import edu.harvard.iq.datatags.model.graphs.nodes.RejectNode
-@import edu.harvard.iq.datatags.model.PolicyModel
+@import edu.harvard.iq.policymodels.externaltexts.Localization
+@import edu.harvard.iq.policymodels.externaltexts.MarkupString
+@import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
+@import edu.harvard.iq.policymodels.model.decisiongraph.nodes.RejectNode
+@import edu.harvard.iq.policymodels.model.PolicyModel
 @(cmt:Comment, kit:VersionKit, loc:Localization, readmeOpt:Option[MarkupString])(implicit msgs: MessagesProvider)
 
 @templates.backend("Comment Viewer", 'backOffice ) {
