@@ -47,14 +47,16 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
               aKit.policyModel match {
                 case None => NotFound("Model not found")
                 case Some( model ) => {
-                   val l10n = locs.localization(aKit.md.id, comment.localization)
+//                  logger.info("###############")
+                  val l10n = locs.localization(aKit.md.id, comment.localization)
+//                  logger.info("comment loc " + comment.localization.getOrElse("NONE"))
+//                  logger.info("l10 " + l10n.toString)
+//                  logger.info("###############")
                   val readmeOpt = if(comment.localization.isDefined && comment.localization.get == ""){ //in case the feedback is for policy-space, get default loc
                     None
                   } else {
                     l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
                   }
-//                  val l10n = locs.localization(aKit.md.id, comment.localization)
-//                  val readmeOpt = l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
                   Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, l10n, readmeOpt)(messagesApi.preferred(req)))
                 }
               }

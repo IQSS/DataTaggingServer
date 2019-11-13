@@ -10,7 +10,7 @@
     </div>
     @if( enableComments ){
       <div>
-      @comps.comments("cmnt", kitKey.modelId, kitKey.version, loc.getLanguage, "node", node.getId, "btn-outline-light")
+      @comps.comments("cmnt", kitKey.modelId, kitKey.version, Some(loc.getLanguage), "node", node.getId, "btn-outline-light")
       </div>
     }
   </div>
