@@ -1,8 +1,8 @@
-@import edu.harvard.iq.datatags.externaltexts.Localization
-@import edu.harvard.iq.datatags.externaltexts.LocalizationTexts
-@import edu.harvard.iq.datatags.util.PolicySpaceHelper
+@import edu.harvard.iq.policymodels.externaltexts.Localization
+@import edu.harvard.iq.policymodels.externaltexts.LocalizationTexts
+@import edu.harvard.iq.policymodels.util.PolicySpaceHelper
 @import views.Helpers
-@( value : edu.harvard.iq.datatags.model.values.AtomicValue, loc:Localization, path:String, versionMD:VersionMD )
+@( value : edu.harvard.iq.policymodels.model.policyspace.values.AtomicValue, loc:Localization, path:String, versionMD:VersionMD )
 @defining(
   Helpers.o2o(loc.getSlotValueText(value))
           .getOrElse( new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null))

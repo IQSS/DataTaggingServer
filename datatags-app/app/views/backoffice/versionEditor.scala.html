@@ -1,6 +1,5 @@
-@import edu.harvard.iq.datatags.externaltexts.Localization
-@import edu.harvard.iq.datatags.model.slots.AbstractSlot
-@import edu.harvard.iq.datatags.model.slots._
+@import edu.harvard.iq.policymodels.externaltexts.Localization
+@import edu.harvard.iq.policymodels.model.policyspace.slots._
 @(form:Form[VersionFormData], modelId:String, versionNumber:Option[Int], tagType:Option[AbstractSlot], loc:Option[Localization], versionMD:Option[VersionMD])(implicit msgs:MessagesProvider)
 
 @scripts = {

@@ -3,8 +3,8 @@ package models
 import java.nio.file.Path
 import java.sql.Timestamp
 
-import edu.harvard.iq.datatags.model.PolicyModel
-import edu.harvard.iq.datatags.tools.ValidationMessage
+import edu.harvard.iq.policymodels.model.PolicyModel
+import edu.harvard.iq.policymodels.tools.ValidationMessage
 
 import scala.collection.mutable
 

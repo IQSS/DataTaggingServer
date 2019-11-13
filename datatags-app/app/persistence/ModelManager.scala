@@ -9,11 +9,11 @@ import actors.VisualizationActor.{DeleteVisualizationFiles, RecreateVisualizatio
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
-import edu.harvard.iq.datatags.io.{PolicyModelDataParser, PolicyModelLoadingException}
-import edu.harvard.iq.datatags.model.PolicyModel
-import edu.harvard.iq.datatags.parser.PolicyModelLoader
-import edu.harvard.iq.datatags.tools.ValidationMessage
-import edu.harvard.iq.datatags.tools.ValidationMessage.Level
+import edu.harvard.iq.policymodels.io.{PolicyModelDataParser, PolicyModelLoadingException}
+import edu.harvard.iq.policymodels.model.PolicyModel
+import edu.harvard.iq.policymodels.parser.PolicyModelLoader
+import edu.harvard.iq.policymodels.tools.ValidationMessage
+import edu.harvard.iq.policymodels.tools.ValidationMessage.Level
 import javax.inject.{Inject, Named, Singleton}
 import models._
 import play.api.{Configuration, Logger}

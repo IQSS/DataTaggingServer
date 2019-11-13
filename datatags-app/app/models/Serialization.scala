@@ -1,10 +1,9 @@
 package models
 
-import edu.harvard.iq.datatags.model.graphs.nodes._
-import edu.harvard.iq.datatags.model.slots.CompoundSlot
-import edu.harvard.iq.datatags.runtime._
-import edu.harvard.iq.datatags.model.graphs._
-import edu.harvard.iq.datatags.model.graphs.DecisionGraph
+import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
+import edu.harvard.iq.policymodels.model.policyspace.slots.CompoundSlot
+import edu.harvard.iq.policymodels.runtime._
+import edu.harvard.iq.policymodels.model.decisiongraph._
 
 import scala.collection.JavaConverters._
 
@@ -49,8 +48,8 @@ object Serialization {
   def apply( questionnaire:DecisionGraph, tagsType:CompoundSlot ):Serialization = {
     // first - get the answer frequencies
     val answers = getAnswersSortedByFrequencies(questionnaire)
-    if ( answers.size > chars.size ) {
-      throw new IllegalArgumentException(s"Serialization currently supports up to ${chars.size} answers. " +
+    if ( answers.size > chars.length ) {
+      throw new IllegalArgumentException(s"Serialization currently supports up to ${chars.length} answers. " +
        "This questionnaire has ${answers.size} answers")
     }
     // now make the map and create the serialization.

@@ -2,11 +2,10 @@ package models
 
 import java.util.{Date, UUID}
 
-import edu.harvard.iq.datatags.externaltexts.Localization
-import edu.harvard.iq.datatags.model.graphs.Answer
-import edu.harvard.iq.datatags.runtime.RuntimeEngineState
-import edu.harvard.iq.datatags.model.graphs.nodes._
-import edu.harvard.iq.datatags.model.values._
+import edu.harvard.iq.policymodels.externaltexts.Localization
+import edu.harvard.iq.policymodels.model.decisiongraph.Answer
+import edu.harvard.iq.policymodels.runtime.RuntimeEngineState
+import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 
 case class AnswerRecord( question: AskNode, answer: Answer)
 
@@ -28,7 +27,7 @@ case class InterviewSession(key:UUID,
                            ) {
 
   def tags = {
-    val parser = new edu.harvard.iq.datatags.io.StringMapFormat
+    val parser = new edu.harvard.iq.policymodels.io.StringMapFormat
     val tagType = kit.policyModel.get.getSpaceRoot
     Option(parser.parseCompoundValue(tagType, engineState.getSerializedTagValue )).getOrElse(tagType.createInstance())
   }

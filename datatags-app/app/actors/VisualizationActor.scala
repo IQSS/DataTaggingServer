@@ -7,9 +7,9 @@ import javax.inject._
 import scala.collection.JavaConverters._
 import actors.VisualizationActor.{CreateVisualizationFiles, DeleteVisualizationFiles, RecreateVisualizationFiles}
 import akka.actor.{Actor, Props}
-import edu.harvard.iq.datatags.cli.ProcessOutputDumper
-import edu.harvard.iq.datatags.model.PolicyModel
-import edu.harvard.iq.datatags.visualizers.graphviz.{AbstractGraphvizDecisionGraphVisualizer, GraphvizDecisionGraphClusteredVisualizer, GraphvizDecisionGraphF11Visualizer, GraphvizPolicySpacePathsVisualizer}
+import edu.harvard.iq.policymodels.cli.ProcessOutputDumper
+import edu.harvard.iq.policymodels.model.PolicyModel
+import edu.harvard.iq.policymodels.visualizers.graphviz.{AbstractGraphvizDecisionGraphVisualizer, ClosedSectionGraphVizualizer, GraphvizDecisionGraphClusteredVisualizer, GraphvizDecisionGraphF11Visualizer, GraphvizPolicySpacePathsVisualizer}
 import models.{KitKey, VersionKit}
 import persistence.ModelManager
 import play.api.{Configuration, Logger}
@@ -90,7 +90,7 @@ class VisualizationActor @Inject()(configuration:Configuration, modelManager:Mod
     val viz: AbstractGraphvizDecisionGraphVisualizer = if (style.contains("f11")) {
         new GraphvizDecisionGraphF11Visualizer(style.contains("-show-ends"))
       } else  {
-        val gvv = new GraphvizDecisionGraphClusteredVisualizer
+        val gvv = new ClosedSectionGraphVizualizer
         gvv.setConcentrate(!style.contains("--no-concentrate"))
         gvv.setDrawEndNodes(style.contains("--show-ends"))
         gvv.setDrawCallLinks(style.contains("--call-links"))

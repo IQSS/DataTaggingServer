@@ -1,7 +1,6 @@
 package util
 
-import edu.harvard.iq.datatags.model.values._
-import edu.harvard.iq.datatags.model.values.AbstractValue
+import edu.harvard.iq.policymodels.model.policyspace.values._
 import play.api.libs.json._
 import play.api.libs.json.Json
 

@@ -1,9 +1,8 @@
 package controllers
 
-import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
 import javax.inject.Inject
-import edu.harvard.iq.datatags.model.slots._
-import edu.harvard.iq.datatags.model.values.AbstractValue
+import edu.harvard.iq.policymodels.model.policyspace.slots._
+import edu.harvard.iq.policymodels.model.policyspace.values.AbstractValue
 import models.{KitKey, Model}
 import persistence.{LocalizationManager, ModelManager}
 import play.api.mvc._

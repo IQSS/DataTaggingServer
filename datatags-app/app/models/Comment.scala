@@ -2,7 +2,7 @@ package models
 
 import java.sql.Timestamp
 
-import edu.harvard.iq.datatags.externaltexts.TrivialLocalization
+import edu.harvard.iq.policymodels.externaltexts.TrivialLocalization
 
 /**
   *
