@@ -37,7 +37,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
 )
 
-TwirlKeys.templateImports ++= Seq("views.Helpers",
+TwirlKeys.templateImports ++= Seq("views.Helpers", "views.Helpers._",
                                   "scala.collection.JavaConverters._")
 
 LessKeys.compress in Assets := true

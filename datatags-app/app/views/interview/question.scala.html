@@ -2,7 +2,7 @@
 @( session:InterviewSession,
    questionNode: edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode,
    note:Option[String],
-   availableLanguage:Seq[String]
+   availableLanguages:Seq[String]
 )(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
@@ -10,7 +10,7 @@
     <script type="text/javascript" src="@routes.Assets.at("js/Question.js")"></script>
 }
 
-@extraHead = {@if(session.localization.isRtl){
+@extraHead = {@whenRTL(session.localization){
   <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
 }}
 
@@ -19,90 +19,53 @@
 @templates.bsNavBar( Messages("interview.question"), 'tag, scripts, extraHead ) {
   <div class="row">
     <div class="col">
+      <div class="d-flex justify-content-end align-items-baseline" style="margin:0 .5rem">
+        @comps.changeLanguageMenu(session.localization, availableLanguages,
+          l=>routes.InterviewCtrl.askNode(session.kit.md.id.modelId, session.kit.md.id.version, questionNode.getId, l))
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
      @comps.questionPanel(
        questionNode, session.kit, session.localization, session.answerHistory,
        session.kit.md.commentingStatus != CommentingStatus.Closed, interactive=true, showId = false, session.allowNotes, note
      )
     </div>
   </div>
-  @if(availableLanguage.size > 1) {
-    <div class="row">
-      <div class="col">
-        @Messages("interview.changeLang")
-        <select name="locSelect" id="locSelect" onchange="window.location.href = this.value" style="margin-left: 10px">
-        @for(loc <- availableLanguage) {
-          <option value="@routes.InterviewCtrl.askNode(session.kit.md.id.modelId, session.kit.md.id.version, questionNode.getId, loc)"
-          @if(session.localization.getLanguage == loc) {selected}>@loc </option>
-        }
-        </select>
-      </div>
-    </div>
-  }
-<div class="row">
-  <div class="col-md">
-      <div class="card m-2">
-          <div class="card-header bg-secondary text-white d-flex">
-            <div class="flex-grow-1">@Messages("interview.answerFeed")</div>
-            <div class="flex-grow-0"><a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))" class="btn btn-sm btn-outline-light">@Messages("interview.restart")</a></div>
-          </div>
-          <div class="card-body">
-              @if( session.answerHistory.nonEmpty ) {
-                  @comps.answerHistory(session.answerHistory, session.kit.md.id, reverse=true, session.kit.serializer, session.localization)
-              } else {
-                  <div class="well well-sm text-center">
-                      <span class="muted small">@Messages("interview.answerFeed.explain")</span>
-                  </div>
-              }
-          </div>
-      </div>
-  </div>
-  <div class="col-md">
-      <div class="card m-2">
-          <div class="card-header bg-secondary text-white">
-              @Messages("interview.currentTags")
-          </div>
-          <div class="card-body">
-            @if( session.tags.getNonEmptySubSlots.isEmpty ) {
-                <div class="well well-sm text-center">
-                    <span class="muted small">@Messages("interview.currentTags.explain")</span>
-                </div>
-            } else {
-                @comps.tagValue(session.tags, session.localization)
-            }
-          </div>
-      </div>
-  </div>
-</div>
-@* This is the engine trace. Might be useful sometimes, so leaving this here for now.
   <div class="row">
-  <div class="col">
-      <div class="card m-2">
-          <div class="card-header text-muted">
-              Engine Trace
-              <small>Useful for debugging an interview, but not very useful otherwise</small>
-          </div>
-          <div class="card-body">
-              <div class="engine-trace-container">
-                  <table class="engine-trace">
-                      <thead>
-                          <tr>
-                              <th>Id</th>
-                              <th>Type</th>
-                              <th>Info</th>
-                          </tr>
-                      </thead>
-                      <tbody>
-                      @for( nd <- session.traversed.reverse ){
-                          <tr>
-                              @comps.node(nd)
-                          </tr>
-                      }
-                      </tbody>
-                  </table>
-              </div>
-          </div>
-      </div>
+    <div class="col-md">
+        <div class="card m-2">
+            <div class="card-header bg-secondary text-white d-flex">
+              <div class="flex-grow-1">@Messages("interview.answerFeed")</div>
+              <div class="flex-grow-0"><a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))" class="btn btn-sm btn-outline-light">@Messages("interview.restart")</a></div>
+            </div>
+            <div class="card-body">
+                @if( session.answerHistory.nonEmpty ) {
+                    @comps.answerHistory(session.answerHistory, session.kit.md.id, reverse=true, session.kit.serializer, session.localization)
+                } else {
+                    <div class="well well-sm text-center">
+                        <span class="muted small">@Messages("interview.answerFeed.explain")</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md">
+        <div class="card m-2">
+            <div class="card-header bg-secondary text-white">
+                @Messages("interview.currentTags")
+            </div>
+            <div class="card-body">
+              @if( session.tags.getNonEmptySubSlots.isEmpty ) {
+                  <div class="well well-sm text-center">
+                      <span class="muted small">@Messages("interview.currentTags.explain")</span>
+                  </div>
+              } else {
+                  @comps.tagValue(session.tags, session.localization)
+              }
+            </div>
+        </div>
+    </div>
   </div>
-</div>
-  *@
 }

@@ -1,2 +1,3 @@
+@import edu.harvard.iq.policymodels.externaltexts.LocalizedModelData
 @(l:edu.harvard.iq.policymodels.externaltexts.Localization)
-@defining( if (l.isRtl)"right" else "left"){ dir => <i class="fa fa-arrow-@dir"></i> }
+@defining( if (l.getLocalizedModelData.getDirection == LocalizedModelData.Direction.RTL)"right" else "left"){ dir => <i class="fa fa-arrow-@dir"></i> }

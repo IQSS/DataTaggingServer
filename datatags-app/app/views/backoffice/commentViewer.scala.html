@@ -3,6 +3,7 @@
 @import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
 @import edu.harvard.iq.policymodels.model.decisiongraph.nodes.RejectNode
 @import edu.harvard.iq.policymodels.model.PolicyModel
+@import Helpers._
 @(cmt:Comment, kit:VersionKit, loc:Localization, readmeOpt:Option[MarkupString])(implicit msgs: MessagesProvider)
 
 @templates.backend("Comment Viewer", 'backOffice ) {
@@ -37,7 +38,7 @@
   <div class="row my-2">
     <div class="col">
       <h4>@Messages("interview.comment.context")</h4>
-      <div class="commentSubjectCtnr" @if(loc.isRtl){style="direction:rtl; text-align:right"}>
+      <div class="commentSubjectCtnr" @whenRTL(loc){style="direction:rtl; text-align:right"}>
         @if(cmt.targetType.trim == "meta"){
           @cmt.targetContent.trim match {
             case "policy-space" => {@comps.tagType(kit.policyModel.get.getSpaceRoot, loc)}

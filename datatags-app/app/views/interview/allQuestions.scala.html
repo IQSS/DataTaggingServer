@@ -3,15 +3,15 @@
 @import collection.mutable.Set
 
 @import scala.collection.mutable
-@(verKit: VersionKit, loc:Localization)(implicit req:Request[_], msgs: MessagesProvider)
+@(verKit: VersionKit, availableLanguages:Seq[String], loc:Localization)(implicit req:Request[_], msgs: MessagesProvider)
 
 @visitAskNode( nd:AskNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="question">
     @comps.questionPanel(nd, verKit, loc, Seq(), enableComments = true, false, showId = true, false, None)
-    @for( a <- nd.getAnswers ) {
-      @visitNode( nd.getNodeFor(a), baseLevel, visited )
-    }
   </div>
+  @for( a <- nd.getAnswers ) {
+    @visitNode( nd.getNodeFor(a), baseLevel, visited )
+  }
 }
 
 @visitCallNode( cn:CallNode, baseLevel:Boolean, visited:Set[String] ) = {
@@ -28,7 +28,7 @@
 
 @visitPartNode( nd:PartNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="node part" id="part-@nd.getId()">
-    <h4>@Messages("interview.part"): @nd.getTitle</h4>
+    <h4>@Messages("interview.part"): @nd.getTitle @Helpers.ifEmpty(nd.getTitle){<code>@nd.getId</code>}</h4>
     @visitNode(nd.getStartNode, baseLevel, visited)
   </div>
 }
@@ -64,13 +64,21 @@
 }
 
 @extraHead = {
-  @if(loc.isRtl){
+  @Helpers.whenRTL(loc){
     <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
   }
 }
 
 
 @templates.bsNavBar(Messages("interview.questions")+":" + verKit.policyModel.get.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
+  <div class="row">
+    <div class="col">
+      <div class="d-flex justify-content-end align-items-baseline">
+      @comps.changeLanguageMenu(loc, availableLanguages,
+        l=>routes.InterviewCtrl.viewAllQuestions(verKit.md.id.modelId, verKit.md.id.version, Some(l)))
+      </div>
+    </div>
+  </div>
   <div class="row">
     <div class="col-md-12">
       <a href="@routes.InterviewCtrl.interviewIntro(verKit.md.id.modelId, verKit.md.id.version)">@comps.backArrow(loc) @Messages("interview.back")</a>

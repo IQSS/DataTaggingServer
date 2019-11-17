@@ -3,36 +3,30 @@
 @import Helpers.{o2o, renderMarkdown}
 @(session:InterviewSession,
   node: RejectNode,
-  availableLanguage:Seq[String]
+  availableLanguages:Seq[String]
 )(implicit req:Request[_], msgs: MessagesProvider)
 
 
 @extraHead = {
-@if(session.localization.isRtl){
+@Helpers.whenRTL(session.localization){
   <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
 }
 }
 
 @templates.bsNavBar(Messages("interview.datasetRejected"), 'tag, extraHead = extraHead) {
+  <div class="row">
+    <div class="col">
+      <div class="d-flex justify-content-end align-items-baseline" style="margin:0 .5rem">
+        @comps.changeLanguageMenu(session.localization, availableLanguages,
+        l=>routes.InterviewCtrl.reject(session.kit.md.id.modelId, session.kit.md.id.version, l))
+      </div>
+    </div>
+  </div>
   <div class="row my-2">
     <div class="col">
       @comps.rejectPanel(node, session.kit.md.id, session.localization, session.answerHistory, session.kit.md.commentingStatus != CommentingStatus.Closed)
     </div>
   </div>
-  @if(availableLanguage.size > 1) {
-    <div class="row">
-      <div class="col">
-        @Messages("interview.changeLang")
-        <select name="locSelect" id="locSelect" onchange="window.location.href = this.value" style="margin-left: 10px">
-          @for(loc <- availableLanguage) {
-          <option value="@routes.InterviewCtrl.reject(session.kit.md.id.modelId, session.kit.md.id.version, loc)"
-            @if(session.localization.getLanguage == loc) {selected}>@loc </option>
-          }
-        </select>
-      </div>
-    </div>
-  }
-
   <div class="row my-2">
     <div class="col text-center">
       <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None)" class="btn btn-primary">

@@ -1,6 +1,6 @@
 @import edu.harvard.iq.policymodels.externaltexts.MarkupString
 @import edu.harvard.iq.policymodels.externaltexts.Localization
-@( qKit:VersionKit, readme:MarkupString, title:String, subTitle:String, loc:Localization, availableLanguage:Seq[String])(implicit req:Request[_], msgs: MessagesProvider)
+@( qKit:VersionKit, readme:MarkupString, title:String, subTitle:String, loc:Localization, availableLanguages:Seq[String])(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -8,7 +8,7 @@
 }
 
 @extraHead = {
-  @if(loc.isRtl){
+@Helpers.whenRTL(loc){
     <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
   }
 }
@@ -16,6 +16,14 @@
 @import views.Helpers
 
 @templates.bsNavBar(qKit.policyModel.get.getMetadata.getTitle + ": " + Messages("interview.readme"), 'tag, scripts, extraHead) {
+  <div class="row">
+    <div class="col">
+      <div class="d-flex justify-content-end align-items-baseline">
+        @comps.changeLanguageMenu(loc, availableLanguages,
+        l=>routes.InterviewCtrl.startInterview(qKit.md.id.modelId, qKit.md.id.version, Some(l)))
+      </div>
+    </div>
+  </div>
 <div class="row">
   <div class="col">
     <div>

@@ -17,7 +17,7 @@ import com.vladsch.flexmark.ext.tables.TablesExtension
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.{DataKey, MutableDataSet}
-import edu.harvard.iq.policymodels.externaltexts.{Localization, MarkupFormat, MarkupString}
+import edu.harvard.iq.policymodels.externaltexts.{Localization, LocalizedModelData, MarkupFormat, MarkupString}
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
 import edu.harvard.iq.policymodels.model.policyspace.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
 import controllers.LoggedInAction
@@ -212,7 +212,12 @@ object Helpers {
   }
   def ifNotEmpty(so:Option[String])(block:String=>Html):Html = so.map(s=>ifNotEmpty(s)(block)).getOrElse(Html(""))
   def ifNotEmpty[T]( col:TraversableOnce[T])(block:TraversableOnce[T]=>Html):Html = if(col!=null && col.nonEmpty) block(col) else Html("")
+  def ifEmpty( s:String )(block:Html):Html = if ( s == null || s.trim.isEmpty ) block else Html("")
   
+  
+  def whenRTL(loc:Localization)(block:Html):Html = {
+    if ( loc.getLocalizedModelData.getDirection == LocalizedModelData.Direction.RTL ) block else Html("")
+  }
   
   def transcriptAsXml(session:InterviewSession, noteMap:Map[String,Note]):scala.xml.Node = {
     val head = <metadata>

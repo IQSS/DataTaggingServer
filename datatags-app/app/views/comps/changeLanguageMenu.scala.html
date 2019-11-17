@@ -1,0 +1,11 @@
+@import edu.harvard.iq.policymodels.externaltexts.Localization
+@(curLoc:Localization, availableLangs:Seq[String], destGen:String=>Call)
+@if(availableLangs.size > 1) {
+  <i class="fa fa-language"></i>&nbsp;
+  <select class="custom-select custom-select-sm" style="width:auto" name="locSelect" id="locSelect" onchange="window.location.href = this.value">
+  @for(lang <- availableLangs) {
+    <option value="@destGen(lang)"
+    @if(curLoc.getLanguage == lang) {selected}>@lang </option>
+  }
+  </select>
+}

@@ -10,7 +10,7 @@ import models._
 import _root_.util.{Jsonizer, Visibuilder}
 import javax.inject.Inject
 import com.ibm.icu.text.SimpleDateFormat
-import edu.harvard.iq.policymodels.externaltexts.MarkupString
+import edu.harvard.iq.policymodels.externaltexts.{Localization, MarkupString}
 import edu.harvard.iq.policymodels.model.PolicyModel
 import edu.harvard.iq.policymodels.model.decisiongraph.Answer
 import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager, NotesDAO}
@@ -19,8 +19,10 @@ import views.Helpers
 import play.api.data.{Form, _}
 import play.api.data.Forms._
 import play.api.i18n._
+
 import scala.collection.JavaConverters._
 import util.JavaOptionals.toRichOptional
+
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
 
@@ -37,9 +39,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
   private implicit val ec = cc.executionContext
   private val logger = Logger( classOf[InterviewCtrl] )
-//  implicit val messagesProvider: MessagesProvider = {
-//    MessagesImpl(langs.availables.head, messagesApi)
-//  }
 
   def interviewIntroDirect(modelId:String, versionNum:Int) = Action {
     TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, versionNum).url )
@@ -81,9 +80,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                 val l10n = locs.localization(kitId, localizationName)
                 val userSession = InterviewSession.create( pmKit, model, l10n )
                 cache.set(userSession.key.toString, userSession)
-                val lang = l10n.getUiLang.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
+                val lang = uiLangFor(l10n)
                 val availableLocs:Seq[String] = pmKit.policyModel.get.getLocalizations.asScala.toSeq
-
                 // add to DB InterviewHistory
                 if ( userSession.saveStat ) {
                   if(req.headers.get("Referer").isDefined && req.headers.get("Referer").get.endsWith("/accept")) {
@@ -134,7 +132,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     val updated = session.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
     cache.set(session.key.toString, updated)
     //Add Record to DB
-    if(updated.saveStat){
+    if  ( updated.saveStat ) {
       interviewHistories.addRecord(
         InterviewHistoryRecord(session.key, new Timestamp(System.currentTimeMillis()), "start interview"))
       interviewHistories.addRecord(
@@ -142,49 +140,40 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     }
 
     val availableLocs:Seq[String] = session.kit.policyModel.get.getLocalizations.asScala.toSeq
+    logger.info("runFirstQuestion: loc '" + updated.localization.getLanguage + "'")
     Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None, availableLocs)(req, messagesProvider))
   }
   
   def askNode( modelId:String, versionNum:Int, reqNodeId:String, loc:String) = InterviewSessionAction(cache, cc).async { implicit req =>
     val kitId = KitKey(modelId, versionNum)
-    if ( req.userSession.engineState == null ) {
-      logger.info("Re-starting interview as there's a session but no engine state.")
-      Future(TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, versionNum).url ))
-    } else {
-      models.getPolicyModel(kitId) match {
-        case None => Future(NotFound("Model not found."))
-        case Some(pm) => {
-          // TODO validate questionnaireId fits the one in the engine state
-          val stateNodeId = req.userSession.engineState.getCurrentNodeId
-          val l10n = locs.localization(kitId, loc)
-          val lang = l10n.getUiLang.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
-          val session = if ( stateNodeId != reqNodeId ) {
-            // re-run to reqNodeId
-            val answers = req.userSession.answerHistory.slice(0, req.userSession.answerHistory.indexWhere( _.question.getId == reqNodeId) )
-            val rerunResult = runUpToNode( pm, reqNodeId, answers )
-            val updatedSession = req.userSession.setHistory(rerunResult.traversed, answers).copy(engineState=rerunResult.state )
-            cache.set( req.userSession.key.toString, updatedSession )
-            updatedSession.copy(localization = l10n)
-  
-          } else {
-            req.userSession.copy(localization = l10n)
-          }
-          cache.set(req.userSession.key.toString, session)
-          val askNode = pm.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
-          if(session.saveStat){
-            interviewHistories.addRecord(
-              InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
-          }
-          val availableLocs = pm.getLocalizations.asScala.toSeq
-          if(session.allowNotes && session.notes.contains(reqNodeId)){
-            for {
-              note <- notes.getNoteText(session.key, reqNodeId)
-            } yield {
-              Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang)))).withLang(lang)(messagesApi)
-            }
-          } else {
-            Future(Ok( views.html.interview.question( session, askNode, None, availableLocs)(req, messagesApi.preferred(Seq(lang)))).withLang(lang)(messagesApi))
-          }
+    models.getPolicyModel(kitId) match {
+      case None => Future(NotFound("Model not found."))
+      case Some(pm) => {
+        // TODO validate questionnaireId fits the one in the engine state
+        val stateNodeId = req.userSession.engineState.getCurrentNodeId
+        val l10n = locs.localization(kitId, loc)
+        val lang = uiLangFor(l10n)
+        val session = if ( stateNodeId != reqNodeId ) {
+          // re-run to reqNodeId
+          val answers = req.userSession.answerHistory.slice(0, req.userSession.answerHistory.indexWhere( _.question.getId == reqNodeId) )
+          val rerunResult = runUpToNode( pm, reqNodeId, answers )
+          req.userSession.setHistory(rerunResult.traversed, answers).copy(engineState=rerunResult.state, localization = l10n)
+        } else {
+          req.userSession.copy(localization = l10n)
+        }
+        
+        cache.set(req.userSession.key.toString, session)
+        val askNode = pm.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
+        if ( session.saveStat ) {
+          interviewHistories.addRecord(
+            InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
+        }
+        val availableLocs = pm.getLocalizations.asScala.toSeq
+        
+        for {
+          note <- if(session.allowNotes && session.notes.contains(reqNodeId)) notes.getNoteText(session.key, reqNodeId) else Future(None)
+        } yield {
+          Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang))) ).withLang(lang)(messagesApi)
         }
       }
     }
@@ -322,7 +311,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   
   def accept(modelId:String, versionNum:Int, loc:String) = InterviewSessionAction(cache, cc) { implicit request =>
     val l10n = locs.localization(KitKey(modelId, versionNum), loc)
-    val lang = l10n.getUiLang.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
+    val lang = uiLangFor(l10n)
     val session = request.userSession.copy(localization = l10n)
     cache.set(session.key.toString, session)
     val tags = session.tags
@@ -340,7 +329,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
   def reject( modelId:String, versionNum:Int, loc:String ) = InterviewSessionAction(cache, cc) { implicit request =>
     val l10n = locs.localization(KitKey(modelId, versionNum), loc)
-    val lang = l10n.getUiLang.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
+    val lang = uiLangFor(l10n)
     val session = request.userSession.copy(localization = l10n)
     cache.set(session.key.toString, session)
     val state = request.userSession.engineState
@@ -378,9 +367,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       verOpt match {
         case Some(versionKit) => {
           val loc = locs.localization(kitId, localizationName)
-          val optLang = if (loc.getUiLang.isPresent) Some(loc.getUiLang.get()) else None
+          val optLang = loc.getLocalizedModelData.getUiLanguage.toOption
           val lang = optLang.map(l => langs.preferred(Seq(Lang(l), langs.availables.head))).getOrElse(langs.availables.head)
-          Ok(views.html.interview.allQuestions(versionKit, loc)(req, messagesApi.preferred(Seq(lang)))).withLang(lang)
+          Ok(views.html.interview.allQuestions(versionKit, versionKit.policyModel.get.getLocalizations.asScala.toSeq, loc)(req, messagesApi.preferred(Seq(lang)))).withLang(lang)
         }
         case None => NotFound("Model not found")
       }
@@ -475,5 +464,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   }
 
 
+  private def uiLangFor( loc:Localization ): Lang = {
+    loc.getLocalizedModelData.getUiLanguage.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
+  }
 
 }
