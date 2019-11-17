@@ -24,7 +24,7 @@
         @Messages("interview.comment") @comps.commentStatus(cmt, Some("commentStatus"))
       </h3>
       <div>
-        <em>@cmt.writer</em> commented at @Helpers.dateTimeFormat(cmt.time)
+        <em>@cmt.writer</em> wrote at @Helpers.dateTimeFormat(cmt.time)
         on <code>@cmt.targetType.trim/@cmt.targetContent.trim</code>
         @for(loc<-cmt.localization) { (Localization: @loc ) }
       </div>

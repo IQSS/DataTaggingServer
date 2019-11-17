@@ -39,7 +39,7 @@
     <div class="mdRender">
       @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
         <div class="float-eol">
-          @comps.comments("cmntReadme", qKit.md.id.modelId, qKit.md.id.version, loc.getLanguage, "meta", "readme")
+          @comps.comments("cmntReadme", qKit.md.id.modelId, qKit.md.id.version, Some(loc.getLanguage), "meta", "readme")
         </div>}
       @Helpers.render(readme)
     </div>
@@ -59,7 +59,7 @@
         <h3>
           @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
             <div class="float-eol">
-            @comps.comments("cmntPS", qKit.md.id.modelId, qKit.md.id.version, loc.getLanguage, "meta", "policy-space")
+            @comps.comments("cmntPS", qKit.md.id.modelId, qKit.md.id.version, Some(loc.getLanguage), "meta", "policy-space")
             </div>}</h3>
         @comps.tagType(qKit.policyModel.get.getSpaceRoot, loc )
       </details>

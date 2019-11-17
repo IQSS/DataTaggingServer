@@ -11,7 +11,7 @@
     @if( enableComments ) {
       <div>
           @comps.comments("cmnt_" + questionNode.getId.filter(Character.isLetterOrDigit),
-                            versionKit.md.id.modelId, versionKit.md.id.version, loc.getLanguage,
+                            versionKit.md.id.modelId, versionKit.md.id.version, Some(loc.getLanguage),
                             "node", questionNode.getId, "btn-outline-light")
       </div>
     }
@@ -24,7 +24,7 @@
   </div>
   @helper.form( action=routes.InterviewCtrl.answer(versionKit.md.id.modelId, versionKit.md.id.version, questionNode.getId), 'id->"answerForm" ) {
     <div class="card-body noteCtnr" id="noteDiv" @if(note.isEmpty) {style="display: none" }>
-        <textarea placeholder="Annotate your answer here" name="note" class="form-control" rows="2">@note.getOrElse("")</textarea>
+        <textarea placeholder="@Messages("interview.annotateAnswer")" name="note" class="form-control" rows="2">@note.getOrElse("")</textarea>
     </div>
     <div class="card-footer">
       <div class="answerButtonCtnr">

@@ -87,14 +87,14 @@
   <div class="row my-2">
     <div class="col">
       @defining( comments.count(!_.resolved)) { unresolved =>
-        <h4>Comments @if(unresolved>0){<span class="badge">@unresolved</span>}</h4>
+        <h4>Feedbacks @if(unresolved>0){<span class="badge">@unresolved</span>}</h4>
       }
       <div class="help">
-        Comments users left on various parts of this model.
+        Feedbacks users left on various parts of this model.
       </div>
       @if( comments.isEmpty ) {
         <div class="noData">
-          No comments.
+          No feedbacks
         </div>
       } else {
         <table class="table">
@@ -111,7 +111,7 @@
           @for(cmt <- comments) {
             <tr>
               <td>@cmt.writer</td>
-              <td>@cmt.targetType.trim/@cmt.targetContent @for( loc <-cmt.localization.filter( ln=>ln!=TrivialLocalization.LANGUAGE_NAME)) { (Localization: @loc) }
+              <td>@cmt.targetType.trim/@cmt.targetContent @for( loc <-cmt.localization.filter( ln=>(ln!=TrivialLocalization.LANGUAGE_NAME && ln != ""))) { (Localization: @loc) }
               </td>
               <td>@Helpers.dateTimeFormat(cmt.time)</td>
               <td>@comps.commentStatus(cmt, Some("cmtsts"+cmt.id))</td>

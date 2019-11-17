@@ -18,12 +18,13 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
   import JSONFormats.commentDTOFmt
 
   implicit private val ec = cc.executionContext
-//  private val logger = Logger(classOf[CommentsCtrl])
+  private val logger = Logger(classOf[CommentsCtrl])
 
   def apiAddComment = Action(parse.tolerantJson).async { implicit req =>
     req.body.validate[CommentDTO] match {
       case s: JsSuccess[CommentDTO] => {
-        comments.addComment(s.value.toComment()).map(_ => Ok(Json.toJson("message" -> "Comment sent")))
+        logger.info("co " + s.value.localization.getOrElse("GG"))
+        comments.addComment(s.value.toComment()).map(_ => Ok(Json.toJson("message" -> "Feedback sent")))
       }
       case e: JsError => {
         Future(BadRequest(Json.toJson(Json.obj("message" -> e.toString))))
@@ -46,8 +47,16 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
               aKit.policyModel match {
                 case None => NotFound("Model not found")
                 case Some( model ) => {
+//                  logger.info("###############")
                   val l10n = locs.localization(aKit.md.id, comment.localization)
-                  val readmeOpt = l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
+//                  logger.info("comment loc " + comment.localization.getOrElse("NONE"))
+//                  logger.info("l10 " + l10n.toString)
+//                  logger.info("###############")
+                  val readmeOpt = if(comment.localization.isDefined && comment.localization.get == ""){ //in case the feedback is for policy-space, get default loc
+                    None
+                  } else {
+                    l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
+                  }
                   Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, l10n, readmeOpt)(messagesApi.preferred(req)))
                 }
               }
