@@ -52,7 +52,11 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       versionOpt match {
         case Some(version) => {
           if ( canView(request, version.md) ) {
-            Ok( views.html.interview.intro(version, None) (request, messagesApi.preferred(Seq(langs.availables.head)))).withoutLang
+            version.policyModel match {
+              case Some(_) => Ok( views.html.interview.intro(version, None) (request, messagesApi.preferred(Seq(langs.availables.head)))).withoutLang
+              case None => Conflict(s"PolicyModel at $modelId/$versionNum contains errors and cannot be loaded.")
+            }
+            
           } else {
             NotFound("Model not found.") // really that's a NotAuthorized, but that would give away the fact that the version exists.
           }
@@ -345,12 +349,19 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode], availableLocs)(request, messagesApi.preferred(Seq(lang))) ).withLang(lang)(messagesApi)
   }
   
-  def transcript( modelId:String, versionNum:Int, format:Option[String] ) = InterviewSessionAction(cache, cc).async { implicit request =>
-    val session = request.userSession
+  def transcript( modelId:String, versionNum:Int, format:Option[String], localizationName:Option[String] ) = InterviewSessionAction(cache, cc).async { implicit request =>
+    var session = request.userSession
+    val availableLanguages = session.kit.policyModel.get.getLocalizations.asScala.toSeq
+    for ( locName <- localizationName ) {
+      session = session.copy(localization = locs.localization(session.kit.md.id, locName))
+    }
+    val optLang = session.localization.getLocalizedModelData.getUiLanguage.toOption
+    val lang = optLang.map(l => langs.preferred(Seq(Lang(l), langs.availables.head))).getOrElse(langs.availables.head)
+    
     notes.getNotesForInterview(session.key).map( noteMap => {
       format.map( _.trim.toLowerCase ) match {
-        case None         => Ok( views.html.interview.transcript(session, noteMap) )
-        case Some("html") => Ok( views.html.interview.transcript(session, noteMap) )
+        case None         => Ok( views.html.interview.transcript(session, noteMap, availableLanguages) ).withLang(lang)
+        case Some("html") => Ok( views.html.interview.transcript(session, noteMap, availableLanguages) ).withLang(lang)
         case Some("xml")  => Ok( Helpers.transcriptAsXml(session, noteMap) ).
                                     withHeaders( s"Content-disposition"->s"attachment; filename=${session.kit.md.pmTitle.replaceAll(" ", "_")}-Transcript.xml")
         case _ => BadRequest("Unknown format")

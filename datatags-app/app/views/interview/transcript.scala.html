@@ -1,6 +1,7 @@
 @import  edu.harvard.iq.policymodels.runtime.RuntimeEngineStatus
 @( session:InterviewSession,
-        notes: Map[String,Note]
+        notes: Map[String,Note],
+        availableLanguages:Seq[String]
 )(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
@@ -14,11 +15,19 @@
 }
 
 @templates.bsNavBar("Interview Transcript", 'ask, scripts, extraHead) {
+  <div class="row">
+    <div class="col">
+      <div class="d-flex justify-content-end align-items-baseline">
+      @comps.changeLanguageMenu(session.localization, availableLanguages,
+        l=>routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, Some("html"), Some(l)))
+      </div>
+    </div>
+  </div>
   <div class="row my-2">
     <div class="col">
       <h2>
         <div class="float-eol">
-          <a class="btn btn-sm btn-outline-dark" href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, Some("xml"))">
+          <a class="btn btn-sm btn-outline-dark" href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, Some("xml"), None)">
             <i class="fa fa-code"></i>
             @Messages("interview.download.xml")
           </a>
