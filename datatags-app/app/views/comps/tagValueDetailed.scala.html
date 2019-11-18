@@ -2,43 +2,46 @@
 @import edu.harvard.iq.policymodels.model.policyspace.values._
 @import edu.harvard.iq.policymodels.model.policyspace.slots.AbstractSlot
 @import edu.harvard.iq.policymodels.util.PolicySpaceHelper
+@import java.util.concurrent.atomic.AtomicInteger;
 
 @( aValue: AbstractValue,
         loc:Localization,
         slotsVisibility:Map[String,String],
         topValues:Seq[AbstractValue],
-        topSlotsAsValues:Seq[(String, AbstractValue)]
+        topSlotsAsValues:Seq[(String, AbstractValue)],
+        counter:AtomicInteger = new AtomicInteger()
 )(implicit req:Request[_], msgs: MessagesProvider)
+
 
 @slotTypeTitle(slot:AbstractSlot ) = {
 @Helpers.localized(slot,loc){ texts =>
   <div class="detailedSlotTitle">
-    <h3>@texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('s@slot.hashCode()')"><i class="fa fa-book"></i></button>}</h3>
+    <h3>@texts.name</h3>
     @Helpers.nonEmpty( texts.smallNote ){ note =>
-      <div class="smallNote">
-        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
-      </div>
+      <p class="smallNote">
+        @Helpers.renderMinimalMarkdown(note)
+        @Helpers.nonEmpty( texts.bigNote ){ note =>
+          <button class="btn btn-txt btn-outline-secondary" type="button" onclick="toggleBigNote('s@counter.incrementAndGet')"><i class="fa fa-expand"></i></button>}
+      </p>
     }
     @Helpers.nonEmpty( texts.bigNote ){ note =>
-      <div id="s@slot.hashCode()" class="bigNote" style="display:none">
-      @Helpers.renderMarkdown(note)
+      <div id="s@counter.get" class="bigNote" style="display:none">
+        @Helpers.renderMarkdown(note)
       </div>
-    }
   </div>
-}}
+}}}
 
 @valueAtom(value:AtomicValue, path:String ) = {
   @Helpers.localized(value, loc ){ texts =>
     <div class="detailedValue">
-      @texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>}
+      @texts.name
       @Helpers.nonEmpty( texts.smallNote ){ note =>
-        <div class="smallNote">
-          <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
-        </div>
+        <span class="smallNote">@Helpers.renderMinimalMarkdown(note)</span>
       }
-      @Helpers.nonEmpty( texts.bigNote ){ note =>
-        <div class="bg-light bigNote" style="display:none" id="v@value.hashCode()s@value.getSlot.hashCode()">
-        @Helpers.renderMarkdown(note)
+      @Helpers.nonEmpty( texts.bigNote ){note =>
+        <button class="btn btn-txt btn-outline-secondary" type="button" onclick="toggleBigNote('v@counter.incrementAndGet')"><i class="fa fa-expand"></i></button>
+        <div class="bg-light bigNote" style="display:none" id="v@counter.get">
+          @Helpers.renderMarkdown(note)
         </div>
       }
     </div>
@@ -52,18 +55,18 @@
     @Helpers.localized(value, loc){ valueText =>
       <span class="slotName">@slotText.name</span> <span class="slotValue">@valueText.name</span>
       @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>
+        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@counter.incrementAndGet')"><i class="fa fa-fa-expand"></i></button>
       }
       @Helpers.nonEmpty( slotText.smallNote ){ note => <div class="smallNote smallNote-slot">
-        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+        @Helpers.renderMinimalMarkdown(note)
       </div>}
       @Helpers.nonEmpty( valueText.smallNote ){ note => <div class="smallNote">
-        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+        @Helpers.renderMinimalMarkdown(note)
       </div>}
       @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-        <div id="v@value.hashCode()s@value.getSlot.hashCode()" class="bigNote" style="display:none">
-          @Helpers.nonEmpty(slotText.bigNote){n=>@Helpers.renderMarkdown(n)}
-          @Helpers.nonEmpty(valueText.bigNote){n=>@Helpers.renderMarkdown(n)}
+        <div id="v@counter.get" class="bigNote" style="display:none">
+          @Helpers.nonEmpty(slotText.bigNote){n=><p>@Helpers.renderMarkdown(n)</p>}
+          @Helpers.nonEmpty(valueText.bigNote){n=><p>@Helpers.renderMarkdown(n)</p>}
         </div>
       }
     }
