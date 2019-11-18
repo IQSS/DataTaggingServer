@@ -24,12 +24,12 @@
           <button class="btn btn-txt btn-outline-secondary" type="button" onclick="toggleBigNote('s@counter.incrementAndGet')"><i class="fa fa-expand"></i></button>}
       </p>
     }
-    @Helpers.nonEmpty( texts.bigNote ){ note =>
-      <div id="s@counter.get" class="bigNote" style="display:none">
-        @Helpers.renderMarkdown(note)
+    @Helpers.nonEmpty( texts.bigNote ) { note =>
+      <div id="s@counter.get" class="bigNote" style="display: none">
+      @Helpers.renderMarkdown(note)
       </div>
-  </div>
-}}}
+    }</div>
+}}
 
 @valueAtom(value:AtomicValue, path:String ) = {
   @Helpers.localized(value, loc ){ texts =>
