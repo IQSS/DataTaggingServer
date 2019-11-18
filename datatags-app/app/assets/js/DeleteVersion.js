@@ -2,14 +2,24 @@ var DeleteVersion = (function(){
     function deleteVersion(modelId, version) {
         swal({
             title: "Are you sure?",
-            text: "You will not be able to recover this version!",
-            type: "warning",
-            showCancelButton: true,
-            confirmButtonClass: "btn-danger",
-            confirmButtonText: "Delete Version",
-            cancelButtonText: "Cancel",
-            closeOnConfirm: false,
-            closeOnCancel: false
+            text:  "You will not be able to recover this version.",
+            dangerMode: true,
+            buttons:{
+                cancel: {
+                    text: "Cancel",
+                    value: null,
+                    visible: true,
+                    className: "",
+                    closeModal: true,
+                },
+                confirm: {
+                    text: "OK",
+                    value: true,
+                    visible: true,
+                    className: "",
+                    closeModal: false
+                }
+            }
         }).then(function(isConfirm){
             if (isConfirm) {
                 var call = jsRoutes.controllers.ModelCtrl.deleteVersion(modelId, version);

@@ -4,7 +4,7 @@
   @if(versions.map(_.runningStatus).contains(RunningStatus.Processing)){
     <script language="Javascript">
       console.log("missing models detected. Will reload window");
-      window.setTimeout( function(){ window.location.reload(); }, 3000 );
+      window.setTimeout( function(){ window.location.reload(); }, 10000 );
     </script>
   }
   <script language="JavaScript">
