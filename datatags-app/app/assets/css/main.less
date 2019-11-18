@@ -840,5 +840,17 @@ details summary .detailedSlotTitle {
 }
 
 .listDisplay {
-  text-align: left;
+  padding: .1rem;
+
+  button {
+    display: block;
+    width: 100%;
+  }
+}
+
+@media (min-width: 576px) {
+  .listDisplay {
+    column-count: 2;
+    padding: .5rem;
+  }
 }

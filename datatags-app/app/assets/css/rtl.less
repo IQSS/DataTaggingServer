@@ -26,6 +26,7 @@ body {
   border-left: .3em solid transparent;
 }
 
+
 .form-control {
   unicode-bidi: plaintext;
 }
@@ -91,3 +92,14 @@ nav.navbar ul.nav {
 .listDisplay {
   text-align: right;
 }
+
+
+.btn-group.rtl-aware {
+  .btn:first-child {
+    border-radius: 0 @inputGroupBorderRadius @inputGroupBorderRadius 0;
+  }
+  .btn:last-child, .btn.dropdown-toggle {
+    border-radius: @inputGroupBorderRadius 0 0 @inputGroupBorderRadius;
+  }
+}
+
