@@ -17,10 +17,12 @@ import com.vladsch.flexmark.ext.tables.TablesExtension
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.{DataKey, MutableDataSet}
-import edu.harvard.iq.policymodels.externaltexts.{Localization, LocalizedModelData, MarkupFormat, MarkupString}
+import edu.harvard.iq.policymodels.externaltexts.{Localization, LocalizationTexts, LocalizedModelData, MarkupFormat, MarkupString}
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
 import edu.harvard.iq.policymodels.model.policyspace.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
 import controllers.LoggedInAction
+import edu.harvard.iq.policymodels.model.policyspace.slots.AbstractSlot
+import edu.harvard.iq.policymodels.util.PolicySpaceHelper
 import models.{CommentingStatus, InterviewSession, Note, PublicationStatus}
 
 object Helpers {
@@ -276,5 +278,15 @@ object Helpers {
       if(ans.isEmpty) None else Some(ans.mkString(","))
     }
 //  }
-
+  
+  def localized( value:AbstractValue, loc:Localization )( block:LocalizationTexts=>Html) = {
+    block( o2o(loc.getSlotValueText(value))
+              .getOrElse(new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null)) )
+  }
+  
+  def localized(slot:AbstractSlot, loc:Localization )(block:LocalizationTexts=>Html) = {
+    block( o2o(loc.getSlotText(slot))
+      .getOrElse(new LocalizationTexts(slot.getName, slot.getNote, null)) )
+  }
+  
 }

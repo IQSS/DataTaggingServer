@@ -8,12 +8,10 @@
         slotsVisibility:Map[String,String],
         topValues:Seq[AbstractValue],
         topSlotsAsValues:Seq[(String, AbstractValue)]
-)
+)(implicit req:Request[_], msgs: MessagesProvider)
+
 @slotTypeTitle(slot:AbstractSlot ) = {
-@defining(
-  Helpers.o2o(loc.getSlotText(slot))
-          .getOrElse( new LocalizationTexts(slot.getName, slot.getNote, null))
-){ texts =>
+@Helpers.localized(slot,loc){ texts =>
   <div class="detailedSlotTitle">
     <h3>@texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('s@slot.hashCode()')"><i class="fa fa-book"></i></button>}</h3>
     @Helpers.nonEmpty( texts.smallNote ){ note =>
@@ -29,52 +27,45 @@
   </div>
 }}
 
-@valueAtom(value:AtomicValue, path:String ) = {@defining(
-  Helpers.o2o(loc.getSlotValueText(value))
-          .getOrElse( new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null))
-){ texts =>
-  <div class="detailedValue">
-    @texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>}
-    @Helpers.nonEmpty( texts.smallNote ){ note =>
-      <div class="smallNote">
-        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
-      </div>
-    }
-    @Helpers.nonEmpty( texts.bigNote ){ note =>
-      <div class="bigNote" style="display:none" id="v@value.hashCode()s@value.getSlot.hashCode()">
-      @Helpers.renderMarkdown(note)
-      </div>
-    }
-  </div>
-}}
+@valueAtom(value:AtomicValue, path:String ) = {
+  @Helpers.localized(value, loc ){ texts =>
+    <div class="detailedValue">
+      @texts.name @Helpers.nonEmpty( texts.bigNote ){ note => <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>}
+      @Helpers.nonEmpty( texts.smallNote ){ note =>
+        <div class="smallNote">
+          <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+        </div>
+      }
+      @Helpers.nonEmpty( texts.bigNote ){ note =>
+        <div class="bg-light bigNote" style="display:none" id="v@value.hashCode()s@value.getSlot.hashCode()">
+        @Helpers.renderMarkdown(note)
+        </div>
+      }
+    </div>
+  }
+}
 
 
 @atomicValue( value:AtomicValue, path:String ) = {
   <div class="detailedValue detailedValue-simple">
-  @defining(
-    Helpers.o2o(loc.getSlotText(value.getSlot))
-            .getOrElse( new LocalizationTexts(value.getSlot.getName, value.getSlot.getNote, null))
-  ) { slotText =>
-    @defining(
-      Helpers.o2o(loc.getSlotValueText(value))
-              .getOrElse( new LocalizationTexts(value.getName, value.getNote, null))
-    ) { valueText =>
+  @Helpers.localized(value.getSlot, loc){ slotText =>
+    @Helpers.localized(value, loc){ valueText =>
       <span class="slotName">@slotText.name</span> <span class="slotValue">@valueText.name</span>
-    @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-      <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>
-    }
-    @Helpers.nonEmpty( slotText.smallNote ){ note => <div class="smallNote smallNote-slot">
-      <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
-    </div>}
-    @Helpers.nonEmpty( valueText.smallNote ){ note => <div class="smallNote">
-      <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
-    </div>}
-    @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-      <div id="v@value.hashCode()s@value.getSlot.hashCode()" class="bigNote" style="display:none">
-        @Helpers.nonEmpty(slotText.bigNote){n=>@Helpers.renderMarkdown(n)}
-        @Helpers.nonEmpty(valueText.bigNote){n=>@Helpers.renderMarkdown(n)}
-      </div>
-    }
+      @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
+        <button class="btn btn-sm btn-outline-secondary" type="button" onclick="toggleBigNote('v@value.hashCode()s@value.getSlot.hashCode()')"><i class="fa fa-book"></i></button>
+      }
+      @Helpers.nonEmpty( slotText.smallNote ){ note => <div class="smallNote smallNote-slot">
+        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+      </div>}
+      @Helpers.nonEmpty( valueText.smallNote ){ note => <div class="smallNote">
+        <i class="fa fa-info-circle"></i> @Helpers.renderMinimalMarkdown(note)
+      </div>}
+      @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
+        <div id="v@value.hashCode()s@value.getSlot.hashCode()" class="bigNote" style="display:none">
+          @Helpers.nonEmpty(slotText.bigNote){n=>@Helpers.renderMarkdown(n)}
+          @Helpers.nonEmpty(valueText.bigNote){n=>@Helpers.renderMarkdown(n)}
+        </div>
+      }
     }
   }
   </div>
@@ -143,18 +134,38 @@
 }
 }
 
+ @topValueDisplay(value:AbstractValue)={
+   <div class="alert alert-primary" role="alert">@Helpers.localized(value, loc){ texts =>
+       <h4 class="alert-heading">@texts.name</h4>
+       @Helpers.nonEmpty( texts.smallNote ){ note =>
+         <p>
+           @Helpers.renderMinimalMarkdown(note)
+         </p>
+        @Helpers.nonEmpty( texts.bigNote ){n=><hr>}
+       }
+       @Helpers.nonEmpty( texts.bigNote ){ note =>
+        <p>
+         @Helpers.renderMarkdown(note)
+        </p>
+       }
+   }
+   </div>
+}
+
 <div class="detailedValue-container">
-  @for( v <- topValues ) {
-    <div class="alert alert-danger" role="alert">
-      @renderValue(v, "")
+  @if( topValues.nonEmpty ) {
+    <div class="topValueCtnr">
+    @for(v <- topValues) {
+      @topValueDisplay(v)
+    }
     </div>
   }
   @if(topSlotsAsValues.nonEmpty){
-    <h2>Important Result</h2>
+    <h3>@Messages("interview.report.highlights")</h3>
+    @for( v <- topSlotsAsValues ) {
+      @renderValue(v._2, v._1)
+    }
   }
-  @for( v <- topSlotsAsValues ) {
-    @renderValue(v._2, v._1)
-  }
-  <h2>All the Result</h2>
+  <h3>@Messages("interview.report.detailedResults")</h3>
   @renderValue(aValue, "")
 </div>
