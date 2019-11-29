@@ -1,0 +1,14 @@
+# /etc/systemd/system/policymodels-server.service
+
+[Unit]
+Description=PolicyModels Server
+After=syslog.target network.target
+
+[Service]
+ExecStart=/opt/policymodels/server/bin/policymodelswebapp -Dconfig.file=/opt/policymodels/server/conf/server.conf -Dpidfile.path=/opt/policymodels/server/RUNNING.pid -Dplay.evolutions.db.default.autoApply=true
+SuccessExitStatus=143
+PIDFile=/opt/policymodels/server/RUNNING.pid
+User=play
+
+[Install]
+WantedBy=multi-user.target
