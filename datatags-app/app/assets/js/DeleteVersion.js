@@ -10,7 +10,7 @@ var DeleteVersion = (function(){
                     value: null,
                     visible: true,
                     className: "",
-                    closeModal: true,
+                    closeModal: true
                 },
                 confirm: {
                     text: "OK",

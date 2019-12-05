@@ -22,6 +22,7 @@
       </div>
     </div>
   </div>
+  @comps.sessionStack(session.sectionStack, session.kit.policyModel.get.getDecisionGraph, session.localization)
   <div class="row my-2">
     <div class="col">
       @comps.rejectPanel(node, session.kit.md.id, session.localization, session.answerHistory, session.kit.md.commentingStatus != CommentingStatus.Closed)

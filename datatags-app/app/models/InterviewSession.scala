@@ -1,6 +1,7 @@
 package models
 
 import java.util.{Date, UUID}
+import scala.collection.JavaConverters._
 
 import edu.harvard.iq.policymodels.externaltexts.Localization
 import edu.harvard.iq.policymodels.model.decisiongraph.Answer
@@ -49,6 +50,11 @@ case class InterviewSession(key:UUID,
 
   def removeNote( nodeId: String ) =
     copy( notes=notes-nodeId)
+  
+  def sectionStack:Seq[String] = engineState.getStack.iterator().asScala.filter( s => {
+    val node = kit.policyModel.get.getDecisionGraph.getNode(s)
+    node != null && node.isInstanceOf[SectionNode]
+  }).toSeq
 
 }
 

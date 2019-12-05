@@ -3,7 +3,7 @@
 @(questionNode:AskNode, versionKit:VersionKit, loc:Localization,
         answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, allowNotes:Boolean, note:Option[String])(implicit msgs: MessagesProvider)
 
-<div class="card m-2 border-info questionPanel">
+<div class="card border-info questionPanel">
   <div class="card-header bg-info text-white d-flex">
     <div class="flex-grow-1">
       @if(showId){<span class="nodeIdBadge">@questionNode.getId</span>}@Messages("interview.selectAnswer")

@@ -1,4 +1,5 @@
 @import edu.harvard.iq.policymodels.externaltexts.Localization
+@import edu.harvard.iq.policymodels.externaltexts.LocalizationTexts
 @import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 @import collection.mutable.Set
 
@@ -19,16 +20,20 @@
 }
 
 @visitSectionNode( nd:SectionNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
-  <div class="node section">
-    <h4>@Messages("interview.section"): @loc.getNodeText(nd.getId).orElse(nd.getTitle)</h4>
-    @visitNode(nd.getStartNode, baseLevel, visited)
-  </div>
-  @visitNode(nd.getNextNode, baseLevel, visited)
+  @defining( Helpers.o2o(loc.getSectionTexts(nd.getId)).getOrElse(new LocalizationTexts(nd.getTitle, null,null)) ) { lt =>
+    <div class="node section">
+      <h4>@Messages("interview.section"): @lt.name</h4>
+      @if( lt.smallNote != null ){ <p>@lt.smallNote</p> }
+      @if( lt.bigNote != null ){ @Helpers.renderMarkdown(lt.bigNote) }
+      @visitNode(nd.getStartNode, baseLevel, visited)
+    </div>
+    @visitNode(nd.getNextNode, baseLevel, visited)
+  }
 }
 
 @visitPartNode( nd:PartNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="node part" id="part-@nd.getId()">
-    <h4>@Messages("interview.part"): @nd.getTitle @Helpers.ifEmpty(nd.getTitle){<code>@nd.getId</code>}</h4>
+    <h4>@Messages("interview.part"): <code>@nd.getId</code></h4>
     @visitNode(nd.getStartNode, baseLevel, visited)
   </div>
 }

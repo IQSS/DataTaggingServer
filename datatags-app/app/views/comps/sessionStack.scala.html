@@ -1,0 +1,28 @@
+@(stack:Seq[String], dg:edu.harvard.iq.policymodels.model.decisiongraph.DecisionGraph, loc:edu.harvard.iq.policymodels.externaltexts.Localization)
+@if(stack.nonEmpty){
+  <div class="row my-2">
+    <div class="col">
+      <nav  aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          @for( p <- stack.zipWithIndex ) {
+            @defining( Helpers.textsForSection(p._1, dg, loc) ) { lt =>
+              <li class="breadcrumb-item @if(p._2 == stack.length - 1) {active}">
+                @if( lt.smallNote==null || lt.smallNote.isEmpty ) {
+                  @lt.name
+                } else {
+                  <span data-toggle="popover" data-trigger="hover"
+                        title="@lt.name.replaceAll("\"","\\\"")" data-html="true"
+                    data-content="@Helpers.renderMinimalMarkdown(lt.smallNote).body.replaceAll("\"","'")"
+                  data-placement="bottom">
+                  @lt.name
+                  <i class="fa fa-info-circle"></i>
+                  </span>
+                }
+              </li>
+            }
+          }
+        </ol>
+      </nav>
+    </div>
+  </div>
+}

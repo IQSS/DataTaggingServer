@@ -72,7 +72,7 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
             }
           }
     
-          if ( locLoad.isHasErrors ) {
+          if ( locLoad.hasErrors ) {
             logger.warn("Errors loading localization «" + localizationName + "» for model «" + kitId + "»" )
             loadTrivialLocalization(kitId)
           } else {

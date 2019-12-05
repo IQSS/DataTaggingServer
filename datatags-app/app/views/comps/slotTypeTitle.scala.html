@@ -3,7 +3,7 @@
 @import edu.harvard.iq.policymodels.externaltexts.LocalizationTexts
 @(tp:AbstractSlot, loc:Localization, explanation:String="")
 @defining(
-  Helpers.o2o(loc.getSlotText(tp))
+  Helpers.o2o(loc.getSlotTexts(tp))
           .getOrElse( new LocalizationTexts(tp.getName, tp.getNote, null))
 ){ texts =>
 <div class="typeName">

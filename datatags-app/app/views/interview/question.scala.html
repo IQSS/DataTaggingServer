@@ -25,7 +25,8 @@
       </div>
     </div>
   </div>
-  <div class="row">
+  @comps.sessionStack(session.sectionStack, session.kit.policyModel.get.getDecisionGraph ,session.localization)
+  <div class="row my-2">
     <div class="col">
      @comps.questionPanel(
        questionNode, session.kit, session.localization, session.answerHistory,
@@ -33,9 +34,9 @@
      )
     </div>
   </div>
-  <div class="row">
+  <div class="row my-2">
     <div class="col-md">
-        <div class="card m-2">
+        <div class="card">
             <div class="card-header bg-secondary text-white d-flex">
               <div class="flex-grow-1">@Messages("interview.answerFeed")</div>
               <div class="flex-grow-0"><a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))" class="btn btn-sm btn-outline-light">@Messages("interview.restart")</a></div>
@@ -52,7 +53,7 @@
         </div>
     </div>
     <div class="col-md">
-        <div class="card m-2">
+        <div class="card">
             <div class="card-header bg-secondary text-white">
                 @Messages("interview.currentTags")
             </div>

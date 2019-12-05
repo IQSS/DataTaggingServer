@@ -18,9 +18,10 @@ import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.{DataKey, MutableDataSet}
 import edu.harvard.iq.policymodels.externaltexts.{Localization, LocalizationTexts, LocalizedModelData, MarkupFormat, MarkupString}
-import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
+import edu.harvard.iq.policymodels.model.decisiongraph.nodes.{AskNode, SectionNode}
 import edu.harvard.iq.policymodels.model.policyspace.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
 import controllers.LoggedInAction
+import edu.harvard.iq.policymodels.model.decisiongraph.DecisionGraph
 import edu.harvard.iq.policymodels.model.policyspace.slots.AbstractSlot
 import edu.harvard.iq.policymodels.util.PolicySpaceHelper
 import models.{CommentingStatus, InterviewSession, Note, PublicationStatus}
@@ -280,13 +281,26 @@ object Helpers {
 //  }
   
   def localized( value:AbstractValue, loc:Localization )( block:LocalizationTexts=>Html) = {
-    block( o2o(loc.getSlotValueText(value))
+    block( o2o(loc.getSlotValueTexts(value))
               .getOrElse(new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null)) )
   }
   
   def localized(slot:AbstractSlot, loc:Localization )(block:LocalizationTexts=>Html) = {
-    block( o2o(loc.getSlotText(slot))
+    block( o2o(loc.getSlotTexts(slot))
       .getOrElse(new LocalizationTexts(slot.getName, slot.getNote, null)) )
   }
   
+  def textsForSection( secId:String, dg:DecisionGraph, loc:Localization):LocalizationTexts = {
+    val txts = loc.getSectionTexts(secId)
+    if ( txts.isPresent ) {
+      txts.get
+    } else {
+      val nd = dg.getNode(secId)
+      val title = nd match {
+        case n: SectionNode => n.getTitle
+        case _ => secId
+      }
+      new LocalizationTexts(title, null, null)
+    }
+  }
 }

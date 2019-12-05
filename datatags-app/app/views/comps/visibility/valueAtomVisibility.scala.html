@@ -4,7 +4,7 @@
 @import views.Helpers
 @( value : edu.harvard.iq.policymodels.model.policyspace.values.AtomicValue, loc:Localization, path:String, versionMD:VersionMD )
 @defining(
-  Helpers.o2o(loc.getSlotValueText(value))
+  Helpers.o2o(loc.getSlotValueTexts(value))
           .getOrElse( new LocalizationTexts(PolicySpaceHelper.name(value), PolicySpaceHelper.note(value), null))
 ){ texts =>
 
