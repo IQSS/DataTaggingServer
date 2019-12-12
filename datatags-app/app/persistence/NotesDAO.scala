@@ -39,5 +39,8 @@ class NotesDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvider,
   def getNotesForInterview( interviewId:UUID ):Future[Map[String,Note]] = db.run {
     notes.filter( r => r.interviewHistoryId === interviewId ).result
   }.map( _.map(n=>(n.nodeId,n)).toMap )
-
+  
+  def removeNote( uuid:UUID, nodeId:String ): Future[Int] = db.run{
+    notes.filter( r => r.interviewHistoryId === uuid && r.nodeId === nodeId ).delete
+  }
 }

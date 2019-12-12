@@ -1,6 +1,7 @@
 @import  edu.harvard.iq.policymodels.runtime.RuntimeEngineStatus
 @( session:InterviewSession,
-        notes: Map[String,Note]
+        notes: Map[String,Note],
+        availableLanguages:Seq[String]
 )(implicit req:Request[_], msgs: MessagesProvider)
 
 @scripts = {
@@ -14,6 +15,14 @@
 }
 
 @templates.bsNavBar("Interview Transcript", 'ask, scripts, extraHead) {
+  <div class="row">
+    <div class="col">
+      <div class="d-flex justify-content-end align-items-baseline" style="margin:0 .5rem">
+      @comps.changeLanguageMenu(session.localization, availableLanguages,
+        l=>routes.InterviewCtrl.showAffirm(session.kit.md.id.modelId, session.kit.md.id.version, Some(l)))
+      </div>
+    </div>
+  </div>
   <div class="row my-2">
     <div class="col">
       <h2>Interview Transcript - Affirmation</h2>

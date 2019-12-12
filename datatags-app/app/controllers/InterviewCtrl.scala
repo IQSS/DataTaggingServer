@@ -23,7 +23,7 @@ import play.api.i18n._
 import scala.collection.JavaConverters._
 import util.JavaOptionals.toRichOptional
 
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration._
 
 
@@ -37,7 +37,7 @@ object InterviewCtrl {
 class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelManager, locs:LocalizationManager,
                               langs:Langs, cc:ControllerComponents, interviewHistories: InterviewHistoryDAO) extends InjectedController with I18nSupport  {
 
-  private implicit val ec = cc.executionContext
+  private implicit val ec:ExecutionContext = cc.executionContext
   private val logger = Logger( classOf[InterviewCtrl] )
 
   def interviewIntroDirect(modelId:String, versionNum:Int) = Action {
@@ -46,8 +46,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
   def interviewIntro(modelId:String, versionNum:Int) = Action.async { implicit request =>
     for {
-      modelOpt   <- models.getModel(modelId)
-      versionOpt <- modelOpt.map(model => models.getVersionKit(KitKey(modelId, versionNum))).getOrElse(Future(None))
+      versionOpt <- models.getVersionKit(KitKey(modelId, versionNum))
     } yield {
       versionOpt match {
         case Some(version) => {
@@ -58,7 +57,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
             }
             
           } else {
-            NotFound("Model not found.") // really that's a NotAuthorized, but that would give away the fact that the version exists.
+            NotFound(views.html.errorPages.NotFound("Model not found.")) // really that's a NotAuthorized, but that would give away the fact that the version exists.
           }
         }
         case None => NotFound("Model not found.")
@@ -73,7 +72,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       pmKitOpt <- models.getVersionKit(kitId)
     } yield {
       (modelOpt, pmKitOpt) match {
-        case ( _, None) => NotFound(s"Model id $kitId not found")
+        case ( _, None) => NotFound(views.html.errorPages.NotFound(s"Model id $kitId not found"))
         case (Some(model), Some(pmKit)) => {
           if ( canView(req, pmKit.md) ) {
             pmKit.policyModel match {
@@ -102,9 +101,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                 readmeOpt match {
                   case Some(readMe) => {
                     // show the readme
-                    val verKitFut = models.getVersionKit(kitId)
-                    val verKit = Await.result(verKitFut, 10.seconds)
-                    Ok(views.html.interview.showReadme(verKit.get, readMe, l10n.getLocalizedModelData.getTitle,
+                    Ok(views.html.interview.showReadme(pmKit, readMe, l10n.getLocalizedModelData.getTitle,
                       l10n.getLocalizedModelData.getSubTitle, l10n, availableLocs)(req, messagesApi.preferred(Seq(lang)))
                     ).withLang(lang).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
                   }
@@ -116,10 +113,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
               }
             }
           } else {
-            NotFound("Model not found.") // really that's a NotAuthorized, but that would give away the fact that the version exists.
+            NotFound(views.html.errorPages.NotFound("Model not found.")) // really that's a NotAuthorized, but that would give away the fact that the version exists.
           }
         }
-        case _ => NotFound("Model not found.")
+        case _ => NotFound(views.html.errorPages.NotFound("Model not found."))
       }
     }
   }
@@ -144,14 +141,13 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     }
 
     val availableLocs:Seq[String] = session.kit.policyModel.get.getLocalizations.asScala.toSeq
-    logger.info("runFirstQuestion: loc '" + updated.localization.getLanguage + "'")
     Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None, availableLocs)(req, messagesProvider))
   }
   
   def askNode( modelId:String, versionNum:Int, reqNodeId:String, loc:String) = InterviewSessionAction(cache, cc).async { implicit req =>
     val kitId = KitKey(modelId, versionNum)
     models.getPolicyModel(kitId) match {
-      case None => Future(NotFound("Model not found."))
+      case None => Future(NotFound(views.html.errorPages.NotFound("Model not found.")))
       case Some(pm) => {
         // TODO validate questionnaireId fits the one in the engine state
         val stateNodeId = req.userSession.engineState.getCurrentNodeId
@@ -177,7 +173,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         for {
           note <- if(session.allowNotes && session.notes.contains(reqNodeId)) notes.getNoteText(session.key, reqNodeId) else Future(None)
         } yield {
-          Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang))) ).withLang(lang)(messagesApi)
+          Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang))) ).withLang(lang)
         }
       }
     }
@@ -210,7 +206,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
         //add note
         answerReq.note.map(_.trim).filter(_.nonEmpty) match {
-          case None => session = session.removeNote(session.engineState.getCurrentNodeId)
+          case None => {
+            notes.removeNote( session.key, session.engineState.getCurrentNodeId )
+            session = session.removeNote(session.engineState.getCurrentNodeId)
+          }
           case Some(note) => {
             session = session.updateNote(session.engineState.getCurrentNodeId)
             notes.updateNote( new Note(session.key, note, session.engineState.getCurrentNodeId) )
@@ -223,7 +222,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         val runRes = advanceEngine( session.kit, session.engineState, answer )
 
         //Add Record to DB
-        if(session.saveStat){
+        if ( session.saveStat ) {
           interviewHistories.addRecord(
             InterviewHistoryRecord(session.key, new Timestamp(System.currentTimeMillis()), "a: " + ansRec.answer.getAnswerText))
         }
@@ -235,12 +234,15 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
           case RuntimeEngineStatus.Accept  => {
             // interview is over, need to display or affirm.
             if ( session.requireAffirmation ) {
-              Redirect( routes.InterviewCtrl.showAffirm(kitKey.modelId, kitKey.version) )
+              Redirect( routes.InterviewCtrl.showAffirm(kitKey.modelId, kitKey.version, Some(session.localization.getLanguage)) )
             } else {
               Redirect( routes.InterviewCtrl.accept(kitKey.modelId, kitKey.version, session.localization.getLanguage) )
             }
           }
-          case _ => InternalServerError("Bad interview state")
+          case s:RuntimeEngineStatus => {
+            logger.warn("Interview entered a bad state: " + s.name() +". Interview data: " + session.kit.md.id + " nodeId: " + session.engineState.getCurrentNodeId )
+            InternalServerError("Bad interview state")
+          }
         }
       }
     )
@@ -265,7 +267,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                                 .serializer.decode(revisitRequest.history.take(revisitRequest.idx), request.userSession)
 
         //Add Record to DB
-        if(updatedSession.saveStat){
+        if ( updatedSession.saveStat ) {
           interviewHistories.addRecord(
             InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "revisit to " + updatedSession.engineState.getCurrentNodeId))
         }
@@ -276,13 +278,22 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     )
   }
   
-  def showAffirm( modelId:String, versionNum:Int ) = InterviewSessionAction(cache, cc).async { implicit request =>
-    val session = request.userSession
-    if(session.saveStat){
+  def showAffirm( modelId:String, versionNum:Int, locName:Option[String]) = InterviewSessionAction(cache, cc).async { implicit request =>
+    var session = request.userSession
+    if ( session.saveStat ) {
       interviewHistories.addRecord(
         InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "show affirmation"))
     }
-    notes.getNotesForInterview(session.key).map( noteMap => Ok(views.html.interview.affirmation(session, noteMap)) )
+    for ( newLocName <- locName ) {
+      if ( newLocName != session.localization.getLanguage ) {
+        val l10n = locs.localization(session.kit.md.id, newLocName)
+        session = session.copy(localization = l10n)
+        cache.set(request.userSession.key.toString, session)
+      }
+    }
+    
+    notes.getNotesForInterview(session.key).map( noteMap =>
+      Ok(views.html.interview.affirmation(session, noteMap, session.kit.policyModel.get.getLocalizations.asScala.toSeq)) )
   }
   
   def doAffirm(modelId:String, versionNum:Int) = InterviewSessionAction(cache, cc) { implicit request =>
@@ -346,7 +357,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     }
 
     val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
-    Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode], availableLocs)(request, messagesApi.preferred(Seq(lang))) ).withLang(lang)(messagesApi)
+    Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode], availableLocs)(request, messagesApi.preferred(Seq(lang))) ).withLang(lang)
   }
   
   def transcript( modelId:String, versionNum:Int, format:Option[String], localizationName:Option[String] ) = InterviewSessionAction(cache, cc).async { implicit request =>

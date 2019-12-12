@@ -24,7 +24,7 @@ class Application @Inject()(cached: Cached, models:ModelManager,
   
   def publicModelCatalog = Action.async { implicit req =>
     models.listAllModels().map( mdls =>
-      if ( LoggedInAction.userPresent(req) ) Redirect(routes.ModelCtrl.showModelsList)
+      if ( LoggedInAction.userPresent(req) ) Redirect(routes.ModelCtrl.showModelsList())
       else Ok( views.html.modelCatalog(mdls.sortBy(_.title)) )
     )
   }
@@ -41,7 +41,7 @@ class Application @Inject()(cached: Cached, models:ModelManager,
 
       } yield {
         modelOpt match {
-          case None => NotFound("Policy Model does not exist.")
+          case None => NotFound(views.html.errorPages.NotFound("Policy Model does not exist."))
           case Some(model) => Ok(
             views.html.publicModelViewer(model, versions.filter(v => v.runningStatus != RunningStatus.Failed)))
         }

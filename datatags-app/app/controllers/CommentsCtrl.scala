@@ -23,7 +23,6 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
   def apiAddComment = Action(parse.tolerantJson).async { implicit req =>
     req.body.validate[CommentDTO] match {
       case s: JsSuccess[CommentDTO] => {
-        logger.info("co " + s.value.localization.getOrElse("GG"))
         comments.addComment(s.value.toComment()).map(_ => Ok(Json.toJson("message" -> "Feedback sent")))
       }
       case e: JsError => {
@@ -36,22 +35,19 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
   def showComment(id: Long) = LoggedInAction(cache, cc).async { implicit req =>
     for {
       commentOpt <- comments.get(id)
-      modelOpt:Option[VersionKit] <- commentOpt.map(cmt => models.getVersionKit(KitKey(cmt.modelId, cmt.version))).getOrElse(Future(None))
+      commentFut = commentOpt.map(cmt => models.getVersionKit(KitKey(cmt.modelId, cmt.version)))
+      modelOpt <- commentFut.getOrElse(Future(None))
     } yield {
       modelOpt match {
-        case None => NotFound("Cannot find model for comment " + id)
+        case None => NotFound(views.html.errorPages.NotFound("Model for comment not found"))
         case Some(aKit) => {
           commentOpt match {
-            case None => NotFound("Comment not found")
+            case None => NotFound(views.html.errorPages.NotFound("Comment not found"))
             case Some(comment) => {
               aKit.policyModel match {
                 case None => NotFound("Model not found")
                 case Some( model ) => {
-//                  logger.info("###############")
                   val l10n = locs.localization(aKit.md.id, comment.localization)
-//                  logger.info("comment loc " + comment.localization.getOrElse("NONE"))
-//                  logger.info("l10 " + l10n.toString)
-//                  logger.info("###############")
                   val readmeOpt = if(comment.localization.isDefined && comment.localization.get == ""){ //in case the feedback is for policy-space, get default loc
                     None
                   } else {

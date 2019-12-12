@@ -140,7 +140,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
 
   def showModelsList = LoggedInAction(cache,cc).async{ implicit req =>
     for {
-                                           models <- models.listAllModels()
+      models <- models.listAllModels()
     } yield {
       Ok(views.html.backoffice.modelList(models.sortBy(_.title), req.flash.get("message")))
     }
@@ -268,7 +268,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
         Ok(s"Model version $mvk was not loaded")
       }
     } else {
-      Unauthorized("Endpoint availabel from localhost only.")
+      Unauthorized("Endpoint available from localhost only.")
     }
   }
   
