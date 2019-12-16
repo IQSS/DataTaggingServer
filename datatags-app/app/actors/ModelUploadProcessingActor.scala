@@ -8,7 +8,7 @@ import java.util.zip.ZipInputStream
 
 import javax.inject.{Inject, Named}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import actors.ModelUploadProcessingActor.{DeleteVersion, PrepareModel}
 import actors.VisualizationActor.DeleteVisualizationFiles
 import akka.actor.{Actor, ActorRef, Props}

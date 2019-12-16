@@ -101,7 +101,7 @@ object Helpers {
   
   def renderMini( qNode:AskNode, loc:Localization ): Html = {
     val textOpt = loc.getNodeText(qNode.getId)
-    if ( textOpt isPresent ) {
+    if ( textOpt.isPresent ) {
       val parser = Parser.builder(MARKDOWN_OPTIONS_FULL).build
       val renderer = HtmlRenderer.builder(MARKDOWN_OPTIONS_FULL).build
       val document = parser.parse(textOpt.get)

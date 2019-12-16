@@ -206,7 +206,7 @@
 }
 
 @if(!isInvite){
-  @templates.backend("Profile Editor", 'backOffice)(content)
+  @templates.backend("Profile Editor", Symbol("backOffice"))(content)
 } else {
   @templates.bsBase("New User")(Html(""))(content)
 }

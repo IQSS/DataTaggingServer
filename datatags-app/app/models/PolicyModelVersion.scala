@@ -3,6 +3,7 @@ package models
 import java.sql.Timestamp
 
 object PublicationStatus extends Enumeration {
+  type PublicationStatus = Value
   /** Only logged in users can view */
   val Private = Value
   
@@ -14,7 +15,7 @@ object PublicationStatus extends Enumeration {
 }
 
 object CommentingStatus extends Enumeration {
-  
+  type CommentingStatus = Value
   /** Nobody can comment */
   val Closed = Value
   
@@ -26,7 +27,8 @@ object CommentingStatus extends Enumeration {
 }
 
 object RunningStatus extends Enumeration {
-
+  type RunningStatus = Value
+  
   /** finished with no errors */
   val Runnable = Value
 

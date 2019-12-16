@@ -194,7 +194,7 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
   def ingestSingleVersion(md:VersionMD, path: Path): Future[Unit] = {
     logger.info("Reading model %s".format(path.toString))
     //Actor unzip
-    implicit val timeout: Timeout = Timeout(60 seconds)
+    implicit val timeout: Timeout = Timeout(60.seconds)
     (uploadActor ? PrepareModel(path, md)).map(modelPath => {
       //load model, update status
       val loadedVer = loadVersion(md, modelPath.asInstanceOf[Path])

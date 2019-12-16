@@ -8,7 +8,7 @@ organization := "edu.harvard.iq"
 
 maintainer := "mbarsinai@iq.harvard.edu"
 
-scalaVersion := "2.12.8"
+scalaVersion := "2.13.1"
 
 routesGenerator := InjectedRoutesGenerator
 
@@ -21,7 +21,7 @@ libraryDependencies ++= Seq(
   ws,
   guice,
   openId,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.1" % "test",
+  "org.scalatestplus.play" %% "scalatestplus-play" % "4.0.3" % "test",
   "org.webjars" % "jquery" % "3.4.1",
   "org.webjars" % "bootstrap" % "4.3.1",
   "org.webjars" % "sweetalert" % "2.1.0" ,
@@ -29,12 +29,12 @@ libraryDependencies ++= Seq(
   "com.vladsch.flexmark" % "flexmark-all" % "0.50.40",
   "org.postgresql" % "postgresql" % "42.0.0",
   "org.webjars" % "popper.js" % "1.14.6",
-  "com.typesafe.play" %% "play-slick" % "4.0.0",
-  "com.typesafe.play" %% "play-slick-evolutions" % "4.0.0",
+  "com.typesafe.play" %% "play-slick" % "4.0.2",
+  "com.typesafe.play" %% "play-slick-evolutions" % "4.0.2",
   "org.mindrot" % "jbcrypt" % "0.3m",
-  "com.typesafe.play" %% "play-iteratees" % "2.6.1",
-  "com.typesafe.play" %% "play-mailer" % "6.0.1",
-  "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
+//  "com.typesafe.play" %% "play-iteratees" % "2.6.1",
+  "com.typesafe.play" %% "play-mailer" % "7.0.1",
+  "com.typesafe.play" %% "play-mailer-guice" % "7.0.1"
 )
 
 TwirlKeys.templateImports ++= Seq("views.Helpers", "views.Helpers._",

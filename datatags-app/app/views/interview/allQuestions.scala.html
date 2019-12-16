@@ -75,7 +75,7 @@
 }
 
 
-@templates.bsNavBar(Messages("interview.questions")+":" + verKit.policyModel.get.getMetadata.getVersion, 'tag, extraHead = extraHead ) {
+@templates.bsNavBar(Messages("interview.questions")+":" + verKit.policyModel.get.getMetadata.getVersion, Symbol("tag"), extraHead = extraHead ) {
   <div class="row">
     <div class="col">
       <div class="d-flex justify-content-end align-items-baseline">

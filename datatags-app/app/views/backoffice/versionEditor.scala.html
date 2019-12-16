@@ -15,7 +15,7 @@
 }
 
 
-@templates.backend("Model Editor", 'backOffice, scripts ) {
+@templates.backend("Model Editor", Symbol("backOffice"), scripts ) {
 
   <div class="row my-2">
     <div class="col">
@@ -32,7 +32,7 @@
           <label for="publicationStatusSelect" class="col-sm-2 col-form-label">Who can view</label>
           <div class="col-sm-10">
             <select class="form-control" name="publicationStatus" id="publicationStatusSelect">
-              @for( v <- PublicationStatus.values ){
+              @for( v <- PublicationStatus.values.iterator ){
                 <option value="@v.toString" @if(form("publicationStatus").value.get==v.toString){selected}>@Helpers.publicationStatus2Str(v)</option>
               }
             </select>
@@ -46,7 +46,7 @@
           <label for="commentingStatusSelect" class="col-sm-2 col-form-label">Who can comment</label>
           <div class="col-sm-10">
             <select class="form-control" name="commentingStatus" id="commentingStatusSelect">
-            @for( v <- CommentingStatus.values ){
+            @for( v <- CommentingStatus.values.iterator ){
               <option value="@v.toString" @if(form("commentingStatus").value.get==v.toString){selected}>@Helpers.commentingStatus2Str(v)</option>
             }
             </select>

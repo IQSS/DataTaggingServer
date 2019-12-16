@@ -9,7 +9,7 @@ import edu.harvard.iq.policymodels.runtime.exceptions.DataTagsRuntimeException
  */
 class TaggingEngineListener extends edu.harvard.iq.policymodels.runtime.RuntimeEngine.Listener {
 
-  var exception:DataTagsRuntimeException = null
+  var exception:DataTagsRuntimeException = _
   private val _traversedNodes = collection.mutable.Buffer[Node]()
   private val sections = collection.mutable.ArrayStack[SectionNode]()
 
@@ -21,7 +21,7 @@ class TaggingEngineListener extends edu.harvard.iq.policymodels.runtime.RuntimeE
     _traversedNodes += aNode
   }
 
-  def traversedNodes:Seq[Node] = _traversedNodes
+  def traversedNodes:Seq[Node] = _traversedNodes.toSeq
 
   override def statusChanged(runtimeEngine: RuntimeEngine): Unit = {}
   
@@ -33,5 +33,4 @@ class TaggingEngineListener extends edu.harvard.iq.policymodels.runtime.RuntimeE
 
   override def partStarted(runtimeEngine: RuntimeEngine, node: Node): Unit = {}
 
-  def sectionStack:Seq[SectionNode] = sections
 }

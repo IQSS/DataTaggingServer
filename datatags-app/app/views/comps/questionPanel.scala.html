@@ -22,7 +22,7 @@
       @Helpers.renderMarkdown( nodeText )
     }
   </div>
-  @helper.form( action=routes.InterviewCtrl.answer(versionKit.md.id.modelId, versionKit.md.id.version, questionNode.getId), 'id->"answerForm" ) {
+  @helper.form( action=routes.InterviewCtrl.answer(versionKit.md.id.modelId, versionKit.md.id.version, questionNode.getId), Symbol("id")->"answerForm" ) {
     <div class="card-body noteCtnr" id="noteDiv" @if(note.isEmpty) {style="display: none" }>
         <textarea placeholder="@Messages("interview.annotateAnswer")" name="note" class="form-control" rows="2">@note.getOrElse("")</textarea>
     </div>

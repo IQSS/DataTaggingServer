@@ -15,7 +15,7 @@
 
 @import views.Helpers
 
-@templates.bsNavBar(qKit.policyModel.get.getMetadata.getTitle + ": " + Messages("interview.readme"), 'tag, scripts, extraHead) {
+@templates.bsNavBar(qKit.policyModel.get.getMetadata.getTitle + ": " + Messages("interview.readme"), Symbol("tag"), scripts, extraHead) {
   <div class="row">
     <div class="col">
       <div class="d-flex justify-content-end align-items-baseline">

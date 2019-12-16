@@ -18,7 +18,7 @@ object JSONFormats {
   implicit val timestampFmt = new Format[Timestamp]{
     override def writes(o: Timestamp): JsValue = JsNumber(o.getTime)
     override def reads(json: JsValue): JsResult[Timestamp] = json match {
-      case num:JsNumber => JsSuccess(new Timestamp(num.value.longValue()))
+      case num:JsNumber => JsSuccess(new Timestamp(num.value.longValue))
       case _ => JsError("Timestamp should be a number")
     }
   }

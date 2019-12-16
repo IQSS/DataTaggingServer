@@ -1,7 +1,7 @@
 @import edu.harvard.iq.policymodels.externaltexts.Localization
 @(answerHistory: Seq[AnswerRecord], kitKey:KitKey, reverse:Boolean, serializer:Serialization, loc:Localization)(implicit msgs: MessagesProvider)
 @import views.Helpers
-@helper.form( action=routes.InterviewCtrl.revisit(kitKey.modelId, kitKey.version), 'id->"answerHistory") {
+@helper.form( action=routes.InterviewCtrl.revisit(kitKey.modelId, kitKey.version), Symbol("id")->"answerHistory") {
     <ol class="answer-history">
         @defining( answerHistory.zipWithIndex ) { answerRecTuples =>
             @defining( if (reverse) answerRecTuples.reverse else answerRecTuples ) { answerRecOrdered =>

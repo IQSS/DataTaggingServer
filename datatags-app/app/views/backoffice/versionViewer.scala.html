@@ -16,7 +16,7 @@
 }
 
 
-@templates.backend("Version Viewer", 'backOffice, scripts ) {
+@templates.backend("Version Viewer", Symbol("backOffice"), scripts ) {
   <div class="row">
     <div class="col-md-12">
       <a href="@routes.ModelCtrl.showModelPage(model.id)">

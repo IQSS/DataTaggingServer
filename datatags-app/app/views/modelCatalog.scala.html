@@ -1,6 +1,6 @@
 @(models: Seq[Model])(implicit req:Request[_])
 
-@templates.bsNavBar("PolicyModels: Server Catalog", 'frontEnd) {
+@templates.bsNavBar("PolicyModels: Server Catalog", Symbol("frontEnd")) {
   <div class="container" id="content">
     <div class="row">
       <div class="col-md-12">
