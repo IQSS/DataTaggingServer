@@ -25,6 +25,7 @@ libraryDependencies ++= Seq(
   "org.webjars" % "jquery" % "3.4.1",
   "org.webjars" % "bootstrap" % "4.3.1",
   "org.webjars" % "sweetalert" % "2.1.0" ,
+  "org.webjars.npm" % "quill" % "1.3.7",
   "com.typesafe.play" %% "play-json" % "2.6.10",
   "com.vladsch.flexmark" % "flexmark-all" % "0.50.40",
   "org.postgresql" % "postgresql" % "42.0.0",
@@ -32,7 +33,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.play" %% "play-slick" % "4.0.2",
   "com.typesafe.play" %% "play-slick-evolutions" % "4.0.2",
   "org.mindrot" % "jbcrypt" % "0.3m",
-//  "com.typesafe.play" %% "play-iteratees" % "2.6.1",
   "com.typesafe.play" %% "play-mailer" % "7.0.1",
   "com.typesafe.play" %% "play-mailer-guice" % "7.0.1"
 )

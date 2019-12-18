@@ -1,50 +1,29 @@
 @(settings:Map[SettingKey.Value, Setting])(implicit req:Request[_])
 
 @extraHead = {
-  <link rel="stylesheet" type="text/css" href="@routes.Assets.at("vnd/pell/pell.min.css")">
-  <style>
-    .pell-content {
-      background-color: #fff;
-    }
-    .pell-button {
-      width:2.5em;
-    }
-  </style>
+  <link rel="stylesheet" type="text/css" href="@routes.Assets.at("lib/quill/dist/quill.snow.css")">
 }
 
 @scripts = {
-  <script src="@routes.Assets.at("vnd/pell/pell.min.js")"></script>
+  <script src="@routes.Assets.at("lib/quill/dist/quill.min.js")"></script>
   <script src="@routes.Assets.at("js/Customization.js")"></script>
   <script>
-          $(document).ready( function(){
-            customizationSetup();
-          } );
+    $(document).ready( function(){
+      customizationSetup();
+    });
   </script>
 }
 
 @templates.backend("Manage PolicyModels Server", Symbol("customize"), scripts, extraHead){
-<div class="row my-2 flex-row">
-  <div class="col flex-grow-1">
-    <h1>
-      Server Customization
-    </h1>
-  </div>
-  <div class="col text-right">
+  @comps.pageTitleRow("Server Customization"){
     <button onclick="save()" class="btn btn-large btn-primary"><i class="fa fa-save"></i> Save</button>
-  </div>
+  }
 
-</div>
-  <div class="row my-2">
-    <div class="col">
-      <div class="card border-secondary">
-        <div class="card-header">
-          Front Page Text
-        </div>
-        <div class="card-body">
-          <div id="pell"></div>
-        </div>
-      </div>
-    </div>
+<div class="row my-2">
+  <div class="col">
+    <h3>Front Page Text</h3>
+    <div id="frontPageTextEditor" style="height: 20em"></div>
   </div>
+</div>
 
 }

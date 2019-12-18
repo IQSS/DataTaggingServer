@@ -32,7 +32,9 @@
     <div class="row">
       <div class="col-md-12">
         @if( Helpers.hasContent(text.map(_.value)) ){
-          @Html(text.get.value)
+          <div class="ql-edited">
+            @Html(text.get.value)
+          </div>
         } else { @defaultText }
       </div>
     </div>

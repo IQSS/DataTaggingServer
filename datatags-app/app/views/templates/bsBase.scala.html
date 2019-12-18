@@ -7,11 +7,13 @@
 
     <title>@title</title>
 
-    <link href="@routes.Assets.at("/css/font-awesome.min.css")" rel="stylesheet">
-    <link href="@routes.Assets.at("/lib/bootstrap/css/bootstrap.min.css")" rel="stylesheet">
-    <link rel="stylesheet" href="@routes.Assets.at("css/main.min.css")">
+    <link href="@routes.Assets.at("css/font-awesome.min.css")" rel="stylesheet">
+    <link href="@routes.Assets.at("lib/bootstrap/css/bootstrap.min.css")" rel="stylesheet">
+	  <link rel="stylesheet" href="@routes.Assets.at("vnd/quilljs/quill.display.css")">
 	  <link rel="stylesheet" href="@routes.Assets.at("css/tags.min.css")">
+    <link rel="stylesheet" href="@routes.Assets.at("css/main.min.css")">
 	  <link rel="stylesheet" href="@routes.Assets.at("css/styledInputs.min.css")">
+	  <link rel="stylesheet" href="@routes.Assets.at("css/Informationals.min.css")">
     <link rel="icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
 	   @extraHead
     @*@comps.analytics()*@
@@ -48,6 +50,8 @@
     <script src="@routes.Assets.at("lib/sweetalert/sweetalert.min.js")"></script>
     <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
     <script src="@routes.Assets.versioned("js/JsUtils.js")"></script>
+    <script src="@routes.Assets.versioned("js/UiUtils.js")"></script>
+    <script src="@routes.Assets.versioned("js/Informationals.js")"></script>
     <script src="@routes.Assets.versioned("js/Comments.js")"></script>
     @scripts
   <script type="text/javascript">

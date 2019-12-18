@@ -63,6 +63,7 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
         val locMap = allLocalizations(kitId)
   
         val locLoad = new LocalizationLoader()
+        
         try {
           val loc = locLoad.load(models.getPolicyModel(kitId).get, localizationName)
           if ( ! locLoad.getMessages.isEmpty ) {

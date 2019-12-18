@@ -1,24 +1,16 @@
 @( models:Seq[Model], message:Option[String] )
-
-@templates.backend("Model Editor", Symbol("backOffice") ) {
-  <div class="row">
-    <div class="col-md-12">
-      <h1>
-        <div class="float-right">
-          <a href="@routes.ModelCtrl.showNewModelPage()" class="btn btn-large btn-secondary"><i class="fa fa-plus-circle"></i> Add</a>
-        </div>
-        Models</h1>
-    </div>
-  </div>
-  @for( m <- message ){
-    <div class="row">
-      <div class="col-md-12">
-        <div class="alert alert-info alert-dismissable" role="alert">
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          @m
-        </div>
-      </div>
-    </div>
+@scripts ={
+  <script language="JavaScript">
+    $(document).ready( function(){
+      @for( m <- message ){
+        Informationals.makeInfo("@Html(m.replaceAll("\"","\\\\\""))", "", 3000).show();
+      }
+    });
+  </script>
+}
+@templates.backend("Model Editor", Symbol("backOffice"), scripts ) {
+  @comps.pageTitleRow("Models"){
+    <a href="@routes.ModelCtrl.showNewModelPage()" class="btn btn-large btn-secondary"><i class="fa fa-plus-circle"></i> Add</a>
   }
   <div class="row">
     <div class="col-md-12">

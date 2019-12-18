@@ -6,18 +6,16 @@
 
 
 @templates.backend("Model Editor", Symbol("backOffice"), scripts ) {
-
-  <div class="row my-2">
-    <div class="col">
-      <h3>Model Editor</h3>
-      <div class="form-text text-muted">
-        Use this page to create and edit <em>models</em>. models serve as a container with a fixed URL for different versions of a policy model.
-      </div>
-    </div>
-  </div>
-  <div class="row my-2">
-    <div class="col">
-      <form action="@if(isNew){@routes.ModelCtrl.doSaveNewModel}else{@routes.ModelCtrl.doSaveModel(form("id").value.get)}" method="POST">
+  <form action="@if(isNew){@routes.ModelCtrl.doSaveNewModel}else{@routes.ModelCtrl.doSaveModel(form("id").value.get)}" method="POST">
+    @comps.pageTitleRow("Model Editor",
+      "Use this page to create and edit models. models serve as a container with a fixed URL for different versions of a policy model."){
+      @if( ! isNew ){
+        <a href="@routes.ModelCtrl.showModelPage(form("id").value.get)" class="btn btn-secondary">Cancel</a>
+      }
+      <button type="submit" class="btn btn-primary">Save</button>
+    }
+    <div class="row my-2">
+      <div class="col">
         <input type="hidden" name="shouldBeNew" value="@form("shouldBeNew").value.getOrElse("0")">
 
         <div class="form-group row @Helpers.fieldStatus(form("id"))">
@@ -94,7 +92,7 @@
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </div>
-      </form>
-    </div>
-  </div>
+      </div>
+   </div>
+  </form>
 }

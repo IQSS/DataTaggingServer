@@ -11,6 +11,9 @@
     $(document).ready( function(){
         JsUtils.fillAccessLinks();
         JsUtils.addHost("#linkToLatest");
+      @for( m <- message ){
+        Informationals.makeInfo("@Html(m.replaceAll("\"","\\\\\""))", "", 3000).show();
+      }
     })
   </script>
   <script src="@routes.Assets.at("js/DeleteVersion.js")"></script>
@@ -33,16 +36,6 @@
       </div>
     }
   </div>
-  @for( m <- message ){
-    <div class="row my-2">
-      <div class="col">
-        <div class="alert alert-info alert-dismissable" role="alert">
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          @m
-        </div>
-      </div>
-    </div>
-  }
   @if( model.note.trim.nonEmpty ) {
     <div class="row my-2">
       <div class="col">

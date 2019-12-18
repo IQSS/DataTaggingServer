@@ -17,21 +17,18 @@
 
 @templates.backend("Model Editor", Symbol("backOffice"), scripts ) {
 
-  <div class="row my-2">
-    <div class="col">
-      <h3>Policy Model Version Editor</h3>
-      <small class="form-text text-muted">
-        Use this page to @if(versionNumber.isDefined){edit}else{create} a single version of policy model.
-      </small>
-    </div>
-  </div>
-  <div class="row my-2">
-    <div class="col">
-      <form enctype="multipart/form-data" action="@versionNumber.map(n=>routes.ModelCtrl.saveVersion(modelId, n)).getOrElse(routes.ModelCtrl.uploadNewVersion(modelId))" method="POST">
+  <form enctype="multipart/form-data" action="@versionNumber.map(n=>routes.ModelCtrl.saveVersion(modelId, n)).getOrElse(routes.ModelCtrl.uploadNewVersion(modelId))" method="POST">
+    @comps.pageTitleRow("Policy Model Version Editor",
+      "Use this page to " + (if(versionNumber.isDefined) "edit" else "create") + " a single version of policy model."){
+      <a href="@routes.ModelCtrl.showModelPage(modelId)" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">Save</button>
+    }
+    <div class="row my-2">
+      <div class="col">
         <div class="form-group row">
           <label for="publicationStatusSelect" class="col-sm-2 col-form-label">Who can view</label>
           <div class="col-sm-10">
-            <select class="form-control" name="publicationStatus" id="publicationStatusSelect">
+            <select class="form-control custom-select" name="publicationStatus" id="publicationStatusSelect">
               @for( v <- PublicationStatus.values.iterator ){
                 <option value="@v.toString" @if(form("publicationStatus").value.get==v.toString){selected}>@Helpers.publicationStatus2Str(v)</option>
               }
@@ -45,7 +42,7 @@
         <div class="form-group row">
           <label for="commentingStatusSelect" class="col-sm-2 col-form-label">Who can comment</label>
           <div class="col-sm-10">
-            <select class="form-control" name="commentingStatus" id="commentingStatusSelect">
+            <select class="form-control custom-select" name="commentingStatus" id="commentingStatusSelect">
             @for( v <- CommentingStatus.values.iterator ){
               <option value="@v.toString" @if(form("commentingStatus").value.get==v.toString){selected}>@Helpers.commentingStatus2Str(v)</option>
             }
@@ -92,7 +89,7 @@
             <button type="submit" class="btn btn-primary">Save</button>
           </div>
         </div>
-      </form>
+      </div>
     </div>
-  </div>
+  </form>
 }

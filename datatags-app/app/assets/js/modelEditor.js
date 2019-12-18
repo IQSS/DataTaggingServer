@@ -20,15 +20,28 @@ var ModelEditor = (function(){
             swal({
                 title: "Delete Model '"+name+"'?",
                 text: "This operation cannot be undone. External links referring to this model will be broken.",
-                type: "warning",
-                showCancelButton: true,
-                confirmButtonText: "Yes, delete it",
-                cancelButtonText: "Cancel",
-                closeOnConfirm: false,
-                closeOnCancel: true
+                dangerMode: true,
+                buttons:{
+                    cancel: {
+                        text: "Cancel",
+                        value: null,
+                        visible: true,
+                        className: "",
+                        closeModal: true
+                    },
+                    confirm: {
+                        text: "Delete Model",
+                        value: true,
+                        visible: true,
+                        className: "",
+                        closeModal: false
+                    }
+                }
             }).then(function(isConfirm) {
                 if (isConfirm) {
                     deleteFile(id);
+                } else {
+                    swal.close();
                 }
             });
         }
