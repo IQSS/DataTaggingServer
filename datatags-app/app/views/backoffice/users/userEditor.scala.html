@@ -1,4 +1,4 @@
-@(form:Form[UserFormData], destination:Call, isNew:Boolean, isInvite:Boolean, activeFirst:Boolean=true)
+@(form:Form[UserFormData], destination:Call, isNew:Boolean, isInvite:Boolean, activeFirst:Boolean=true)(implicit request: RequestHeader, msgs: MessagesProvider)
 
 @content = {
   <div class="container">
@@ -206,7 +206,7 @@
 }
 
 @if(!isInvite){
-  @templates.backend("Profile Editor", Symbol("backOffice"))(content)
+  @templates.backend("Profile Editor", views.BackOfficeSections.Users)(content)
 } else {
   @templates.bsBase("New User")(Html(""))(content)
 }

@@ -1,4 +1,4 @@
-@(settings:Map[SettingKey.Value, Setting])(implicit req:Request[_])
+@(settings:Map[SettingKey.Value, Setting])(implicit request: RequestHeader, msgs: MessagesProvider)
 
 @extraHead = {
   <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("lib/quill/dist/quill.snow.css")">

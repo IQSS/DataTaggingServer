@@ -1,5 +1,5 @@
-@(users:Seq[User], curUser:User)
-@templates.backend("Users", Symbol("backOffice") ) {
+@(users:Seq[User], curUser:User)(implicit request: RequestHeader, msgs: MessagesProvider)
+@templates.backend("Users", views.BackOfficeSections.Users ) {
   <div class="row">
     <div class="col-md-12">
       <h1>

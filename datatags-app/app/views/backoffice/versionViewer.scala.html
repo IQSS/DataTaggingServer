@@ -1,5 +1,5 @@
 @import edu.harvard.iq.policymodels.externaltexts.TrivialLocalization
-@(ver:VersionKit, model:Model, comments:Seq[Comment])(implicit msgs:MessagesProvider)
+@(ver:VersionKit, model:Model, comments:Seq[Comment])(implicit request: RequestHeader, msgs: MessagesProvider)
 
 @scripts ={
 @if(ver.md.runningStatus == RunningStatus.Processing){
@@ -16,7 +16,7 @@
 }
 
 
-@templates.backend("Version Viewer", Symbol("backOffice"), scripts ) {
+@templates.backend("Version Viewer", views.BackOfficeSections.Models, scripts ) {
   <div class="row">
     <div class="col-md-12">
       <a href="@routes.ModelCtrl.showModelPage(model.id)">

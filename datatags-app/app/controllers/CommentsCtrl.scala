@@ -53,7 +53,7 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
                   } else {
                     l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
                   }
-                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, l10n, readmeOpt)(messagesApi.preferred(req)))
+                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, l10n, readmeOpt)(req, messagesApi.preferred(req)))
                 }
               }
             }

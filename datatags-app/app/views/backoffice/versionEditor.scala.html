@@ -1,6 +1,7 @@
 @import edu.harvard.iq.policymodels.externaltexts.Localization
 @import edu.harvard.iq.policymodels.model.policyspace.slots._
-@(form:Form[VersionFormData], modelId:String, versionNumber:Option[Int], tagType:Option[AbstractSlot], loc:Option[Localization], versionMD:Option[VersionMD])(implicit msgs:MessagesProvider)
+@(form:Form[VersionFormData], modelId:String, versionNumber:Option[Int], tagType:Option[AbstractSlot], loc:Option[Localization], versionMD:Option[VersionMD]
+)(implicit request: RequestHeader, msgs: MessagesProvider)
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -15,7 +16,7 @@
 }
 
 
-@templates.backend("Model Editor", Symbol("backOffice"), scripts ) {
+@templates.backend("Model Editor", views.BackOfficeSections.Models, scripts ) {
 
   <form enctype="multipart/form-data" action="@versionNumber.map(n=>routes.ModelCtrl.saveVersion(modelId, n)).getOrElse(routes.ModelCtrl.uploadNewVersion(modelId))" method="POST">
     @comps.pageTitleRow("Policy Model Version Editor",

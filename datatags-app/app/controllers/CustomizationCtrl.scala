@@ -1,11 +1,11 @@
 package controllers
 
 import javax.inject.Inject
-
 import models._
 import persistence.{CommentsDAO, SettingsDAO}
 import play.api.{Configuration, Logger}
 import play.api.cache.{Cached, SyncCacheApi}
+import play.api.i18n.I18nSupport
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{ControllerComponents, InjectedController}
 
@@ -16,12 +16,12 @@ import scala.concurrent.Future
   */
 class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settings:SettingsDAO,
                                   comments:CommentsDAO,
-                                  cc:ControllerComponents ) extends InjectedController {
+                                  cc:ControllerComponents ) extends InjectedController with I18nSupport {
   implicit private val ec = cc.executionContext
   import JSONFormats.customizationDTOFmt
   
   // TODO: Move somewhere more sensible
-  def index = LoggedInAction(cache, cc).async { req =>
+  def index = LoggedInAction(cache, cc).async { implicit  req =>
     comments.listRecent(10).map( commentDNs => {
       Ok(views.html.backoffice.index(req.user, commentDNs.sortBy( -_.comment.time.getTime )))
     })

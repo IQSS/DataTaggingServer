@@ -1,4 +1,4 @@
-@( models:Seq[Model], message:Option[String] )
+@( models:Seq[Model], message:Option[String] )(implicit request: RequestHeader, msgs: MessagesProvider)
 @scripts ={
   <script language="JavaScript">
     $(document).ready( function(){
@@ -8,7 +8,7 @@
     });
   </script>
 }
-@templates.backend("Model Editor", Symbol("backOffice"), scripts ) {
+@templates.backend("Model Editor", views.BackOfficeSections.Models, scripts ) {
   @comps.pageTitleRow("Models"){
     <a href="@routes.ModelCtrl.showNewModelPage()" class="btn btn-large btn-secondary"><i class="fa fa-plus-circle"></i> Add</a>
   }

@@ -1,3 +1,13 @@
+navbar.title=PM|Server
+navbar.dashboard=Dashboard
+navbar.models=Models
+navbar.users=Users
+navbar.customize=Customize
+navbar.customize.pages=Pages
+navbar.customize.texts=Extra Texts
+navbar.customize.styling=Styling
+navbar.customize.analytics=Analytics
+
 interview.readme=README
 interview.question=Question
 interview.model=Model

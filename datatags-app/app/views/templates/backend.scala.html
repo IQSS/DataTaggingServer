@@ -1,4 +1,5 @@
-@(title:String, section:Symbol, scripts: Html=Html(""), extraHead: Html=Html(""))(content:Html)
+@import views._
+@(title:String, currentSection:BackOfficeSections.Value, scripts: Html=Html(""), extraHead: Html=Html(""))(content:Html)(implicit request: RequestHeader, msgs:MessagesProvider)
 
 @headPart = {
 	@extraHead
@@ -7,40 +8,32 @@
 }
 
 @bsBase(title, scripts, headPart) {
-<nav class="navbar navbar-expand-lg navbar-light fixed-top bg-light">
-  <a class="navbar-brand" href="/">PolicyModels</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
+  <div class="container-fluid">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+      <a class="navbar-brand" href="/">@Messages("navbar.title")</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
 
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
-    <ul class="nav navbar-nav mr-auto">
-      <li class="nav-item">
-        <a class="nav-link" href="@routes.CustomizationCtrl.index()">Dashboard</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="@routes.ModelCtrl.showModelsList()">Models</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="@routes.UsersCtrl.showUserList()">Users</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="@routes.CustomizationCtrl.showCustomization()">Customize</a>
-      </li>
-    </ul>
-
-    <div class="nav ml-auto">
-      <ul class="nav navbar-nav">
-        <li class="nav-item"><a class="nav-link" data-toggle="tooltip" data-placement="bottom" href="http://datatags.org" target="_blank" title="Project's home"><i class="fa fa-home"></i></a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tooltip" data-placement="bottom" href="https://github.com/IQSS/DataTags/" title="We're open source! Visit us at GitHub" target="_blank"><i class="fa fa-github-alt"></i></a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tooltip" data-placement="bottom" href="http://iq.harvard.edu" title="Institute of Quantitative Social Science" target="_blank">IQSS</a></li>
-      </ul>
-      <form class="form-inline" method="POST" action="@routes.UsersCtrl.doLogout">
-        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa fa-sign-out"></i> Logout</button>
-      </form>
-    </div>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+        @for( sec <- Structure.backOfficeSections ){
+          @comps.showSection(sec, currentSection==sec.id)
+        }
+        </ul>
+        <div class="nav ml-auto">
+          <ul class="nav navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-toggle="tooltip" data-placement="bottom" href="http://datatags.org" target="_blank" title="Project's home"><i class="fa fa-home"></i></a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tooltip" data-placement="bottom" href="https://github.com/IQSS/DataTags/" title="We're open source! Visit us at GitHub" target="_blank"><i class="fa fa-github-alt"></i></a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tooltip" data-placement="bottom" href="http://iq.harvard.edu" title="Institute of Quantitative Social Science" target="_blank">IQSS</a></li>
+          </ul>
+          <form class="form-inline" method="POST" action="@routes.UsersCtrl.doLogout">
+            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fa fa-sign-out"></i> Logout</button>
+          </form>
+        </div>
+      </div>
+    </nav>
   </div>
-</nav>
 } {
 	@content
 }

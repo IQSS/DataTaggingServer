@@ -17,7 +17,7 @@ import play.api.i18n.{I18nSupport, Langs}
 import play.api.libs.json.Json
 import play.api.mvc.{ControllerComponents, InjectedController}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Future
 
 case class ModelFormData( id:String, title:String, note:String, saveStat:Boolean,
@@ -76,11 +76,11 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     )(VersionFormData.apply)(VersionFormData.unapply)
   )
 
-  def showNewModelPage = LoggedInAction(cache,cc){ req =>
+  def showNewModelPage = LoggedInAction(cache,cc){ implicit req =>
     Ok( views.html.backoffice.modelEditor(modelForm, true) )
   }
 
-  def showEditModelPage(id:String)= LoggedInAction(cache,cc).async { req =>
+  def showEditModelPage(id:String)= LoggedInAction(cache,cc).async { implicit req =>
     models.getModel(id).map({
       case None => NotFound("Model does not exist.")
       case Some(model) => Ok( views.html.backoffice.modelEditor(modelForm.fill(new ModelFormData(model)), false) )
@@ -124,16 +124,16 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     )
   }
 
-  def showModelPage(id:String) = LoggedInAction(cache, cc).async { req =>
+  def showModelPage(id:String) = LoggedInAction(cache, cc).async { implicit req =>
     for {
       modelOpt <- models.getModel(id)
       versions <- models.listVersionFor(id)
     } yield {
       modelOpt match {
         case None => NotFound("Model does not exist.")
-        case Some(model) => Ok(
-          views.html.backoffice.modelViewer(model, versions,
-          true, req.flash.get("message"))(messagesApi.preferred(Seq(langs.availables.head)))).withoutLang
+        case Some(model) => Ok(views.html.backoffice.modelViewer(
+                                  model, versions, enableEdits = true, req.flash.get("message"))
+                              ).withoutLang
       }
     }
   }
@@ -209,7 +209,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
               mfd.note, UUID.randomUUID().toString, RunningStatus.Processing, "", Map[String, Set[String]](), "", "", slotVisibility, topValues, listDisplay)
             models.addNewVersion(md).map(nv => {
               val destFile = uploadPath.resolve(UUID.randomUUID().toString+".zip")
-              file.ref.moveFileTo( destFile, replace=false )
+              file.ref.moveTo( destFile, replace=false )
               models.ingestSingleVersion(nv, destFile)
               Redirect(routes.ModelCtrl.showModelPage(modelId)).flashing( "message"->"Created new version." )
             })
@@ -242,7 +242,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
               if ( Files.size(file.ref.path) > 0 ) {
                 models.updateVersion(md.copy(runningStatus = RunningStatus.Processing))
                 val destFile = uploadPath.resolve(UUID.randomUUID().toString + ".zip")
-                file.ref.moveFileTo(destFile, replace = false)
+                file.ref.moveTo(destFile, replace = false)
                 models.removeLoadedModel(KitKey(modelId, vNum))
                 locs.removeLocalizations(KitKey(modelId, vNum))
                 models.ingestSingleVersion(md, destFile)
@@ -314,8 +314,8 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     if ( req.connection.remoteAddress.isLoopbackAddress ) {
       val modelsPath = Paths.get(config.get[String]("taggingServer.models.folder"))
       val vizPath = Paths.get(config.get[String]("taggingServer.visualizations.folder"))
-      Files.list(modelsPath).iterator().asScala.filter( Files.isDirectory(_) ).foreach(modelName => {
-        Files.list(modelName).iterator().asScala.filter( Files.isDirectory(_) ).foreach( ver => {
+      Files.list(modelsPath).iterator.asScala.filter( Files.isDirectory(_) ).foreach(modelName => {
+        Files.list(modelName).iterator.asScala.filter( Files.isDirectory(_) ).foreach( ver => {
           val listOfDir = Files.list(ver).iterator().asScala.toSet
           val modelDir = Files.createDirectory(ver.resolve("model-temp-dir"))
           listOfDir.foreach(file => Files.move(file, modelDir.resolve(file.getFileName)))

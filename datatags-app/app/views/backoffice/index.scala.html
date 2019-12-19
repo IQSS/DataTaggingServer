@@ -1,6 +1,6 @@
-@(user:User, recentComments:Seq[CommentDN])
+@(user:User, recentComments:Seq[CommentDN])(implicit request: RequestHeader, msgs: MessagesProvider)
 
-@templates.backend("Manage PolicyModels Server", Symbol("index")){
+@templates.backend("Manage PolicyModels Server", views.BackOfficeSections.Dashboard){
   <div class="row my-2">
     <div class="col">
       <h3>Hello, @user.name!</h3>

@@ -4,9 +4,9 @@
 @import edu.harvard.iq.policymodels.model.decisiongraph.nodes.RejectNode
 @import edu.harvard.iq.policymodels.model.PolicyModel
 @import Helpers._
-@(cmt:Comment, kit:VersionKit, loc:Localization, readmeOpt:Option[MarkupString])(implicit msgs: MessagesProvider)
+@(cmt:Comment, kit:VersionKit, loc:Localization, readmeOpt:Option[MarkupString])(implicit request: RequestHeader, msgs: MessagesProvider)
 
-@templates.backend("Comment Viewer", Symbol("backOffice") ) {
+@templates.backend("Comment Viewer", views.BackOfficeSections.Models ) {
   <div class="row my-2">
     <div class="col">
       <a href="@routes.ModelCtrl.showVersionPage(kit.md.id.modelId, kit.md.id.version)">

@@ -2,8 +2,8 @@ package controllers
 
 import java.sql.Timestamp
 import java.util.{Date, UUID}
-import javax.inject.Inject
 
+import javax.inject.Inject
 import akka.http.scaladsl.model.HttpEntity.Chunked
 import models.{User, UuidForForgotPassword, UuidForInvitation}
 import persistence.{UsersDAO, UuidForForgotPasswordDAO, UuidForInvitationDAO}
@@ -11,6 +11,7 @@ import play.api.cache.SyncCacheApi
 import play.api.{Configuration, Logger, cache}
 import play.api.data.Forms._
 import play.api.data._
+import play.api.i18n.I18nSupport
 import play.api.libs.json.{JsObject, JsString}
 import play.api.libs.mailer._
 import play.api.mvc.{ControllerComponents, InjectedController}
@@ -42,7 +43,7 @@ case class ChangePassFormData ( previousPassword:String, password1:String, passw
 class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
                           users:UsersDAO, cache:SyncCacheApi, mailerClient: MailerClient,
                           uuidForInvitation:UuidForInvitationDAO,
-                          uuidForForgotPassword:UuidForForgotPasswordDAO) extends InjectedController {
+                          uuidForForgotPassword:UuidForForgotPasswordDAO) extends InjectedController with I18nSupport {
   implicit private val ec = cc.executionContext
   private val validUserId = "^[-._a-zA-Z0-9]+$".r
   
@@ -101,7 +102,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
   }
   
   
-  def showEditUserPage( userId:String ) = LoggedInAction(cache,cc).async { req =>
+  def showEditUserPage( userId:String ) = LoggedInAction(cache,cc).async { implicit req =>
     if ( userId == req.user.username ) {
       users.getUser(userId).map({
         case None => notFound(userId)
@@ -134,7 +135,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     }
   }
   
-  def showNewUserPage = LoggedInAction(cache,cc) { req =>
+  def showNewUserPage = LoggedInAction(cache,cc) { implicit req =>
     Ok( views.html.backoffice.users.userEditor(userForm, routes.UsersCtrl.doSaveNewUser, isNew=true, isInvite=false) )
   }
   
@@ -171,7 +172,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     )
   }
 
-  def showNewUserInvitation(uuid:String) = Action { req =>
+  def showNewUserInvitation(uuid:String) = Action { implicit req =>
     Ok( views.html.backoffice.users.userEditor( userForm.bind(Map("uuid"->uuid)).discardingErrors, routes.UsersCtrl.doNewUserInvitation,
                                                 isNew=true, isInvite=true ))
   }
@@ -213,11 +214,11 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
 
   }
   
-  def showUserList = LoggedInAction(cache,cc).async { req =>
+  def showUserList = LoggedInAction(cache,cc).async { implicit req =>
     users.allUsers.map( users => Ok(views.html.backoffice.users.userList(users, req.user)) )
   }
   
-  def showLogin = Action { req =>
+  def showLogin = Action { implicit req =>
     Ok( views.html.backoffice.users.login(None,None) )
   }
   
@@ -246,7 +247,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     )
   }
   
-  def doLogout = Action { req =>
+  def doLogout = Action { implicit req =>
     // delete the user from the cache (if it is there)
     req.session.get(LoggedInAction.KEY).foreach( key => cache.remove(LoggedInAction.KEY) )
     
@@ -282,11 +283,11 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     )
   }
 
-  def showForgotPassword = Action { req =>
+  def showForgotPassword = Action { implicit req =>
     Ok( views.html.backoffice.users.forgotPassword(None,None) )
   }
 
-  def showResetPassword(randomUuid:String) = Action { req =>
+  def showResetPassword(randomUuid:String) = Action { implicit  req =>
     Ok( views.html.backoffice.users.reset(None) )
   }
 
@@ -322,7 +323,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
     )
   }
 
-  def showInviteUser = Action {req =>
+  def showInviteUser = Action { implicit req =>
     Ok( views.html.comps.inviteUser() )
   }
 
