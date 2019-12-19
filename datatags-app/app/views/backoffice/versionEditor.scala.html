@@ -4,7 +4,7 @@
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
-  <script type="text/javascript" src="@routes.Assets.at("js/modelEditor.js")"></script>
+  <script type="text/javascript" src="@routes.Assets.versioned("js/modelEditor.js")"></script>
   <script >
     $(document).ready(function () {
       @for((k,v) <- versionMD.map(v=>v.slotsVisibility).getOrElse(Map())) {

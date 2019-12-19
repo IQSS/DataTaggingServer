@@ -291,9 +291,9 @@ object Helpers {
   }
   
   def textsForSection( secId:String, dg:DecisionGraph, loc:Localization):LocalizationTexts = {
-    val txts = loc.getSectionTexts(secId)
-    if ( txts.isPresent ) {
-      txts.get
+    val texts = loc.getSectionTexts(secId)
+    if ( texts.isPresent ) {
+      texts.get
     } else {
       val nd = dg.getNode(secId)
       val title = nd match {

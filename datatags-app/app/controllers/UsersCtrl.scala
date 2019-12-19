@@ -234,7 +234,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
             val userSessionId = UUID.randomUUID.toString
             userOpt.map(u => {
               cache.set(userSessionId, u)
-              Redirect( routes.BackendCtrl.index() ).withSession( LoggedInAction.KEY -> userSessionId )
+              Redirect( routes.CustomizationCtrl.index() ).withSession( LoggedInAction.KEY -> userSessionId )
             }).getOrElse(BadRequest(views.html.backoffice.users.login(Some(fd.username),
               Some("Username/Password does not match"))))
           } else {
@@ -338,7 +338,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
         val bodyText = "You have been invited to join a policy models server, please click the link below \n" + link
         val email = Email("Invite user", conf.get[String]("play.mailer.user"), Seq(fd.email), Some(bodyText))
         mailerClient.send(email)
-        Future(Redirect(routes.BackendCtrl.index))
+        Future(Redirect(routes.CustomizationCtrl.index))
       }
     )
   }

@@ -1,7 +1,7 @@
 @(text: Option[Setting], rows: Seq[Row], startTaggingUrl: Call)
 
   @extraHead = {
-    <link href="/assets/css/tagsTable.min.css" rel="stylesheet">
+    <link href="@routes.Assets.versioned("css/tagsTable.min.css")" rel="stylesheet">
   }
 
   @scripts = {

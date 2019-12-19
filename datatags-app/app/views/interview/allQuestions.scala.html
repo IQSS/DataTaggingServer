@@ -2,7 +2,7 @@
 @import edu.harvard.iq.policymodels.externaltexts.LocalizationTexts
 @import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 @import collection.mutable.Set
-
+@import scala.jdk.CollectionConverters._
 @import scala.collection.mutable
 @(verKit: VersionKit, availableLanguages:Seq[String], loc:Localization)(implicit req:Request[_], msgs: MessagesProvider)
 
@@ -70,7 +70,7 @@
 
 @extraHead = {
   @Helpers.whenRTL(loc){
-    <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+    <link rel="stylesheet" href="@routes.Assets.versioned("css/rtl.min.css")">
   }
 }
 
@@ -100,7 +100,7 @@
     <div class="col">
       <div class="allQuestions">
         @visitNode( verKit.policyModel.get.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
-        @for( nd <- verKit.policyModel.get.getDecisionGraph.nodes.asScala.filter(_.isInstanceOf[PartNode]) ) {
+        @for( nd <- verKit.policyModel.get.getDecisionGraph.nodes.filter(_.isInstanceOf[PartNode]) ) {
           @visitPartNode(nd.asInstanceOf[PartNode], true, Set() )
         }
       </div>

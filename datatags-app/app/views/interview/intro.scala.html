@@ -2,7 +2,7 @@
 @(qKit: VersionKit, interviewWelcomeMessage:Option[String])(implicit req:Request[_], msgs:MessagesProvider)
 
 @scripts = {
-  <script type="text/javascript" src="@routes.Assets.at("js/InterviewIntro.js")"></script>
+  <script type="text/javascript" src="@routes.Assets.versioned("js/InterviewIntro.js")"></script>
 }
 @templates.bsNavBar("Interview Start Page", Symbol("tag"), scripts) {
   <div class="row my-2">

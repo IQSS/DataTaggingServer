@@ -1,23 +1,20 @@
 /* jshint esversion:6 */
 
-/**
- * Created by michael on 20/7/17.
- */
-
-let quill;
-
+let homeEditor;
+let modelsEditor;
+let aboutEditor;
+const editors = {};
+const NAMES = ["home", "models", "about"];
 function customizationSetup() {
-    const toolbarOptions = [
+    const fullToolbarOptions = [
         ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
         ['blockquote', 'code-block'],
+        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
 
-        [{ 'header': 1 }, { 'header': 2 }],               // custom button values
         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
         [{ 'script': 'sub'}, { 'script': 'super' }],      // superscript/subscript
         [{ 'indent': '-1'}, { 'indent': '+1' }],          // outdent/indent
         [{ 'direction': 'rtl' }],                         // text direction
-
-        [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
 
         [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
         [{ 'font': [] }],
@@ -26,9 +23,12 @@ function customizationSetup() {
         ['clean']                                         // remove formatting button
     ];
 
-    quill = new Quill('#frontPageTextEditor', {
-        modules: { toolbar: toolbarOptions },
-        theme: 'snow'
+    NAMES.forEach(function(name){
+       const ctrlId = "#" + name + "TextEditor";
+       editors[name] = new Quill(ctrlId, {
+           modules: { toolbar: fullToolbarOptions },
+           theme: 'snow'
+       });
     });
 
     loadContent();
@@ -36,14 +36,39 @@ function customizationSetup() {
 
 function loadContent() {
     // GET http commands are easy, as there's no content in the request body
-    $.ajax(jsRoutes.controllers.BackendCtrl.apiGetCustomizations()).done(
+    $.ajax(jsRoutes.controllers.CustomizationCtrl.apiGetPageCustomizations()).done(
         function(data) {
-            quill.root.innerHTML = data.frontPageText;
+            NAMES.forEach(function(name){
+                const key = name.toUpperCase() + "_PAGE_TEXT";
+                if ( data[key] ) {
+                    editors[name].root.innerHTML = data[key];
+                }
+            });
         }
     );
 }
 
-function save() {
+function save(name) {
+    const call = jsRoutes.controllers.CustomizationCtrl.apiSetCustomization(name.toLocaleUpperCase() + "_PAGE_TEXT");
+    const msg = Informationals.showBackgroundProcess("Saving " + name);
+    $.ajax(call.url, {
+        type: call.method,
+        data: editors[name].root.innerHTML,
+        dataType: "text",
+        contentType: "text/plain; charset=utf-8"
+    }).done(function (data, status, jqXhr) {
+        msg.success();
+        Informationals.makeSuccess( name + " updated", 2000 );
+    }).fail( function(jXHR, status, message){
+        msg.dismiss();
+        Informationals.makeDanger("Error saving customization data", message + " (" + status + ")" );
+        console.log(jXHR);
+        console.log(status);
+        console.log(message);
+    });
+}
+
+function save_OLD() {
     const uploadObj = {
         frontPageText: quill.root.innerHTML,
         parentProjectLink : "",

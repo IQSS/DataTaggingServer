@@ -7,11 +7,11 @@
 
 @scripts = {
     <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
-    <script type="text/javascript" src="@routes.Assets.at("js/Question.js")"></script>
+    <script type="text/javascript" src="@routes.Assets.versioned("js/Question.js")"></script>
 }
 
 @extraHead = {@whenRTL(session.localization){
-  <link rel="stylesheet" href="@routes.Assets.at("css/rtl.min.css")">
+  <link rel="stylesheet" href="@routes.Assets.versioned("css/rtl.min.css")">
 }}
 
 @import views.Helpers

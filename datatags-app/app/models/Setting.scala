@@ -1,9 +1,9 @@
 package models
 
 object SettingKey extends Enumeration {
-  val THIS_INSTANCE_TEXT = Value
-  val PARENT_PROJECT_LINK = Value
-  val PARENT_PROJECT_TEXT = Value
+  val HOME_PAGE_TEXT,
+      MODELS_PAGE_TEXT,
+      ABOUT_PAGE_TEXT = Value
 }
 
 /**

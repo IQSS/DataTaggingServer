@@ -4,6 +4,7 @@
 
 # Home page
 GET     /                                        controllers.Application.index
+GET     /about/                                  controllers.Default.todo
 GET     /models/                                 controllers.Application.publicModelCatalog
 GET     /models/tagDownload                      controllers.InterviewCtrl.downloadTags
 GET     /models/:modelId                         controllers.Application.showModel(modelId)
@@ -42,8 +43,10 @@ POST    /admin/models/:id     controllers.ModelCtrl.doSaveModel(id)
 DELETE  /admin/models/:id     controllers.ModelCtrl.apiDoDeleteModel(id)
 GET     /admin/models/          controllers.ModelCtrl.showModelsList
 GET     /admin/models/:id       controllers.ModelCtrl.showModelPage(id)
-GET     /api/customization    controllers.BackendCtrl.apiGetCustomizations
-POST    /api/customization    controllers.BackendCtrl.apiSetCustomizations
+
+GET     /admin/api/customization/pages    controllers.CustomizationCtrl.apiGetPageCustomizations
+POST    /admin/api/customization          controllers.CustomizationCtrl.apiSetCustomizations
+PUT     /admin/api/customization/:key     controllers.CustomizationCtrl.apiSetCustomization(key)
 
 POST    /admin/models/:modelId/versions/           controllers.ModelCtrl.uploadNewVersion(modelId)
 GET     /admin/models/:modelId/versions/new/edit   controllers.ModelCtrl.showNewVersionPage(modelId)
@@ -54,8 +57,8 @@ DELETE  /admin/models/:modelId/versions/:vNum/delete  controllers.ModelCtrl.dele
 GET     /admin/comments/:id   controllers.CommentsCtrl.showComment(id:Long)
 
 # Users
-GET     /admin/                      controllers.BackendCtrl.index
-GET     /admin/customization         controllers.BackendCtrl.showCustomization
+GET     /admin/                      controllers.CustomizationCtrl.index
+GET     /admin/customization         controllers.CustomizationCtrl.showCustomization
 GET     /admin/login                 controllers.UsersCtrl.showLogin
 POST    /admin/login                 controllers.UsersCtrl.doLogin
 POST    /admin/logout                controllers.UsersCtrl.doLogout
@@ -87,7 +90,6 @@ POST   /admin/localApi/models/:model/:version/unload controllers.ModelCtrl.unloa
 
 # Map static resources from the /public folder to the /assets URL path
 # GET  /assets/*file           controllers.Assets.at(path="/public", file)
-GET  /assets/*file        controllers.Assets.at(file)
 GET  /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)
 GET  /javascriptRoutes    controllers.Application.javascriptRoutes
 

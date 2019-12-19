@@ -16,7 +16,7 @@ class Application @Inject()(cached: Cached, models:ModelManager,
   implicit val ec = cc.executionContext
   
   def index = Action.async { implicit req =>
-    settings.get( SettingKey.THIS_INSTANCE_TEXT ).map( stng =>
+    settings.get( SettingKey.HOME_PAGE_TEXT ).map( stng =>
       Ok(views.html.index(stng, TagsTable.rows, routes.Application.publicModelCatalog())
    ))}
    
@@ -60,8 +60,9 @@ class Application @Inject()(cached: Cached, models:ModelManager,
           routes.javascript.InterviewCtrl.accessByLink,
           routes.javascript.ModelCtrl.apiDoDeleteModel,
           routes.javascript.ModelCtrl.showModelsList,
-          routes.javascript.BackendCtrl.apiGetCustomizations,
-          routes.javascript.BackendCtrl.apiSetCustomizations,
+          routes.javascript.CustomizationCtrl.apiSetCustomizations,
+          routes.javascript.CustomizationCtrl.apiGetPageCustomizations,
+          routes.javascript.CustomizationCtrl.apiSetCustomization,
           routes.javascript.CommentsCtrl.apiAddComment,
           routes.javascript.CommentsCtrl.apiSetCommentStatus,
           routes.javascript.CommentsCtrl.deleteComment,

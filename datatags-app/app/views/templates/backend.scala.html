@@ -2,7 +2,7 @@
 
 @headPart = {
 	@extraHead
-	<link href="@routes.Assets.at("css/navbar-extras.min.css")" rel="stylesheet">
+	<link href="@routes.Assets.versioned("css/navbar-extras.min.css")" rel="stylesheet">
   <meta name="robots" content="noindex, nofollow">
 }
 
@@ -16,7 +16,7 @@
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="nav navbar-nav mr-auto">
       <li class="nav-item">
-        <a class="nav-link" href="@routes.BackendCtrl.index()">Dashboard</a>
+        <a class="nav-link" href="@routes.CustomizationCtrl.index()">Dashboard</a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="@routes.ModelCtrl.showModelsList()">Models</a>
@@ -25,7 +25,7 @@
         <a class="nav-link" href="@routes.UsersCtrl.showUserList()">Users</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="@routes.BackendCtrl.showCustomization()">Customize</a>
+        <a class="nav-link" href="@routes.CustomizationCtrl.showCustomization()">Customize</a>
       </li>
     </ul>
 
