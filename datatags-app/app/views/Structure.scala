@@ -45,15 +45,15 @@ object Structure {
     MultiPageSection("navbar.customize", BackOfficeSections.Customize, Seq(
       PageSectionItem("navbar.customize.pages",     routes.CustomizationCtrl.showPagesCustomization()),
       PageSectionItem("navbar.customize.texts",     routes.CustomizationCtrl.showTextsCustomization()),
-      PageSectionItem("navbar.customize.styling",   routes.Default.todo()),
-      PageSectionItem("navbar.customize.analytics", routes.Default.todo())
+      PageSectionItem("navbar.customize.styling",   routes.CustomizationCtrl.showStylingCustomization()),
+      PageSectionItem("navbar.customize.analytics", routes.CustomizationCtrl.showAnalyticsCustomization())
     ))
   )
   
   val customizationSections:Seq[PageSection[Customization.Value]] = Seq(
     PageSection("customization.pages",     Customization.Page,      routes.CustomizationCtrl.showPagesCustomization()),
     PageSection("customization.texts",     Customization.Texts,     routes.CustomizationCtrl.showTextsCustomization()),
-    PageSection("customization.styling",   Customization.Styling,   routes.CustomizationCtrl.showPagesCustomization()),
-    PageSection("customization.analytics", Customization.Analytics, routes.CustomizationCtrl.showPagesCustomization())
+    PageSection("customization.styling",   Customization.Styling,   routes.CustomizationCtrl.showStylingCustomization()),
+    PageSection("customization.analytics", Customization.Analytics, routes.CustomizationCtrl.showAnalyticsCustomization())
   )
 }

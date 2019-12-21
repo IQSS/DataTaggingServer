@@ -160,6 +160,14 @@ var UiUtils = (function () {
         mkHighlight(emt, properties.count)();
     };
 
+    var onEnter = function( fld, hdlr ) {
+        fld.addEventListener("keyup", function(event) {
+            if (event.key === "Enter") {
+                hdlr();
+            }
+        });
+    };
+
     return {
         makeElement: makeElement,
         makeA: makeA,
@@ -181,6 +189,7 @@ var UiUtils = (function () {
             remove: removeButton
         },
         defaultHeight:defaultHeight,
-        highlight:highlight
+        highlight:highlight,
+        onEnter: onEnter
     };
 }());

@@ -6,6 +6,8 @@ object SettingKey extends Enumeration {
       ABOUT_PAGE_TEXT,
       FOOTER_TEXT,
       STATEMENT_TEXT,
+      ANALYTICS_USE,
+      ANALYTICS_CODE,
       PROJECT_NAVBAR_URL,
       PROJECT_NAVBAR_TEXT = Value
 }
@@ -13,4 +15,12 @@ object SettingKey extends Enumeration {
 /**
   * Stores a setting in the database
   */
-case class Setting(key:SettingKey.Value, value:String)
+case class Setting(key:SettingKey.Value, value:String) {
+  def isTrue = (value!=null) && Setting.truishValues.contains(value.toLowerCase)
+}
+
+object Setting {
+  private val truishValues = Set("yes","1","true","ok")
+  def isTruish(s:String) = truishValues(s)
+}
+

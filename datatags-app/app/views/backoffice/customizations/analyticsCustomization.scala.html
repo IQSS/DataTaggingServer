@@ -1,0 +1,70 @@
+@(isUsing:Boolean, code:String)(implicit request: RequestHeader, msgs: MessagesProvider)
+
+@scripts = {
+  <script>
+    function save() {
+      const ctrl = document.getElementById("txtCode");
+      const call = jsRoutes.controllers.CustomizationCtrl.apiSetCustomization("ANALYTICS_CODE");
+      const msg  = Informationals.showBackgroundProcess("Updating Code");
+      $.ajax(call.url, {
+        type: call.method,
+        data: ctrl.value,
+        dataType: "text",
+        contentType: "text/plain; charset=utf-8"
+      }).done(function (data, status, jqXhr) {
+        msg.success();
+      }).fail(function(jXHR, status, message){
+        dumpError(jXHR, status, message);
+        msg.dismiss();
+      });
+    }
+
+    function updateUseAnalytics() {
+        const ctrl = document.getElementById("chkUseAnalytics");
+        const value = ctrl.checked;
+        const call = jsRoutes.controllers.CustomizationCtrl.apiSetCustomization("ANALYTICS_USE");
+        const msg  = Informationals.showBackgroundProcess("Turning analytics " + (value?"on":"off"));
+      $.ajax(call.url, {
+        type: call.method,
+        data: JSON.stringify(ctrl.checked),
+        dataType: "text",
+        contentType: "text/plain; charset=utf-8"
+      }).done(function (data, status, jqXhr) {
+        msg.success();
+      }).fail(function(jXHR, status, message){
+          dumpError(jXHR, status, message);
+          msg.dismiss();
+      });
+    }
+
+    function dumpError(jXHR, status, message){
+      Informationals.makeDanger("Error updating analytics usage", message + " (" + status + ")" );
+      console.log(jXHR);
+      console.log(status);
+      console.log(message);
+    }
+  </script>
+}
+
+@customizationScreen("Manage PolicyModels Server", views.Customization.Analytics, scripts, Html("")) {
+  @comps.pageTitleRow("Analytics Code", "Analytics services enable tracking and analyzing how users use the interviews.")()
+<div class="row my-2">
+  <div class="col">
+    <form action="#" onsubmit="return false" id="mainForm">
+      <div class="form-group">
+        <div class="custom-control custom-switch">
+          <input type="checkbox" onchange="updateUseAnalytics()" class="custom-control-input" id="chkUseAnalytics" @if(isUsing){checked}>
+          <label class="custom-control-label" for="chkUseAnalytics">@Messages("customizations.analytics.use.label")</label>
+        </div>
+        <small>@Messages("customizations.analytics.use.help")</small>
+      </div>
+      <div class="form-group">
+        <label for="fldStatement">@Messages("customizations.analytics.code.label")</label>
+        <button type="button" onclick="save()" class="btn btn-primary float-right"><i class="fa fa-save"></i> @Messages("ui.save")</button>
+        <textarea class="form-control" rows="10" id="txtCode" style="font-family: monospace">@code</textarea>
+        <small>@Messages("customizations.analytics.code.help")</small>
+      </div>
+    </form>
+  </div>
+</div>
+}

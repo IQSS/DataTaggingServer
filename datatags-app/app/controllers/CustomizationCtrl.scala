@@ -19,7 +19,8 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
                                   comments:CommentsDAO,
                                   cc:ControllerComponents ) extends InjectedController with I18nSupport {
   implicit private val ec = cc.executionContext
-  
+  private val logger = Logger(classOf[CommentsCtrl])
+
   // TODO: Move somewhere more sensible
   def index = LoggedInAction(cache, cc).async { implicit  req =>
     comments.listRecent(10).map( commentDNs => {
@@ -35,15 +36,24 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
     settings.get(
       Set(SettingKey.FOOTER_TEXT, SettingKey.PROJECT_NAVBAR_URL,
            SettingKey.PROJECT_NAVBAR_TEXT, SettingKey.STATEMENT_TEXT)
-    ).map { stg =>
-      val map = stg.map(s => s.key->s.value ).toMap
+    ).map { settings =>
+      val map = settings.map(s => s.key->s.value ).toMap
       Ok(views.html.backoffice.customizations.extraTextsCustomization(map))
     }
   }
   
   def showStylingCustomization = TODO
   
-  def showAnalyticsCustomization = TODO
+  def showAnalyticsCustomization = LoggedInAction(cache, cc).async{ implicit req =>
+    settings.get(
+      Set(SettingKey.ANALYTICS_CODE, SettingKey.ANALYTICS_USE)
+    ).map { settings =>
+      val map = settings.map(s => s.key->s.value ).toMap
+      val use = map.get(SettingKey.ANALYTICS_USE).exists(Setting.isTruish)
+      val code = map.getOrElse(SettingKey.ANALYTICS_CODE, "")
+      Ok(views.html.backoffice.customizations.analyticsCustomization(use, code))
+    }
+  }
   
   def apiGetPageCustomizations = LoggedInAction(cache, cc).async { req =>
     for {
@@ -54,20 +64,19 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
     }
   }
   
-  def apiGetTextsCustomizations = LoggedInAction(cache, cc).async { req =>
-    for {
-      values <- settings.get(Set(SettingKey.FOOTER_TEXT, SettingKey.PROJECT_NAVBAR_URL,
-                              SettingKey.PROJECT_NAVBAR_TEXT, SettingKey.STATEMENT_TEXT))
-      valueMap = values.map( s=> s.key.toString->s.value ).toMap
-    } yield Ok( Json.toJson(valueMap) )
-  }
-  
   def apiSetCustomization( value:String ) = LoggedInAction(cache, cc).async{ req =>
+    logger.info("Setting customization " + value )
     try {
       val settingKey = SettingKey.withName(value.trim)
       req.body.asText match {
-        case None => Future(BadRequest("Empty content"))
-        case Some(v) => settings.store(Setting(settingKey, v)).map( _ => Ok(settingKey.toString + " updated") )
+        case None => {
+          logger.info("... deleting" )
+          settings.store(Setting(settingKey, null)).map( _ => Ok(settingKey.toString + " deleted") )
+        }
+        case Some(v) => {
+          logger.info("... to '%s'".format(v) )
+          settings.store(Setting(settingKey, v)).map( _ => Ok(settingKey.toString + " updated") )
+        }
       }
       
     } catch {

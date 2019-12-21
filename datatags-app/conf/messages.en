@@ -21,6 +21,10 @@ customizations.texts.projectUrl.label=Parent Project URL
 customizations.texts.projectUrl.help=The web address for the parent project. Users who click the navigation bar link would be directed there.
 customizations.texts.footerText.label=Footer text
 customizations.texts.footerText.help=This text appears in the footer of all public pages. Good place to put contact info or copyright messages.
+customizations.analytics.use.label=Use Analytics
+customizations.analytics.use.help=When selected, analytics code will be included in all public pages
+customizations.analytics.code.label=Analytics Code
+customizations.analytics.code.help=The analytics code to include in public pages. Get this from your analytics site.
 
 interview.readme=README
 interview.question=Question

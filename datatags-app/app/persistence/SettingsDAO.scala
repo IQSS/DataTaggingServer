@@ -25,9 +25,16 @@ class SettingsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvid
   }
   
   def store( aSetting:Setting ):Future[Boolean] = {
-    db.run{
-      Settings.insertOrUpdate(aSetting)
-    }.map( _ > 0 )
+    if ( (aSetting.value == null) ||
+         aSetting.value.trim.isEmpty) {
+      db.run(
+        Settings.filter( _.key === aSetting.key.toString ).delete
+      ).map( _ > 0 )
+    } else {
+      db.run{
+        Settings.insertOrUpdate(aSetting)
+      }.map( _ > 0 )
+    }
   }
   
   def get( keys:Set[SettingKey.Value] ):Future[Set[Setting]] = {
