@@ -1,4 +1,4 @@
-@(settings:Map[SettingKey.Value, Setting])(implicit request: RequestHeader, msgs: MessagesProvider)
+@()(implicit request: RequestHeader, msgs: MessagesProvider)
 
 @extraHead = {
   <link rel="stylesheet" type="text/css" href="@routes.Assets.versioned("lib/quill/dist/quill.snow.css")">
@@ -14,13 +14,13 @@
   </script>
 }
 
-@customizationScreen("Manage PolicyModels Server", views.Structure.Customization.Page, scripts, extraHead){
+@customizationScreen("Manage PolicyModels Server", views.Customization.Page, scripts, extraHead){
   @comps.pageTitleRow("Server Pages", "Edit contents of public pages in this server.")()
 
   <div class="row my-2">
     <div class="col">
       <h3>Home Page
-        <button onclick="save('home')" class="btn btn-large btn-primary float-right"><i class="fa fa-save"></i> Save</button>
+        <button onclick="save('home')" class="btn btn-large btn-primary float-right"><i class="fa fa-save"></i> @Messages("ui.save")</button>
       </h3>
       <p class="text-muted">This text appears in the server's <a href="/" target="_blank">home page</a>. It's what users see when they type the server's address in their browser.</p>
       <div id="homeTextEditor" style="height: 30em"></div>
@@ -30,7 +30,7 @@
   <div class="row my-2">
     <div class="col">
       <h3>Models Page
-        <button onclick="save('models')" class="btn btn-large btn-primary float-right"><i class="fa fa-save"></i> Save</button>
+        <button onclick="save('models')" class="btn btn-large btn-primary float-right"><i class="fa fa-save"></i> @Messages("ui.save")</button>
       </h3>
       <p class="text-muted">This text appears above the model list, at the server's <a href="@routes.Application.publicModelCatalog" target="_blank">Models page</a>.</p>
       <div id="modelsTextEditor" style="height: 15em"></div>
@@ -40,7 +40,7 @@
   <div class="row my-2">
     <div class="col">
       <h3>About Page
-        <button onclick="save('about')" class="btn btn-large btn-primary float-right"><i class="fa fa-save"></i> Save</button>
+        <button onclick="save('about')" class="btn btn-large btn-primary float-right"><i class="fa fa-save"></i> @Messages("ui.save")</button>
       </h3>
       <p class="text-muted">This text appears at the server's <a href="@routes.Default.todo" target="_blank">About page</a>.
         This is the place to present your organization/project, why the server was installed, and who it is supposed to serve.

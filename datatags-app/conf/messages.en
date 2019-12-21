@@ -8,6 +8,20 @@ navbar.customize.texts=Extra Texts
 navbar.customize.styling=Styling
 navbar.customize.analytics=Analytics
 
+customization.title=Server Customization
+customization.pages=Pages
+customization.texts=Additional Texts
+customization.styling=Styling
+customization.analytics=Analytics
+customizations.texts.statement.label=Limited Liability Statement
+customizations.texts.statement.help=This statement appears on all public facing pages. It can be used to limit the liability of your organization, e.g. stating that the results are a recommendation, and do not replace consultation with a professional lawyer.
+customizations.texts.aboutProject.label=Parent Project Title
+customizations.texts.aboutProject.help=Name of the parent project/organization for this PolicyModels server. Appears as a link title in the navigation bar.
+customizations.texts.projectUrl.label=Parent Project URL
+customizations.texts.projectUrl.help=The web address for the parent project. Users who click the navigation bar link would be directed there.
+customizations.texts.footerText.label=Footer text
+customizations.texts.footerText.help=This text appears in the footer of all public pages. Good place to put contact info or copyright messages.
+
 interview.readme=README
 interview.question=Question
 interview.model=Model
@@ -68,3 +82,6 @@ interview.changeLang=Change Language
 feedback=Feedbacks
 feedback.exp=Feedbacks users left on various parts of this model.
 feedback.empty=No feedbacks
+
+ui.save=Save
+ui.cancel=Cancel

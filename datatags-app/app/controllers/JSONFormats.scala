@@ -2,7 +2,7 @@ package controllers
 
 import java.sql.Timestamp
 
-import models.{Comment, CommentDTO, CustomizationDTO, RequestedInterviewData}
+import models.{Comment, CommentDTO, RequestedInterviewData}
 import play.api.libs.json._
 
 /**
@@ -12,9 +12,6 @@ object JSONFormats {
   
   implicit val requestedInterviewDataReader : Reads[RequestedInterviewData] = Json.reads[RequestedInterviewData]
   
-  /* Converts Json to CustomizationDTO object and vice versa */
-  implicit val customizationDTOFmt:Format[CustomizationDTO] = Json.format[CustomizationDTO]
-
   implicit val timestampFmt = new Format[Timestamp]{
     override def writes(o: Timestamp): JsValue = JsNumber(o.getTime)
     override def reads(json: JsValue): JsResult[Timestamp] = json match {

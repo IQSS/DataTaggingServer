@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
-  * Created by michael on 20/7/17.
+  * Stores settings of the server. Settings are configuration data that we want to allow the users to edit.
   */
 class SettingsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
@@ -24,10 +24,15 @@ class SettingsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvid
     ).map( _.headOption )
   }
   
-  def store( stng:Setting ):Future[Boolean] = {
+  def store( aSetting:Setting ):Future[Boolean] = {
     db.run{
-      Settings.insertOrUpdate(stng)
+      Settings.insertOrUpdate(aSetting)
     }.map( _ > 0 )
+  }
+  
+  def get( keys:Set[SettingKey.Value] ):Future[Set[Setting]] = {
+    val futureSeq = keys.map( get )
+    Future.sequence(futureSeq).map(_.flatten)
   }
   
 }

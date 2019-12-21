@@ -67,31 +67,3 @@ function save(name) {
         console.log(message);
     });
 }
-
-function save_OLD() {
-    const uploadObj = {
-        frontPageText: quill.root.innerHTML,
-        parentProjectLink : "",
-        parentProjectText : ""
-    };
-
-    // POST/PUT commands require body, so they're a bit more complicated
-    const call = jsRoutes.controllers.BackendCtrl.apiSetCustomizations();
-
-    const msg = Informationals.showBackgroundProcess("Saving...");
-    $.ajax(call.url, {
-        type: call.method,
-        data: JSON.stringify(uploadObj),
-        dataType: "json",
-        contentType: "application/json; charset=utf-8"
-    }).done(function (data, status, jqXhr) {
-        msg.success();
-        Informationals.makeSuccess("Customization saved", 1500 );
-    }).fail( function(jXHR, status, message){
-        msg.dismiss();
-        Informationals.makeDanger("Error saving customization data", message + " (" + status + ")" );
-        console.log(jXHR);
-        console.log(status);
-        console.log(message);
-    });
-}

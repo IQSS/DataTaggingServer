@@ -1,0 +1,50 @@
+@(map:Map[SettingKey.Value, String])(implicit request: RequestHeader, msgs: MessagesProvider)
+
+@scripts = {
+  <script src="@routes.Assets.versioned("js/extraTextsCustomization.js")"></script>
+  <script>
+          $(document).ready( function(){
+            setup();
+          });
+  </script>
+}
+
+@customizationScreen("Manage PolicyModels Server", views.Customization.Texts, scripts, Html("")) {
+  @comps.pageTitleRow("Additional Texts", "Edit short texts that appear in various places throughout the application"){
+    <button onclick="save()" class="btn btn-large btn-primary float-right"><i class="fa fa-save"></i> @Messages("ui.save")</button>
+  }
+  <div class="row my-2">
+    <div class="col">
+      <form action="#"  onsubmit="save(); return false;" id="mainForm">
+        <div class="form-group">
+          <label for="fldStatement">@Messages("customizations.texts.statement.label")</label>
+          <input type="text" class="form-control" id="fldStatement" value="@map.getOrElse(SettingKey.STATEMENT_TEXT,"")">
+          <small>@Messages("customizations.texts.statement.help")</small>
+        </div>
+        <div class="form-group">
+          <label for="fldStatement">@Messages("customizations.texts.footerText.label")</label>
+          <input type="text" class="form-control" id="fldFooterText" value="@map.getOrElse(SettingKey.FOOTER_TEXT,"")">
+          <small>@Messages("customizations.texts.footerText.help")</small>
+        </div>
+        <div class="form-group">
+          <label for="fldStatement">@Messages("customizations.texts.aboutProject.label")</label>
+          <input type="text" class="form-control" id="fldAboutLabel" value="@map.getOrElse(SettingKey.PROJECT_NAVBAR_TEXT,"")">
+          <small>@Messages("customizations.texts.aboutProject.help")</small>
+        </div>
+        <div class="form-group">
+          <label for="fldStatement">@Messages("customizations.texts.projectUrl.label")</label>
+          <div class="input-group">
+            <input type="url" spellcheck="false"
+                   pattern="/^$|(^http:\/\/.*)|(^https:\/\/.*)/"
+                   value="@map.getOrElse(SettingKey.PROJECT_NAVBAR_URL,"")"
+                   class="form-control" id="fldAboutUrl">
+            <div class="input-group-append">
+              <button onclick="openProjectUrl()" type="button" class="btn btn-outline-secondary"><i class="fa fa-external-link"></i></button>
+            </div>
+          </div>
+          <small>@Messages("customizations.texts.projectUrl.help")</small>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -44,9 +44,10 @@ DELETE  /admin/models/:id     controllers.ModelCtrl.apiDoDeleteModel(id)
 GET     /admin/models/          controllers.ModelCtrl.showModelsList
 GET     /admin/models/:id       controllers.ModelCtrl.showModelPage(id)
 
-GET     /admin/api/customization/pages    controllers.CustomizationCtrl.apiGetPageCustomizations
-POST    /admin/api/customization          controllers.CustomizationCtrl.apiSetCustomizations
-PUT     /admin/api/customization/:key     controllers.CustomizationCtrl.apiSetCustomization(key)
+GET     /admin/                      controllers.CustomizationCtrl.index
+GET     /admin/login                 controllers.UsersCtrl.showLogin
+POST    /admin/login                 controllers.UsersCtrl.doLogin
+POST    /admin/logout                controllers.UsersCtrl.doLogout
 
 POST    /admin/models/:modelId/versions/           controllers.ModelCtrl.uploadNewVersion(modelId)
 GET     /admin/models/:modelId/versions/new/edit   controllers.ModelCtrl.showNewVersionPage(modelId)
@@ -56,27 +57,32 @@ POST    /admin/models/:modelId/versions/:vNum      controllers.ModelCtrl.saveVer
 DELETE  /admin/models/:modelId/versions/:vNum/delete  controllers.ModelCtrl.deleteVersion(modelId, vNum:Int)
 GET     /admin/comments/:id   controllers.CommentsCtrl.showComment(id:Long)
 
-# Users
-GET     /admin/                      controllers.CustomizationCtrl.index
-GET     /admin/customization         controllers.CustomizationCtrl.showCustomization
-GET     /admin/login                 controllers.UsersCtrl.showLogin
-POST    /admin/login                 controllers.UsersCtrl.doLogin
-POST    /admin/logout                controllers.UsersCtrl.doLogout
+GET     /admin/customization/pages     controllers.CustomizationCtrl.showPagesCustomization
+GET     /admin/customization/texts     controllers.CustomizationCtrl.showTextsCustomization
+GET     /admin/customization/styling   controllers.CustomizationCtrl.showStylingCustomization
+GET     /admin/customization/analytics controllers.CustomizationCtrl.showAnalyticsCustomization
+
+GET     /admin/api/customization/pages controllers.CustomizationCtrl.apiGetPageCustomizations
+GET     /admin/api/customization/texts controllers.CustomizationCtrl.apiGetTextsCustomizations
+PUT     /admin/api/customization/:key  controllers.CustomizationCtrl.apiSetCustomization(key)
+PUT     /admin/api/customization/      controllers.CustomizationCtrl.apiSetCustomizations
+
 GET     /admin/users/                controllers.UsersCtrl.showUserList
 GET     /admin/users/new             controllers.UsersCtrl.showNewUserPage
 POST    /admin/users/                controllers.UsersCtrl.doSaveNewUser
 GET     /admin/users/:id/edit        controllers.UsersCtrl.showEditUserPage(id)
 POST    /admin/users/:id/edit        controllers.UsersCtrl.doSaveUser(id)
 POST    /admin/api/users/            controllers.UsersCtrl.apiAddUser
+
 GET     /admin/forgotPassword        controllers.UsersCtrl.showForgotPassword
 POST    /admin/forgotPassword        controllers.UsersCtrl.doForgotPassword
+POST    /admin/changePassword        controllers.UsersCtrl.doChangePassword
 GET     /admin/resetPassword/:id     controllers.UsersCtrl.showResetPassword(id)
 POST    /admin/resetPassword/        controllers.UsersCtrl.doResetPassword
 GET     /admin/inviteUser/           controllers.UsersCtrl.showInviteUser
 POST    /admin/inviteUser/           controllers.UsersCtrl.doInviteUser
 GET     /admin/newUserInvitation/:id controllers.UsersCtrl.showNewUserInvitation(id)
 POST    /admin/newUserInvitation/    controllers.UsersCtrl.doNewUserInvitation
-POST    /admin/changePassword        controllers.UsersCtrl.doChangePassword
 
 # Comments
 POST    /admin/api/comments/             controllers.CommentsCtrl.apiAddComment

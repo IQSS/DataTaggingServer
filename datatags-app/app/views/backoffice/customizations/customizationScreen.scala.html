@@ -1,13 +1,13 @@
-@import views.Structure.Customization
-@(title:String, section:Customization.Value, scripts: Html=Html(""), extraHead: Html=Html(""))(content:Html)(implicit request: RequestHeader, msgs: MessagesProvider)
+@import views.Structure
+@(title:String, section:views.Customization.Value, scripts: Html=Html(""), extraHead: Html=Html(""))(content:Html)(implicit request: RequestHeader, msgs: MessagesProvider)
 
 @templates.backend(title, views.BackOfficeSections.Customize, scripts, extraHead ) {
   <div class="row">
     <div class="col">
       <nav class="nav nav-pills nav-justified">
-        <span class="nav-item nav-link badge-secondary mr-2">Server Customization</span>
-        @for( v <- Customization.values.iterator ) {
-         <a class="nav-item nav-link@if(v==section){ active}" href="#">@v.toString</a>
+        <span class="nav-item nav-link badge-secondary mr-2">@Messages("customization.title")</span>
+        @for( v <- Structure.customizationSections ) {
+         <a class="nav-item nav-link@if(v.id==section){ active}" href="@v.call">@Messages(v.title)</a>
         }
       </nav>
     </div>
