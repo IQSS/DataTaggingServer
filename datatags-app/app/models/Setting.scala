@@ -8,6 +8,7 @@ object SettingKey extends Enumeration {
       STATEMENT_TEXT,
       ANALYTICS_USE,
       ANALYTICS_CODE,
+      BRANDING_CSS,
       PROJECT_NAVBAR_URL,
       PROJECT_NAVBAR_TEXT = Value
 }

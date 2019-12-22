@@ -9,6 +9,7 @@ import play.api.i18n.I18nSupport
 import play.api.libs.json.{JsArray, JsError, JsObject, JsString, JsSuccess, Json}
 import play.api.mvc.{ControllerComponents, InjectedController}
 
+import scala.collection.mutable
 import scala.concurrent.Future
 import scala.util.Try
 
@@ -42,7 +43,16 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
     }
   }
   
-  def showStylingCustomization = TODO
+  def showStylingCustomization = LoggedInAction(cache, cc).async{ implicit req =>
+    for {
+      cssStylingSetting <- settings.get(SettingKey.BRANDING_CSS)
+      css = cssStylingSetting.map(_.value).getOrElse("/*---*/")
+    } yield {
+      val csses = css.split("/\\*---\\*/")
+      val cssMap = parseCss(csses(0))
+      Ok(views.html.backoffice.customizations.stylingCustomization(cssMap, csses(1)))
+    }
+  }
   
   def showAnalyticsCustomization = LoggedInAction(cache, cc).async{ implicit req =>
     settings.get(
@@ -106,4 +116,18 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
     }
   }
   
+  private def parseCss(css:String):Map[(String,String),String] = {
+    val lines = css.split("\n").map(_.trim).filter(_.nonEmpty)
+    val retVal = mutable.Map[(String,String),String]()
+    var curSelector = ""
+    lines.foreach(line => {
+      if ( line.endsWith("{") ) {
+        curSelector = line.split(" ")(0)
+      } else if ( line.contains(":")) {
+        val kv = line.replaceAll(";", "").split(":").map(_.trim)
+        retVal((curSelector,kv(0))) = kv(1)
+      }
+    })
+    retVal.toMap
+  }
 }

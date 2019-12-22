@@ -168,6 +168,15 @@ var UiUtils = (function () {
         });
     };
 
+    var documentReady = function(callback) {
+        if ( document.readyState!=='loading' ){
+            // document loaded; execute now
+            callback();
+        } else {
+            document.addEventListener('DOMContentLoaded', callback);
+        }
+    };
+
     return {
         makeElement: makeElement,
         makeA: makeA,
@@ -190,6 +199,7 @@ var UiUtils = (function () {
         },
         defaultHeight:defaultHeight,
         highlight:highlight,
-        onEnter: onEnter
+        onEnter: onEnter,
+        documentReady:documentReady
     };
 }());

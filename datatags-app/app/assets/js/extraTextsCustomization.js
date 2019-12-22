@@ -6,7 +6,7 @@ function setup(){
     urlField = document.getElementById("fldAboutUrl");
     UiUtils.onEnter(urlField, save);
     UiUtils.onEnter(document.getElementById("fldFooterText"), save);
-    UiUtils.onEnter(document.getElementById("fldStatement"), save);
+    UiUtils.onEnter(document.getElementById("fldStatement"),  save);
     UiUtils.onEnter(document.getElementById("fldAboutLabel"), save);
 }
 

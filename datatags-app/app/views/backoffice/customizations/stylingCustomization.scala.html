@@ -1,0 +1,95 @@
+@(cssMap:Map[(String,String),String], extraCss:String)(implicit request: RequestHeader, msgs: MessagesProvider)
+
+@scripts = {
+  <script src="@routes.Assets.versioned("js/stylingCustomization.js")"></script>
+  <script>
+    UiUtils.documentReady(function(){
+       setup();
+        @for(kv<-cssMap){
+          setColor( "@kv._1._1", "@kv._1._2", "@kv._2" );
+        }
+    });
+  </script>
+}
+@customizationScreen("Manage PolicyModels Server", views.Customization.Styling, scripts, Html("")) {
+  @comps.pageTitleRow("Server Branding", "Change the style of this server, so it matches your brand.")()
+  <div class="row my-2">
+    <div class="col">
+      <h2>
+        Logo
+        <div class="float-eol">
+          <button id="deleteImageBtn" onclick="deleteLogo()" type="button" class="btn btn-danger">@Messages("customization.styling.deleteLogo")</button>
+          <button id="uploadImageBtn" onclick="uploadLogo()" type="button" class="btn btn-primary">@Messages("customization.styling.uploadLogo")</button>
+        </div>
+      </h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-7">
+      <div class="form-group">
+        <label class="control-label" for="imageFile">@Messages("customization.styling.logo.label")</label>
+        <input type="file" name="imageFile" id="imageFile" class="form-control">
+        <small>@Messages("customization.styling.logo.help")</small>
+      </div>
+    </div>
+
+    <div class="col-md-5">
+      <div id="noImage" class="noData">
+        <i class="fa fa-3x fa-file-image-o"></i><br>
+        @Messages("customization.styling.noLogo")
+      </div>
+      <div id="imageDiv" class="text-center">
+        <img style="max-height: 300px; max-width:300px" src="" alt="">
+      </div>
+    </div>
+  </div>
+
+  <div class="row my-2">
+    <div class="col">
+      <h2>Styling
+        <div class="float-eol">
+          <button onclick="saveStyling()" class="btn btn-large btn-primary"><i class="fa fa-save"></i> @Messages("ui.save")</button>
+        </div>
+      </h2>
+    </div>
+  </div>
+  <div class="row my-2">
+    <div class="col-md-5">
+      <div class="form-group row">
+        <label for="textColor" class="col-sm-5">@Messages("customization.styling.textColor")</label>
+        <div class="col-sm-7">
+          <input type="color" data-selector="body" data-key="color" name="textColor" id="textColor" value="">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="aTextColor" class="col-sm-5">@Messages("customization.styling.aTextColor")</label>
+        <div class="col-sm-7">
+          <input type="color" data-selector="a" data-key="color" name="aTextColor" id="aTextColor" value="">
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-5">
+      <div class="form-group row">
+        <label for="hTextColor" class="col-sm-5">@Messages("customization.styling.hTextColor")</label>
+        <div class="col-sm-7">
+          <input type="color" data-selector="h1,h2,h3,h4,h5,h6" data-key="color" name="hTextColor" id="hTextColor" value="">
+        </div>
+      </div>
+      <div class="form-group row">
+        <label for="backgroundColor" class="col-sm-5">@Messages("customization.styling.backgroundColor")</label>
+        <div class="col-sm-7">
+          <input type="color" data-selector="body" data-key="background-color" name="backgroundColor" id="backgroundColor" value="">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row my-2">
+    <div class="col">
+      <label for="extraCss">@Messages("customization.styling.css.label")</label>
+      <textarea rows="10" class="form-control text-code" name="extraCss" id="extraCss">@extraCss</textarea>
+      <small class="form-text text-muted">@Messages("customization.styling.css.help")</small>
+    </div>
+  </div>
+}
