@@ -63,6 +63,8 @@ GET     /admin/customization/styling   controllers.CustomizationCtrl.showStyling
 GET     /admin/customization/analytics controllers.CustomizationCtrl.showAnalyticsCustomization
 
 GET     /admin/api/customization/pages controllers.CustomizationCtrl.apiGetPageCustomizations
+POST    /admin/api/customization/logo  controllers.CustomizationCtrl.apiSetLogo
+DELETE  /admin/api/customization/logo  controllers.CustomizationCtrl.apiDeleteLogo
 PUT     /admin/api/customization/:key  controllers.CustomizationCtrl.apiSetCustomization(key)
 PUT     /admin/api/customization/      controllers.CustomizationCtrl.apiSetCustomizations
 

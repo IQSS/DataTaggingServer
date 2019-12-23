@@ -1,5 +1,8 @@
 package controllers
 
+import java.nio.file.Files
+import java.util.Base64
+
 import javax.inject.Inject
 import models._
 import persistence.{CommentsDAO, SettingsDAO}
@@ -114,6 +117,42 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
         }
       }
     }
+  }
+  
+  def apiSetLogo = LoggedInAction(cache, cc)(parse.multipartFormData).async{ req =>
+    req.body.file("logo") match {
+      case None => Future(BadRequest(Json.obj("status"->"error", "message"->"No file named 'logo' found")))
+      case Some(f) => {
+        logger.info( f.filename + " " + f.contentType + " " + f.dispositionType )
+        val fileTypeOk = f.contentType.exists( _.startsWith("image") )
+        if ( fileTypeOk ) {
+          for {
+            mimeOk <- settings.store( Setting(SettingKey.LOGO_IMAGE_MIME, f.contentType.get) )
+            imageOk <- {
+              val bytes = Files.readAllBytes(f.ref.path)
+              val content = Base64.getEncoder.encodeToString(bytes);
+              settings.store(Setting(SettingKey.LOGO_IMAGE, content));
+            }
+          } yield {
+            if ( mimeOk && imageOk ) {
+              Ok(Json.obj("status"->"ok", "message"->"new logo uploaded"))
+            } else {
+              logger.warn("Error saving logo image. mimeOk: %b imageOk: %b".format(mimeOk, imageOk))
+              InternalServerError(Json.obj("status"->"error", "message"->"Error saving logo image."))
+            }
+          }
+        } else {
+          Future(BadRequest(Json.obj("status"->"error", "message"->"Uploaded file is not an image file.")))
+        }
+      }
+    }
+  }
+  
+  def apiDeleteLogo = LoggedInAction(cache, cc).async{req =>
+    Future.sequence( Seq(
+      settings.store( Setting(SettingKey.LOGO_IMAGE, null) ),
+      settings.store( Setting(SettingKey.LOGO_IMAGE_MIME, null) )
+    )).map( bools => Ok(Json.obj("status"->"ok","deleted"->bools.map(_.toString).mkString("[", ",", "]"))))
   }
   
   private def parseCss(css:String):Map[(String,String),String] = {

@@ -27,8 +27,8 @@
   <div class="row">
     <div class="col-md-7">
       <div class="form-group">
-        <label class="control-label" for="imageFile">@Messages("customization.styling.logo.label")</label>
-        <input type="file" name="imageFile" id="imageFile" class="form-control">
+        <label class="control-label" for="logoFile">@Messages("customization.styling.logo.label")</label>
+        <input type="file" name="logoFile" id="logoFile" class="form-control">
         <small>@Messages("customization.styling.logo.help")</small>
       </div>
     </div>
@@ -39,7 +39,7 @@
         @Messages("customization.styling.noLogo")
       </div>
       <div id="imageDiv" class="text-center">
-        <img style="max-height: 300px; max-width:300px" src="" alt="">
+        <img id="imgLogo" style="max-height: 300px; max-width:300px" src="" alt="">
       </div>
     </div>
   </div>

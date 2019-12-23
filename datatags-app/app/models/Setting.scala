@@ -9,6 +9,8 @@ object SettingKey extends Enumeration {
       ANALYTICS_USE,
       ANALYTICS_CODE,
       BRANDING_CSS,
+      LOGO_IMAGE,
+      LOGO_IMAGE_MIME,
       PROJECT_NAVBAR_URL,
       PROJECT_NAVBAR_TEXT = Value
 }

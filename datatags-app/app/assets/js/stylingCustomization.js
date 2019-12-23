@@ -59,7 +59,42 @@ function setColor( selector, key, value ) {
     }).val(value);
 }
 
-function deleteImage() {
+function uploadLogo() {
+    const files = document.getElementById("logoFile").files;
+    const formData = new FormData();
+
+    if ( files.length === 0 ) {
+        Informationals.makeDanger("No file selected", "Please select an image file to use as a logo", 2000).show();
+        return;
+    }
+
+    for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+
+        formData.append('logo', file);
+    }
+
+    const msg = Informationals.showBackgroundProcess("Uploading");
+    fetch(jsRoutes.controllers.CustomizationCtrl.apiSetLogo().url, {
+        method: 'POST',
+        body: formData,
+    }).then(response => {
+        if( response.status === 200 ) {
+            msg.success();
+            setHasImage(true);
+            return null;
+        } else {
+            msg.dismiss();
+            return response.json();
+        }
+    }).then( json => {
+        if ( json ) {
+            Informationals.makeDanger("Error uploading logo", json.message, 3000).show();
+        }
+    });
+}
+
+function deleteLogo() {
     swal({
         title: "Are you sure you want to delete the server's logo?",
         text: "This operation cannot be undone.",
@@ -71,15 +106,23 @@ function deleteImage() {
         dangerMode: true
     }).then(function(willDelete){
         if (willDelete) {
-            new Playjax(beRoutes)
-                .using(function(c){return c.CampaignMgrCtrl.deleteCampaignImage(campaignId);})
-                .fetch()
-                .then( function(res){
-                    if ( res.ok ) {
-                        Informationals.makeSuccess(polyglot.t("image_delete"), "", 2000).show();
-                        setHasImage( false );
-                    }
-                });
+            const msg = Informationals.showBackgroundProcess("Deleting logo");
+            const call = jsRoutes.controllers.CustomizationCtrl.apiDeleteLogo();
+            fetch( call.url, {
+                method: call.method
+            }).then( resp => {
+                if ( resp.status === 200 ) {
+                    msg.success();
+                    setHasImage(false);
+                } else {
+                    return resp.json();
+                }
+            }).then( json=>{
+               msg.dismiss();
+               if ( json ) {
+                   Informationals.makeDanger("Error uploading logo", json.message, 3000).show();
+               }
+            });
      }});
 }
 
@@ -88,6 +131,7 @@ function setHasImage( hasImage ) {
         $("#noImage").hide();
         $("#imageDiv").show();
         $("#deleteImageBtn").show();
+        // TODO load image to #imgLogo
     } else {
         $("#noImage").show();
         $("#imageDiv").hide();
