@@ -1,4 +1,4 @@
-@(cssMap:Map[(String,String),String], extraCss:String)(implicit request: RequestHeader, msgs: MessagesProvider)
+@(cssMap:Map[(String,String),String], extraCss:String, hasImage:Boolean)(implicit request: RequestHeader, msgs: MessagesProvider)
 
 @scripts = {
   <script src="@routes.Assets.versioned("js/stylingCustomization.js")"></script>
@@ -8,6 +8,7 @@
         @for(kv<-cssMap){
           setColor( "@kv._1._1", "@kv._1._2", "@kv._2" );
         }
+        setHasImage( @hasImage.toString );
     });
   </script>
 }
@@ -39,7 +40,7 @@
         @Messages("customization.styling.noLogo")
       </div>
       <div id="imageDiv" class="text-center">
-        <img id="imgLogo" style="max-height: 300px; max-width:300px" src="" alt="">
+        <img id="imgLogo" style="max-height: 300px; max-width:300px" src="@if(hasImage){@routes.CustomizationCtrl.getServerLogo()}" alt="">
       </div>
     </div>
   </div>

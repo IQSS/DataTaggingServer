@@ -26,6 +26,9 @@
                 <div class="alert alert-danger">@m</div>
               </div>
             }
+          <div class="text-center">
+            <img src="@routes.CustomizationCtrl.getServerLogo" alt="Server logo" style="max-height: 100px; margin:auto">
+          </div>
             <div class="form-group">
               <label for="idInput">Username</label>
               <input type="text" class="form-control" id="usernameInput" name="username" value="@username.getOrElse("")" placeholder="username">

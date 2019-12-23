@@ -131,7 +131,7 @@ function setHasImage( hasImage ) {
         $("#noImage").hide();
         $("#imageDiv").show();
         $("#deleteImageBtn").show();
-        // TODO load image to #imgLogo
+        document.getElementById("imgLogo").src=jsRoutes.controllers.CustomizationCtrl.getServerLogo().url + "?" + Math.ceil(Math.random()*2048);
     } else {
         $("#noImage").show();
         $("#imageDiv").hide();

@@ -133,7 +133,6 @@ object Helpers {
     returnable
   }
   
-  
   def isPhraseEnglishAndLower(input: String) = {
     var shouldBeChanged = false
     val test = input.split(" ")
@@ -144,7 +143,6 @@ object Helpers {
     }
     shouldBeChanged
   }
-  
   
   def isWordLowerEnglish(input: String):Boolean = input.filter( _.isLetter ).forall( _.isLower )
   

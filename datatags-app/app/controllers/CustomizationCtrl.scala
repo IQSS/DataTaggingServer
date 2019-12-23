@@ -1,7 +1,9 @@
 package controllers
 
-import java.nio.file.Files
+import java.io.File
+import java.nio.file.{Files, Paths}
 import java.util.Base64
+import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
 
 import javax.inject.Inject
 import models._
@@ -17,19 +19,35 @@ import scala.concurrent.Future
 import scala.util.Try
 
 /**
-  * Controller for non-specific actions in the app back-end.
+  * Controller for branding/customization.
   */
 class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settings:SettingsDAO,
-                                  comments:CommentsDAO,
+                                  comments:CommentsDAO, cached:Cached,
                                   cc:ControllerComponents ) extends InjectedController with I18nSupport {
   implicit private val ec = cc.executionContext
-  private val logger = Logger(classOf[CommentsCtrl])
+  private val logger = Logger(classOf[CustomizationCtrl])
 
-  // TODO: Move somewhere more sensible
+  // TODO: This is the back office index. Move somewhere more sensible
   def index = LoggedInAction(cache, cc).async { implicit  req =>
     comments.listRecent(10).map( commentDNs => {
       Ok(views.html.backoffice.index(req.user, commentDNs.sortBy( -_.comment.time.getTime )))
     })
+  }
+  
+  def getServerLogo = cached("logo"){
+    Action.async{ req =>
+      for {
+        mime <- settings.get(SettingKey.LOGO_IMAGE_MIME)
+        logo <- settings.get(SettingKey.LOGO_IMAGE)
+      } yield {
+        val sendData = if ( mime.isDefined && logo.isDefined ) {
+          (Base64.getDecoder.decode(logo.get.value), mime.get.value)
+        } else {
+          (Files.readAllBytes(Paths.get("public/images/pomo_logo.svg")), "image/svg+xml")
+        }
+        Ok(sendData._1)as(sendData._2 )
+      }
+    }
   }
   
   def showPagesCustomization = LoggedInAction(cache, cc){ implicit req =>
@@ -50,10 +68,11 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
     for {
       cssStylingSetting <- settings.get(SettingKey.BRANDING_CSS)
       css = cssStylingSetting.map(_.value).getOrElse("/*---*/")
+      hasImage <- settings.get(SettingKey.LOGO_IMAGE_MIME).map(_.isDefined)
     } yield {
       val csses = css.split("/\\*---\\*/")
       val cssMap = parseCss(csses(0))
-      Ok(views.html.backoffice.customizations.stylingCustomization(cssMap, csses(1)))
+      Ok(views.html.backoffice.customizations.stylingCustomization(cssMap, csses(1), hasImage))
     }
   }
   
@@ -126,6 +145,7 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
         logger.info( f.filename + " " + f.contentType + " " + f.dispositionType )
         val fileTypeOk = f.contentType.exists( _.startsWith("image") )
         if ( fileTypeOk ) {
+          cache.remove("logo")
           for {
             mimeOk <- settings.store( Setting(SettingKey.LOGO_IMAGE_MIME, f.contentType.get) )
             imageOk <- {
@@ -149,6 +169,7 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
   }
   
   def apiDeleteLogo = LoggedInAction(cache, cc).async{req =>
+    cache.remove("logo")
     Future.sequence( Seq(
       settings.store( Setting(SettingKey.LOGO_IMAGE, null) ),
       settings.store( Setting(SettingKey.LOGO_IMAGE_MIME, null) )
