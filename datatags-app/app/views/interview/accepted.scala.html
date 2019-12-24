@@ -7,7 +7,7 @@
         topValues:Seq[AbstractValue],
         topSlotsAsValues:Seq[(String, AbstractValue)],
         availableLanguages:Seq[String]
-)(implicit req:Request[_], msgs: MessagesProvider)
+)(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
 
 @scripts = {
     <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -22,7 +22,7 @@
 }
 
 
-@templates.bsNavBar("Interview Completed", Symbol("ask"), scripts, extraHead) {
+@templates.publicPages("Interview Completed", views.PublicSection.Interview, scripts, extraHead) {
   <div class="row">
     <div class="col">
       <div class="d-flex justify-content-end align-items-baseline" style="margin:0 .5rem">

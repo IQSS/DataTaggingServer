@@ -4,7 +4,8 @@
 @import collection.mutable.Set
 @import scala.jdk.CollectionConverters._
 @import scala.collection.mutable
-@(verKit: VersionKit, availableLanguages:Seq[String], loc:Localization)(implicit req:Request[_], msgs: MessagesProvider)
+@(verKit: VersionKit, availableLanguages:Seq[String], loc:Localization
+)(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
 
 @visitAskNode( nd:AskNode, baseLevel:Boolean, visited:Set[String] ) = {
   <div class="question">
@@ -75,7 +76,7 @@
 }
 
 
-@templates.bsNavBar(Messages("interview.questions")+":" + verKit.policyModel.get.getMetadata.getVersion, Symbol("tag"), extraHead = extraHead ) {
+@templates.publicPages(Messages("interview.questions")+":" + verKit.policyModel.get.getMetadata.getVersion, views.PublicSection.Models, extraHead = extraHead ) {
   <div class="row">
     <div class="col">
       <div class="d-flex justify-content-end align-items-baseline">

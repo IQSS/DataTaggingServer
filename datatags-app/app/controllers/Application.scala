@@ -5,27 +5,34 @@ import play.api.mvc._
 import play.api.cache.Cached
 import models._
 import persistence.{ModelManager, SettingsDAO}
+import play.api.i18n.I18nSupport
 import play.api.{Configuration, routing}
 
 import scala.concurrent.Future
 
 
 class Application @Inject()(cached: Cached, models:ModelManager,
-                            conf:Configuration, cc:ControllerComponents,
-                            settings:SettingsDAO ) extends InjectedController {
+                            conf:Configuration, cc:ControllerComponents, custCtrl:CustomizationCtrl,
+                            settings:SettingsDAO ) extends InjectedController with I18nSupport {
   implicit val ec = cc.executionContext
+  implicit def pcd = custCtrl.pageCustomizations()
   
   def index = Action.async { implicit req =>
     settings.get( SettingKey.HOME_PAGE_TEXT ).map( stng =>
       Ok(views.html.index(stng, TagsTable.rows, routes.Application.publicModelCatalog())
    ))}
-   
   
+  def aboutServer = Action.async{ implicit req =>
+    for {
+      textOpt <- settings.get(SettingKey.ABOUT_PAGE_TEXT)
+    } yield {
+      Ok( textOpt.toString )
+    }
+  }
   
   def publicModelCatalog = Action.async { implicit req =>
     models.listAllModels().map( mdls =>
-      if ( LoggedInAction.userPresent(req) ) Redirect(routes.ModelCtrl.showModelsList())
-      else Ok( views.html.modelCatalog(mdls.sortBy(_.title)) )
+     Ok( views.html.modelCatalog(mdls.sortBy(_.title)) )
     )
   }
 

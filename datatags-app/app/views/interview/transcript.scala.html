@@ -2,7 +2,7 @@
 @( session:InterviewSession,
         notes: Map[String,Note],
         availableLanguages:Seq[String]
-)(implicit req:Request[_], msgs: MessagesProvider)
+)(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -14,7 +14,7 @@
 }
 }
 
-@templates.bsNavBar("Interview Transcript", Symbol("ask"), scripts, extraHead) {
+@templates.publicPages("Interview Transcript", views.PublicSection.Interview, scripts, extraHead) {
   <div class="row">
     <div class="col">
       <div class="d-flex justify-content-end align-items-baseline">

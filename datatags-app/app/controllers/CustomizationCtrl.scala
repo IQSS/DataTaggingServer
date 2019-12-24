@@ -1,27 +1,28 @@
 package controllers
 
-import java.io.File
 import java.nio.file.{Files, Paths}
 import java.util.Base64
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicReference}
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicReference
 
 import javax.inject.Inject
 import models._
 import persistence.{CommentsDAO, SettingsDAO}
 import play.api.{Configuration, Logger}
-import play.api.cache.{Cached, SyncCacheApi}
+import play.api.cache.{AsyncCacheApi, Cached, SyncCacheApi}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.{JsArray, JsError, JsObject, JsString, JsSuccess, Json}
 import play.api.mvc.{ControllerComponents, InjectedController}
 
 import scala.collection.mutable
-import scala.concurrent.Future
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 import scala.util.Try
 
 /**
   * Controller for branding/customization.
   */
-class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settings:SettingsDAO,
+class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, conf:Configuration, settings:SettingsDAO,
                                   comments:CommentsDAO, cached:Cached,
                                   cc:ControllerComponents ) extends InjectedController with I18nSupport {
   implicit private val ec = cc.executionContext
@@ -34,7 +35,40 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
     })
   }
   
-  def getServerLogo = cached("logo"){
+  def pageCustomizations():PageCustomizationData = {
+    cache.get[PageCustomizationData](CustomizationCtrl.CACHE_KEY_PAGE) match {
+      case Some(pc) => pc
+      case None => {
+        val pc = Await.result(loadPageCustomizationData(), Duration(5, TimeUnit.SECONDS))
+        cache.set(CustomizationCtrl.CACHE_KEY_PAGE, pc)
+        pc
+      }
+    }
+  }
+  
+  private def loadPageCustomizationData():Future[PageCustomizationData] = {
+    logger.info("Loading page customization data")
+    for {
+      navbarUrl     <- settings.get(SettingKey.PROJECT_NAVBAR_URL)
+      navbarText    <- settings.get(SettingKey.PROJECT_NAVBAR_TEXT)
+      footer        <- settings.get(SettingKey.FOOTER_TEXT)
+      css           <- settings.get(SettingKey.BRANDING_CSS)
+      analyticsCode <- settings.get(SettingKey.ANALYTICS_CODE)
+      analyticsUse  <- settings.get(SettingKey.ANALYTICS_USE)
+      liabilityStatement <- settings.get(SettingKey.STATEMENT_TEXT)
+    } yield {
+      val effAnalytics = analyticsUse.filter(_.isTrue).flatMap( _ => analyticsCode )
+      PageCustomizationData(
+        navbarUrl.map(_.value), navbarText.map(_.value),
+        liabilityStatement.map(_.value),
+        footer.map(_.value),
+        css.map(_.value).getOrElse(""),
+        effAnalytics.map(_.value)
+      )
+    }
+  }
+  
+  def getServerLogo = cached(CustomizationCtrl.CACHE_KEY_LOGO){
     Action.async{ req =>
       for {
         mime <- settings.get(SettingKey.LOGO_IMAGE_MIME)
@@ -145,7 +179,7 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
         logger.info( f.filename + " " + f.contentType + " " + f.dispositionType )
         val fileTypeOk = f.contentType.exists( _.startsWith("image") )
         if ( fileTypeOk ) {
-          cache.remove("logo")
+          cache.remove(CustomizationCtrl.CACHE_KEY_LOGO)
           for {
             mimeOk <- settings.store( Setting(SettingKey.LOGO_IMAGE_MIME, f.contentType.get) )
             imageOk <- {
@@ -169,7 +203,7 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
   }
   
   def apiDeleteLogo = LoggedInAction(cache, cc).async{req =>
-    cache.remove("logo")
+    cache.remove(CustomizationCtrl.CACHE_KEY_LOGO)
     Future.sequence( Seq(
       settings.store( Setting(SettingKey.LOGO_IMAGE, null) ),
       settings.store( Setting(SettingKey.LOGO_IMAGE_MIME, null) )
@@ -190,4 +224,9 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, conf:Configuration, settin
     })
     retVal.toMap
   }
+}
+
+object CustomizationCtrl {
+  val CACHE_KEY_LOGO = "CustomizationCtrl-Logo"
+  val CACHE_KEY_PAGE = "CustomizationCtrl-PageData"
 }

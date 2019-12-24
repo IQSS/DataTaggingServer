@@ -27,7 +27,7 @@
     </div>
   </div>
 
-  <div class="row my-2">
+  <div class="row my-4">
     <div class="col">
       <h3>Models Page
         <button onclick="save('models')" class="btn btn-large btn-primary float-eol"><i class="fa fa-save"></i> @Messages("ui.save")</button>
@@ -37,12 +37,12 @@
     </div>
   </div>
 
-  <div class="row my-2">
+  <div class="row my-4">
     <div class="col">
       <h3>About Page
         <button onclick="save('about')" class="btn btn-large btn-primary float-eol"><i class="fa fa-save"></i> @Messages("ui.save")</button>
       </h3>
-      <p class="text-muted">This text appears at the server's <a href="@routes.Default.todo" target="_blank">About page</a>.
+      <p class="text-muted">This text appears at the server's <a href="@routes.Application.aboutServer" target="_blank">About page</a>.
         This is the place to present your organization/project, why the server was installed, and who it is supposed to serve.
       </p>
       <div id="aboutTextEditor" style="height: 20em"></div>

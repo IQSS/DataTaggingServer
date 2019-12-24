@@ -1,6 +1,7 @@
 @import edu.harvard.iq.policymodels.externaltexts.MarkupString
 @import edu.harvard.iq.policymodels.externaltexts.Localization
-@( qKit:VersionKit, readme:MarkupString, title:String, subTitle:String, loc:Localization, availableLanguages:Seq[String])(implicit req:Request[_], msgs: MessagesProvider)
+@( qKit:VersionKit, readme:MarkupString, title:String, subTitle:String, loc:Localization, availableLanguages:Seq[String]
+)(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
 
 @scripts = {
   <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -15,7 +16,7 @@
 
 @import views.Helpers
 
-@templates.bsNavBar(qKit.policyModel.get.getMetadata.getTitle + ": " + Messages("interview.readme"), Symbol("tag"), scripts, extraHead) {
+@templates.publicPages(qKit.policyModel.get.getMetadata.getTitle + ": " + Messages("interview.readme"), views.PublicSection.Interview, scripts, extraHead) {
   <div class="row">
     <div class="col">
       <div class="d-flex justify-content-end align-items-baseline">

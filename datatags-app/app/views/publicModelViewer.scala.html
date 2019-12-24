@@ -1,4 +1,4 @@
-@(model:Model, versions:Seq[VersionMD] )(implicit req:Request[_])
+@(model:Model, versions:Seq[VersionMD] )(implicit req:Request[_], msgs:MessagesProvider, pcd:models.PageCustomizationData)
 
 @scripts = {
   <script language="JavaScript">
@@ -8,7 +8,7 @@
   </script>
 }
 
-@templates.bsNavBar(model.title, Symbol("frontEnd"), scripts ) {
+@templates.publicPages(model.title, views.PublicSection.Models, scripts ) {
 
   <div class="row">
     <div class="col-md-8">

@@ -2,6 +2,10 @@ navbar.title=PM|Server
 navbar.dashboard=Dashboard
 navbar.models=Models
 navbar.users=Users
+
+navbar.public.models=Model Catalog
+navbar.public.aboutServer=About
+
 navbar.customize=Customize
 navbar.customize.pages=Pages
 navbar.customize.texts=Extra Texts

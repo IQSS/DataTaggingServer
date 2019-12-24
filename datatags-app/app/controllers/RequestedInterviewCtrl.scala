@@ -27,9 +27,11 @@ import scala.concurrent.duration.Duration
   * @param cc
   */
 class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, interviewHistories: InterviewHistoryDAO,
+                                       custCtrl:CustomizationCtrl,
                                        langs:Langs, messagesApi:MessagesApi, models:ModelManager, ec:ExecutionContext, cc:ControllerComponents, locs:LocalizationManager) extends InjectedController {
   private val logger = Logger(classOf[RequestedInterviewCtrl])
-
+  private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
+  
   implicit val messagesProvider: MessagesProvider = {
     MessagesImpl(langs.availables.head, messagesApi)
   }

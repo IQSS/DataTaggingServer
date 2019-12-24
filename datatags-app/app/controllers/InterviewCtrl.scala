@@ -20,12 +20,10 @@ import play.api.data.{Form, _}
 import play.api.data.Forms._
 import play.api.i18n._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import util.JavaOptionals.toRichOptional
 
-import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.concurrent.duration._
-
+import scala.concurrent.{ExecutionContext, Future}
 
 object InterviewCtrl {
   val INVITED_INTERVIEW_KEY = "InterviewCtrl#INVITED_INTERVIEW_KEY"
@@ -35,10 +33,12 @@ object InterviewCtrl {
  * Controller for the interview part of the application.
  */
 class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelManager, locs:LocalizationManager,
+                              custCtrl:CustomizationCtrl,
                               langs:Langs, cc:ControllerComponents, interviewHistories: InterviewHistoryDAO) extends InjectedController with I18nSupport  {
 
   private implicit val ec:ExecutionContext = cc.executionContext
   private val logger = Logger( classOf[InterviewCtrl] )
+  private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
 
   def interviewIntroDirect(modelId:String, versionNum:Int) = Action {
     TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, versionNum).url )
@@ -52,7 +52,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         case Some(version) => {
           if ( canView(request, version.md) ) {
             version.policyModel match {
-              case Some(_) => Ok( views.html.interview.intro(version, None) (request, messagesApi.preferred(Seq(langs.availables.head)))).withoutLang
+              case Some(_) => Ok( views.html.interview.intro(version, None)(request, messagesApi.preferred(Seq(langs.availables.head)),pcd)).withoutLang
               case None => Conflict(s"PolicyModel at $modelId/$versionNum contains errors and cannot be loaded.")
             }
             
@@ -102,7 +102,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                   case Some(readMe) => {
                     // show the readme
                     Ok(views.html.interview.showReadme(pmKit, readMe, l10n.getLocalizedModelData.getTitle,
-                      l10n.getLocalizedModelData.getSubTitle, l10n, availableLocs)(req, messagesApi.preferred(Seq(lang)))
+                      l10n.getLocalizedModelData.getSubTitle, l10n, availableLocs)(req, messagesApi.preferred(Seq(lang)), pcd)
                     ).withLang(lang).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
                   }
                   case None => {
@@ -141,7 +141,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     }
 
     val availableLocs:Seq[String] = session.kit.policyModel.get.getLocalizations.asScala.toSeq
-    Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None, availableLocs)(req, messagesProvider))
+    Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None, availableLocs)(req, messagesProvider, pcd))
   }
   
   def askNode( modelId:String, versionNum:Int, reqNodeId:String, loc:String) = InterviewSessionAction(cache, cc).async { implicit req =>
@@ -173,7 +173,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         for {
           note <- if(session.allowNotes && session.notes.contains(reqNodeId)) notes.getNoteText(session.key, reqNodeId) else Future(None)
         } yield {
-          Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang))) ).withLang(lang)
+          Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang)), pcd)).withLang(lang)
         }
       }
     }
@@ -339,7 +339,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
     val topVisibility = session.tags.accept(new Visibuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
       session.kit.md.topValues, ""))
-    Ok( views.html.interview.accepted(session, codeOpt, topVisibility.topValues, topVisibility.topSlots, availableLocs)(request, messagesApi.preferred(Seq(lang))) ).withLang(lang)(messagesApi)
+    Ok( views.html.interview.accepted(session, codeOpt, topVisibility.topValues, topVisibility.topSlots, availableLocs
+                                     )(request, messagesApi.preferred(Seq(lang)), pcd) ).withLang(lang)(messagesApi)
   }
 
   def reject( modelId:String, versionNum:Int, loc:String ) = InterviewSessionAction(cache, cc) { implicit request =>
@@ -357,7 +358,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     }
 
     val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
-    Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode], availableLocs)(request, messagesApi.preferred(Seq(lang))) ).withLang(lang)
+    Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode], availableLocs)(request, messagesApi.preferred(Seq(lang)), pcd) ).withLang(lang)
   }
   
   def transcript( modelId:String, versionNum:Int, format:Option[String], localizationName:Option[String] ) = InterviewSessionAction(cache, cc).async { implicit request =>
@@ -391,7 +392,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
           val loc = locs.localization(kitId, localizationName)
           val optLang = loc.getLocalizedModelData.getUiLanguage.toOption
           val lang = optLang.map(l => langs.preferred(Seq(Lang(l), langs.availables.head))).getOrElse(langs.availables.head)
-          Ok(views.html.interview.allQuestions(versionKit, versionKit.policyModel.get.getLocalizations.asScala.toSeq, loc)(req, messagesApi.preferred(Seq(lang)))).withLang(lang)
+          Ok(views.html.interview.allQuestions(versionKit, versionKit.policyModel.get.getLocalizations.asScala.toSeq, loc
+                                              )(req, messagesApi.preferred(Seq(lang)), pcd)).withLang(lang)
         }
         case None => NotFound("Model not found")
       }

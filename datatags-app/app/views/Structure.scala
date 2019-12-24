@@ -29,6 +29,12 @@ object BackOfficeSections extends Enumeration {
   val Customize = Value("Customize")
 }
 
+object PublicSection extends Enumeration {
+  val Models = Value("navbar.public.models")
+  val AboutServer = Value("navbar.public.aboutServer")
+  val Interview = Value
+}
+
 object Customization extends Enumeration {
   val Page      : Value = Value(1)
   val Styling   : Value = Value(2)
@@ -37,6 +43,11 @@ object Customization extends Enumeration {
 }
 
 object Structure {
+  
+  val publicSections:Seq[TopSiteSection[PublicSection.Value]] = Seq(
+    PageSection(PublicSection.Models.toString, PublicSection.Models, routes.Application.publicModelCatalog),
+    PageSection(PublicSection.AboutServer.toString, PublicSection.AboutServer, routes.Application.aboutServer)
+  )
   
   val backOfficeSections:Seq[TopSiteSection[BackOfficeSections.Value]] = Seq(
     PageSection("navbar.dashboard", BackOfficeSections.Dashboard, routes.CustomizationCtrl.index() ),

@@ -4,7 +4,7 @@
 
 # Home page
 GET  /                                        controllers.Application.index
-GET  /about/                                  controllers.Default.todo
+GET  /about/                                  controllers.Application.aboutServer
 GET  /models/                                 controllers.Application.publicModelCatalog
 GET  /models/tagDownload                      controllers.InterviewCtrl.downloadTags
 GET  /models/:modelId                         controllers.Application.showModel(modelId)

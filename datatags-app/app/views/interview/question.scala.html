@@ -3,7 +3,7 @@
    questionNode: edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode,
    note:Option[String],
    availableLanguages:Seq[String]
-)(implicit req:Request[_], msgs: MessagesProvider)
+)(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
 
 @scripts = {
     <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
@@ -16,7 +16,7 @@
 
 @import views.Helpers
 
-@templates.bsNavBar( Messages("interview.question"), Symbol("tag"), scripts, extraHead ) {
+@templates.publicPages( Messages("interview.question"), views.PublicSection.Interview, scripts, extraHead ) {
   <div class="row">
     <div class="col">
       <div class="d-flex justify-content-end align-items-baseline" style="margin:0 .5rem">

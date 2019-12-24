@@ -19,6 +19,7 @@ object LoggedInAction {
   val logger = Logger(classOf[LoggedInAction])
 }
 
+// TODO move to AsyncCache.
 case class LoggedInAction(cache:SyncCacheApi, cc:ControllerComponents) extends ActionBuilder[LoggedInRequest, AnyContent] {
   private implicit val ec = cc.executionContext
 

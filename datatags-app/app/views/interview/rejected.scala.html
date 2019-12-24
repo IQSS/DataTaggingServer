@@ -4,7 +4,7 @@
 @(session:InterviewSession,
   node: RejectNode,
   availableLanguages:Seq[String]
-)(implicit req:Request[_], msgs: MessagesProvider)
+)(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
 
 
 @extraHead = {
@@ -13,7 +13,7 @@
 }
 }
 
-@templates.bsNavBar(Messages("interview.datasetRejected"), Symbol("tag"), extraHead = extraHead) {
+@templates.publicPages(Messages("interview.datasetRejected"), views.PublicSection.Interview, extraHead = extraHead) {
   <div class="row">
     <div class="col">
       <div class="d-flex justify-content-end align-items-baseline" style="margin:0 .5rem">
