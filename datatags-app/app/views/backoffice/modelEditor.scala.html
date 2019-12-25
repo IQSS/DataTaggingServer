@@ -5,7 +5,7 @@
 }
 
 
-@templates.backend("Model Editor", views.BackOfficeSections.Models, scripts ) {
+@templates.backend("Model Editor", views.BackOfficeSection.Models, scripts ) {
   <form action="@if(isNew){@routes.ModelCtrl.doSaveNewModel}else{@routes.ModelCtrl.doSaveModel(form("id").value.get)}" method="POST">
     @comps.pageTitleRow("Model Editor",
       "Use this page to create and edit models. models serve as a container with a fixed URL for different versions of a policy model."){

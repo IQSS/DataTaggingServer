@@ -5,7 +5,7 @@ import java.util.{Date, UUID}
 
 import javax.inject.Inject
 import akka.http.scaladsl.model.HttpEntity.Chunked
-import models.{User, UuidForForgotPassword, UuidForInvitation}
+import models.{PageCustomizationData, User, UuidForForgotPassword, UuidForInvitation}
 import persistence.{UsersDAO, UuidForForgotPasswordDAO, UuidForInvitationDAO}
 import play.api.cache.SyncCacheApi
 import play.api.{Configuration, Logger, cache}
@@ -40,11 +40,12 @@ case class ForgotPassFormData ( email:String , protocol_and_host:String)
 case class ResetPassFormData ( password1:String, password2:String, uuid:String)
 case class ChangePassFormData ( previousPassword:String, password1:String, password2:String)
 
-class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents,
+class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents, custCtrl: CustomizationCtrl,
                           users:UsersDAO, cache:SyncCacheApi, mailerClient: MailerClient,
                           uuidForInvitation:UuidForInvitationDAO,
                           uuidForForgotPassword:UuidForForgotPasswordDAO) extends InjectedController with I18nSupport {
   implicit private val ec = cc.executionContext
+  private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
   private val validUserId = "^[-._a-zA-Z0-9]+$".r
   
   val userForm = Form(mapping(

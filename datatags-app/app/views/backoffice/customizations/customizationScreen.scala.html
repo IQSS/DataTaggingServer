@@ -1,7 +1,7 @@
 @import views.Structure
 @(title:String, section:views.Customization.Value, scripts: Html=Html(""), extraHead: Html=Html(""))(content:Html)(implicit request: RequestHeader, msgs: MessagesProvider)
 
-@templates.backend(title, views.BackOfficeSections.Customize, scripts, extraHead ) {
+@templates.backend(title, views.BackOfficeSection.Customize, scripts, extraHead ) {
   <div class="row">
     <div class="col">
       <nav class="nav nav-pills nav-justified">

@@ -22,7 +22,7 @@ abstract sealed class TopSiteSection[T]{
 case class PageSection[T](title:String, id:T, call:Call) extends TopSiteSection[T]
 case class MultiPageSection[T](title:String, id:T, children:Seq[SectionItem]) extends TopSiteSection[T]
 
-object BackOfficeSections extends Enumeration {
+object BackOfficeSection extends Enumeration {
   val Dashboard = Value("Dashboard")
   val Models = Value("Models")
   val Users = Value("Users")
@@ -50,11 +50,11 @@ object Structure {
     PageSection(PublicSection.AboutServer.toString, PublicSection.AboutServer, routes.Application.aboutServer)
   )
   
-  val backOfficeSections:Seq[TopSiteSection[BackOfficeSections.Value]] = Seq(
-    PageSection("navbar.dashboard", BackOfficeSections.Dashboard, routes.CustomizationCtrl.index() ),
-    PageSection("navbar.models", BackOfficeSections.Models, routes.ModelCtrl.showModelsList() ),
-    PageSection("navbar.users", BackOfficeSections.Users, routes.UsersCtrl.showUserList() ),
-    MultiPageSection("navbar.customize", BackOfficeSections.Customize, Seq(
+  val backOfficeSections:Seq[TopSiteSection[BackOfficeSection.Value]] = Seq(
+    PageSection("navbar.dashboard", BackOfficeSection.Dashboard, routes.CustomizationCtrl.index() ),
+    PageSection("navbar.models", BackOfficeSection.Models, routes.ModelCtrl.showModelsList() ),
+    PageSection("navbar.users", BackOfficeSection.Users, routes.UsersCtrl.showUserList() ),
+    MultiPageSection("navbar.customize", BackOfficeSection.Customize, Seq(
       PageSectionItem("navbar.customize.pages",     routes.CustomizationCtrl.showPagesCustomization()),
       PageSectionItem("navbar.customize.texts",     routes.CustomizationCtrl.showTextsCustomization()),
       PageSectionItem("navbar.customize.styling",   routes.CustomizationCtrl.showStylingCustomization()),

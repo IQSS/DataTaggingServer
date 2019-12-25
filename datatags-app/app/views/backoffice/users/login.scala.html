@@ -1,4 +1,4 @@
-@(username:Option[String], message:Option[String])
+@(username:Option[String], message:Option[String])(implicit req:Request[_], msgs:MessagesProvider, pcd:PageCustomizationData)
 
 @scripts = {
   <script lang="Javascript">
@@ -12,22 +12,23 @@
   <meta name="robots" content="noindex, nofollow">
 }
 
-@templates.bsBase("Log in", scripts, extraHead )(Html("")){
-<form action="@routes.UsersCtrl.doLogin" method="POST">
+@templates.publicPages("Log in", null, scripts, extraHead ){
+<form action="@routes.UsersCtrl.doLogin" method="POST" style="margin: 20vh auto">
   <div class="row my-5">
     <div class="col">
-      <div class="card mx-auto border-primary" style="width: 36rem">
-        <div class="card-header bg-primary text-light">
+      <div class="card mx-auto border-secondary shadow-lg" style="width: 36rem">
+        <div class="card-header bg-secondary shadow-sm text-light">
           Log In to PolicyModels Server
         </div>
-        <div class="card-body">
+        <div class="card-body shadow-sm ">
             @for( m <- message ){
               <div class="form-group has-danger">
                 <div class="alert alert-danger">@m</div>
               </div>
             }
           <div class="text-center">
-            <img src="@routes.CustomizationCtrl.getServerLogo" alt="Server logo" style="max-height: 100px; margin:auto">
+            <img src="@routes.CustomizationCtrl.getServerLogo" alt="Server logo" style="max-height: 100px; margin:auto"><br>
+            @pcd.serverName
           </div>
             <div class="form-group">
               <label for="idInput">Username</label>

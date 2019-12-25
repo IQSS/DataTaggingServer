@@ -16,7 +16,7 @@
 }
 
 
-@templates.backend("Model Editor", views.BackOfficeSections.Models, scripts ) {
+@templates.backend("Model Editor", views.BackOfficeSection.Models, scripts ) {
 
   <form enctype="multipart/form-data" action="@versionNumber.map(n=>routes.ModelCtrl.saveVersion(modelId, n)).getOrElse(routes.ModelCtrl.uploadNewVersion(modelId))" method="POST">
     @comps.pageTitleRow("Policy Model Version Editor",

@@ -206,7 +206,7 @@
 }
 
 @if(!isInvite){
-  @templates.backend("Profile Editor", views.BackOfficeSections.Users)(content)
+  @templates.backend("Profile Editor", views.BackOfficeSection.Users)(content)
 } else {
   @templates.bsBase("New User")(Html(""))(content)
 }

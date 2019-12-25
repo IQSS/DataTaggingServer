@@ -6,7 +6,7 @@
 @import Helpers._
 @(cmt:Comment, kit:VersionKit, loc:Localization, readmeOpt:Option[MarkupString])(implicit request: RequestHeader, msgs: MessagesProvider)
 
-@templates.backend("Comment Viewer", views.BackOfficeSections.Models ) {
+@templates.backend("Comment Viewer", views.BackOfficeSection.Models ) {
   <div class="row my-2">
     <div class="col">
       <a href="@routes.ModelCtrl.showVersionPage(kit.md.id.modelId, kit.md.id.version)">

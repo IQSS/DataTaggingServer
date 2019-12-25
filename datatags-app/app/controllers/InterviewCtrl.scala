@@ -37,8 +37,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                               langs:Langs, cc:ControllerComponents, interviewHistories: InterviewHistoryDAO) extends InjectedController with I18nSupport  {
 
   private implicit val ec:ExecutionContext = cc.executionContext
-  private val logger = Logger( classOf[InterviewCtrl] )
   private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
+  private val logger = Logger( classOf[InterviewCtrl] )
 
   def interviewIntroDirect(modelId:String, versionNum:Int) = Action {
     TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, versionNum).url )
