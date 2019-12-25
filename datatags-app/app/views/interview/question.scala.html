@@ -39,9 +39,12 @@
         <div class="card">
             <div class="card-header bg-secondary text-white d-flex">
               <div class="flex-grow-1">@Messages("interview.answerFeed")</div>
-              <div class="flex-grow-0"><a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))" class="btn btn-sm btn-outline-light">@Messages("interview.restart")</a></div>
+              <div class="flex-grow-0">
+                <a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))" class="btn btn-sm btn-outline-light">@Messages("interview.restart")</a>
+                <button onclick="toggleCard(this,'answerHistory')" type="button" class="btn btn-sm btn-outline-light"><i class="fa fa-chevron-circle-down"></i></button>
+              </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="answerHistory" style="display: none">
                 @if( session.answerHistory.nonEmpty ) {
                     @comps.answerHistory(session.answerHistory, session.kit.md.id, reverse=true, session.kit.serializer, session.localization)
                 } else {
@@ -54,10 +57,14 @@
     </div>
     <div class="col-md">
         <div class="card">
-            <div class="card-header bg-secondary text-white">
-                @Messages("interview.currentTags")
+            <div class="card-header bg-secondary text-white d-flex">
+              <div class="flex-grow-1">@Messages("interview.currentTags")</div>
+              <div class="flex-grow-0">
+                <button onclick="toggleCard(this,'currentCoordinate')" type="button" class="btn btn-sm btn-outline-light"><i class="fa fa-chevron-circle-down"></i></button>
+              </div>
             </div>
-            <div class="card-body">
+            <div class="card-body" id="currentCoordinate" style="display: none">
+              <small>@Messages("interview.currentTags.help")</small>
               @if( session.tags.getNonEmptySubSlots.isEmpty ) {
                   <div class="well well-sm text-center">
                       <span class="muted small">@Messages("interview.currentTags.explain")</span>

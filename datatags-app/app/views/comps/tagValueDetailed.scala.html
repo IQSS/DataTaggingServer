@@ -21,7 +21,7 @@
       <p class="smallNote">
         @Helpers.renderMinimalMarkdown(note)
         @Helpers.nonEmpty( texts.bigNote ){ note =>
-          <button class="btn btn-txt btn-outline-secondary" type="button" onclick="toggleBigNote('s@counter.incrementAndGet')"><i class="fa fa-expand"></i></button>}
+          <button class="btn btn-txt btn-outline-secondary" type="button" onclick="toggleBigNote(this, 's@counter.incrementAndGet')"><i class="fa fa-chevron-circle-down"></i></button>}
       </p>
     }
     @Helpers.nonEmpty( texts.bigNote ) { note =>
@@ -39,8 +39,8 @@
         <span class="smallNote">@Helpers.renderMinimalMarkdown(note)</span>
       }
       @Helpers.nonEmpty( texts.bigNote ){note =>
-        <button class="btn btn-txt btn-outline-secondary" type="button" onclick="toggleBigNote('v@counter.incrementAndGet')"><i class="fa fa-expand"></i></button>
-        <div class="bg-light bigNote" style="display:none" id="v@counter.get">
+        <button class="btn btn-txt btn-outline-secondary" type="button" onclick="toggleBigNote(this, 'v@counter.incrementAndGet')"><i class="fa fa-chevron-circle-down"></i></button>
+        <div class="bigNote" style="display:none" id="v@counter.get">
           @Helpers.renderMarkdown(note)
         </div>
       }
@@ -55,7 +55,7 @@
     @Helpers.localized(value, loc){ valueText =>
       <span class="slotName">@slotText.name</span> <span class="slotValue">@valueText.name</span>
       @if( Helpers.hasContent(slotText.bigNote) || Helpers.hasContent(valueText.bigNote)){
-        <button class="btn btn-txt btn-outline-secondary" type="button" onclick="toggleBigNote('v@counter.incrementAndGet')"><i class="fa fa-expand"></i></button>
+        <button class="btn btn-txt btn-outline-secondary" type="button" onclick="toggleBigNote(this, 'v@counter.incrementAndGet')"><i class="fa fa-chevron-circle-down"></i></button>
       }
       @Helpers.nonEmpty( slotText.smallNote ){ note => <div class="smallNote smallNote-slot">
         @Helpers.renderMinimalMarkdown(note)

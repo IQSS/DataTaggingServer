@@ -30,6 +30,11 @@ h1, h2, h3 {
   padding: 0 .5rem;
   font-size: .7rem;
   line-height: .7rem;
+  border: none;
+  &:hover {
+    background-color: #444;
+    color: #CCC;
+  }
 }
 
 .startButtonsCtnr {
@@ -181,9 +186,11 @@ h1, h2, h3 {
   border-color: #444;
 }
 
+@QSColorLight: rgba(255,255,255,.15);
+@QSColorDark: rgba(0,0,0,.15);
 .transcript {
   .question {
-    border: 1px solid #DDD;
+    border: 1px solid @QSColorDark;
     margin: 1em 0;
     .text {
       padding: .5em;
@@ -195,12 +202,12 @@ h1, h2, h3 {
       flex-direction: row;
       align-items: center;
       padding: 0.5em;
-      border-top: 1px solid #DDD;
+      border-top: 1px solid @QSColorDark;
 
       h6 {
         flex-grow: 0;
         margin: 0.5em 0.5em .5em 0;
-        border-right: 1px solid #DDD;
+        border-right: 1px solid @QSColorDark;
         width: 5em;
       }
       .text {
@@ -209,7 +216,7 @@ h1, h2, h3 {
     }
 
     .questionSectionNote {
-      background-color: #EEE;
+      background-color: @QSColorLight;
 
       .text {
         font-style: italic;
@@ -218,7 +225,7 @@ h1, h2, h3 {
     }
 
     .questionSectionAnswer {
-      background-color: #f0f8ff;
+      background-color: @QSColorDark;
       .text {
         font-weight: bold;
         text-align: right;
@@ -435,8 +442,6 @@ table.engine-trace {
   }
 }
 
-
-
 .detailedValue-container > .detailedValue {
   margin: .5em 0;
   background-color: white;
@@ -452,6 +457,9 @@ table.engine-trace {
   .smallNote {
     color: darken(@theme4,20%);
     font-size: 11pt;
+    p {
+      margin: 0;
+    }
   }
 
   .smallNote-slot {
@@ -460,9 +468,13 @@ table.engine-trace {
 
   .bigNote {
     color: @theme1;
+    background-color: rgba(0,0,0,.1);
     border-radius: 1em;
     padding: 1em;
-    margin: 1em;
+    margin: .5em;
+    p {
+      margin: 0;
+    }
   }
 
   h3 {

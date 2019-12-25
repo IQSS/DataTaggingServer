@@ -24,3 +24,17 @@ var Question = function() {
 
 };}();
 
+var UP   = "fa-chevron-circle-up";
+var DOWN = "fa-chevron-circle-down";
+
+function toggleCard(button, divId) {
+    $("#" + divId).slideToggle();
+    var iconEmt = button.getElementsByTagName("i")[0];
+    if ( iconEmt.className.indexOf(UP) >= 0 ) {
+        iconEmt.classList.remove(UP);
+        iconEmt.classList.add(DOWN);
+    } else {
+        iconEmt.classList.remove(DOWN);
+        iconEmt.classList.add(UP);
+    }
+}
