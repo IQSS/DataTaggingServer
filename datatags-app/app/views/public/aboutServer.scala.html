@@ -1,0 +1,86 @@
+@(aboutServerHtml:Option[String])(implicit req:Request[_], msgs:MessagesProvider, pcd:PageCustomizationData)
+
+@templates.publicPages("About", views.PublicSection.AboutServer) {
+  @for( about <- aboutServerHtml ) {
+    <div class="row my-4">
+      <div class="col">
+          <h2>About this server</h2>
+          <div class="ql-edited">@Html(about)</div>
+      </div>
+    </div>
+    <hr>
+  }
+  <div class="row my-4">
+    <div class="col">
+      <h2>About PolicyModels</h2>
+      <p>
+      Policy Models (formerly: DataTags) is a tool for creating formal models of policies, such as proper handling for
+        a given dataset or benefit entitlements for unemployed people. Originally intended as a way of helping
+        researchers understand the laws and contractual agreements that govern how they can share sensitive data,
+      it may also be used to model other legal and legal-like domains, such as certain types of public policies or
+        scholarly protocols.
+      </p>
+      <p><em>
+        Unless otherwise noted, this server, and the organization running it, are not affiliated with the PolicyModels project; they are just only the
+        software developed by the PolicyModels project.
+      </em></p>
+      <h3>Research</h3>
+      <p>
+        PolicyModels is an open source tool originally developed by the <a href="http://privacytools.seas.harvard.edu">
+        Privacy Tools for Sharing Research Data project</a> at Harvard University. It is currently maintained by
+        the <a href="http://www.iq.harvard.edu"> Institute for Quantitative Social Science</a> at Harvard University
+        (IQSS) and by additional organizations.
+      </p>
+      <p>
+        The goal of this broad, multidisciplinary collaboration between the <a href="http://crcs.seas.harvard.edu ">
+        Center for Research on Computation and Society</a>, the <a href="http://www.iq.harvard.edu">
+        Institute for Quantitative Social Science</a>, the <a href="http://cyber.law.harvard.edu">
+        Berkman Center for Internet &amp; Society</a>, and the <a href="http://www.dataprivacylab.org">Data Privacy Lab</a>
+        is to help enable the collection, analysis, and sharing of personal data for research while providing privacy for individual subjects.
+      </p><p>
+        More information about the development of the DataTags prototype is available from the <a href="http://datatags.org/">DataTags project page</a>.
+        This page also list relevant <a href="http://datatags.org/publications">academic publications</a>.
+      </p>
+
+      <h2 class="mt-4">Funding and Support</h2>
+      <h4>Initial Funding and Development</h4>
+      <ul class="image-links">
+        <li><a data-toggle="tooltip" data-placement="top" title="National Science Foundation" href="http://nsf.gov" target="_blank">
+          <span><img src="@routes.Assets.versioned("images/logos/nsf.png")" alt="NSF logo" /></span> National Science Foundation</a> (grant #CNS-1237235)</li>
+        <li><a href="https://privacytools.seas.harvard.edu/">
+          <span><img src="@routes.Assets.versioned("images/logos/seas.png")" alt=""></span> Harvard University Privacy Tools Project</a></li>
+        <li><a title="The Dataverse Project" href="http://thedata.org" target="_blank"><span>
+          <img src="@routes.Assets.versioned("images/logos/dataverse.svg")" alt="Dataverse logo" /></span> Dataverse.org</a></li>
+        <li><a title="Data Privacy Lab, IQSS at Harvard University" href="http://dataprivacylab.org/" target="_blank">
+          <span><img src="@routes.Assets.versioned("images/logos/dpl.png")" alt="Data Privacy Lab logo" /></span> Data Privacy Lab</a></li>
+        <li><a title="Berkman Center for Internet and Society at Harvard University" href="http://cyber.law.harvard.edu/" target="_blank">
+          <span><img src="@routes.Assets.versioned("images/logos/bkkc.png")" alt="Berkman Center logo" /></span> Berkman-Klein Center for Internet and Society</a></li>
+        <li><a title="Privacy Tools for Sharing Research Data, at Harvard School of Engineering and Applied Sciences" href="http://privacytools.seas.harvard.edu" target="_blank">
+          <span><img src="@routes.Assets.versioned("images/logos/seas.png")" alt="Harvard SEAS logo" /></span> Harvard SEAS</a></li>
+        <li><a title="The Institute for Quantitative Social Science at Harvard University" href="http://iq.harvard.edu" target="_blank">
+          <span><img src="@routes.Assets.versioned("images/logos/iqss.png")" alt="IQSS logo" /></span> Institute for Quantitative Social Science at Harvard University (IQSS)</a></li>
+      </ul>
+
+      <h4 class="mt-4">Subsequent Funding and Development</h4>
+      <ul class="image-links">
+        <li><a href="https://iq.harvard.edu"><span><img src="@routes.Assets.versioned("images/logos/iqss.png")" alt="logo"></span>IQSS</a></li>
+        <li><a href="http://force11.org"><span><img src="@routes.Assets.versioned("images/logos/force11.png")" alt="logo"></span>Force11.org</a></li>
+        <li><a href="https://www.cs.bgu.ac.il"><span><img src="@routes.Assets.versioned("images/logos/BGU.png")" alt="logo"></span>Ben-Gurion University, Computer Science Department</a></li>
+        <li><a href="https://ucsd.edu"><span><img src="@routes.Assets.versioned("images/logos/UCSD.png")" alt="logo"></span>University of California - San Diego</a></li>
+        <li><a href="https://dknet.org/"><span><img src="@routes.Assets.versioned("images/logos/dkNet.png")" alt="logo"></span>dkNet / National Institute of Diabetes Digestive and Kidney Disease (NIDDK)</a></li>
+        <li><a href="https://innovationisrael.org.il/en/"><span><img src="@routes.Assets.versioned("images/logos/iia.png")" alt="logo"></span>Israel Innovation Authority, Government Innovation Track</a></li>
+        <li><a href="https://www.kavlaoved.org.il/"><span><img src="@routes.Assets.versioned("images/logos/kavlaoved.png")" alt="logo"></span>Kav Laoved</a></li>
+      </ul>
+
+      <h2 class="mt-4">Code</h2>
+      <p>
+        PolicyModels tools and servers are released under industry-friendly open-source licence (APLv2/MIT).
+      </p>
+      <ul>
+        <li><a data-toggle="tooltip" data-placement="bottom" href="https://github.com/IQSS/DataTags/" title="We're open source! Visit us at GitHub" target="_blank"><i class="fa fa-github"></i> PolicyModels <em>language</em> repository at GitHub</a></li>
+        <li><a data-toggle="tooltip" data-placement="bottom" href="https://github.com/IQSS/DataTaggingServer/" title="We're open source! Visit us at GitHub" target="_blank"><i class="fa fa-github"></i> PolicyModels <em>Server</em> repository at GitHub</a></li>
+        <li><a data-toggle="tooltip" data-placement="bottom" href="https://github.com/IQSS/DataTags-Atom-Package" title="We're open source! Visit us at GitHub" target="_blank"><i class="fa fa-github"></i> PolicyModels <em>Atom Editor Support</em> repository at GitHub</a></li>
+      </ul>
+    </div>
+  </div>
+}

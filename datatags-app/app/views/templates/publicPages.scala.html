@@ -5,9 +5,14 @@
 @headPart = {
 	@extraHead
 	<link href="@routes.Assets.versioned("css/navbar-extras.min.css")" rel="stylesheet">
+  @if(pcd.css.nonEmpty){
+    <style type="text/css">
+      @Html(pcd.css)
+    </style>
+  }
 }
 
-@bsBase(title, scripts, headPart) {
+@bsBase(title, scripts, headPart, Some(pcd)) {
 <nav class="navbar navbar-expand-lg navbar-light fixed-top bg-light">
   <a class="navbar-brand" href="/"><img src="@routes.CustomizationCtrl.getServerLogo()" height="30px" alt="Server Logo"></a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar-collapse" aria-controls="navbar-collapse" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,7 +26,7 @@
       }
       @if(pcd.hasNavbarData){
         <li class="nav-item">
-          <a class="nav-link" href="@pcd.navbarUrl.get">@pcd.navbarText.get</a>
+          <a class="nav-link" href="@pcd.navbarUrl.get">@pcd.navbarText.get <i class="fa fa-external-link"></i></a>
         </li>
       }
     </ul>

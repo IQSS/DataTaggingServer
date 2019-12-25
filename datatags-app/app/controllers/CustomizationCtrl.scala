@@ -49,6 +49,7 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, con
   private def loadPageCustomizationData():Future[PageCustomizationData] = {
     logger.info("Loading page customization data")
     for {
+      serverName    <- settings.get(SettingKey.SERVER_NAME)
       navbarUrl     <- settings.get(SettingKey.PROJECT_NAVBAR_URL)
       navbarText    <- settings.get(SettingKey.PROJECT_NAVBAR_TEXT)
       footer        <- settings.get(SettingKey.FOOTER_TEXT)
@@ -59,6 +60,7 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, con
     } yield {
       val effAnalytics = analyticsUse.filter(_.isTrue).flatMap( _ => analyticsCode )
       PageCustomizationData(
+        serverName.map(_.value),
         navbarUrl.map(_.value), navbarText.map(_.value),
         liabilityStatement.map(_.value),
         footer.map(_.value),
@@ -90,7 +92,8 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, con
   
   def showTextsCustomization = LoggedInAction(cache, cc).async{ implicit req =>
     settings.get(
-      Set(SettingKey.FOOTER_TEXT, SettingKey.PROJECT_NAVBAR_URL,
+      Set(SettingKey.SERVER_NAME,
+           SettingKey.FOOTER_TEXT, SettingKey.PROJECT_NAVBAR_URL,
            SettingKey.PROJECT_NAVBAR_TEXT, SettingKey.STATEMENT_TEXT)
     ).map { settings =>
       val map = settings.map(s => s.key->s.value ).toMap
@@ -133,14 +136,13 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, con
   def apiSetCustomization( value:String ) = LoggedInAction(cache, cc).async{ req =>
     logger.info("Setting customization " + value )
     try {
+      cache.remove(CustomizationCtrl.CACHE_KEY_PAGE)
       val settingKey = SettingKey.withName(value.trim)
       req.body.asText match {
         case None => {
-          logger.info("... deleting" )
           settings.store(Setting(settingKey, null)).map( _ => Ok(settingKey.toString + " deleted") )
         }
         case Some(v) => {
-          logger.info("... to '%s'".format(v) )
           settings.store(Setting(settingKey, v)).map( _ => Ok(settingKey.toString + " updated") )
         }
       }
@@ -157,9 +159,10 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, con
         json match {
           case jobj: JsObject => {
             val strStrPairs = jobj.fields.filter(_._2.isInstanceOf[JsString]).map(p => (p._1, p._2.asInstanceOf[JsString].value))
-            val settingCandidates = strStrPairs.map(p => (p._1, Try(Setting(SettingKey.withName(p._1), p._2))) )
+            val settingCandidates = strStrPairs.map(p => (p._1, Try(Setting(SettingKey.withName(p._1), p._2.trim))) )
             val work = settingCandidates.filter( _._2.isSuccess ).map( p => settings.store(p._2.get))
             Future.sequence(work).map{ res =>
+              cache.remove(CustomizationCtrl.CACHE_KEY_PAGE)
               Ok( Json.obj(
                 "status" -> "ok",
                 "updated" -> JsArray(settingCandidates.filter(_._2.isSuccess).map( s=>JsString(s._1)))

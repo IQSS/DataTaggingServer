@@ -17,6 +17,8 @@ customization.pages=Pages
 customization.texts=Additional Texts
 customization.styling=Branding
 customization.analytics=Analytics
+customizations.texts.serverName.label=Server/Instance Name
+customizations.texts.serverName.help=Name of this server (or, more formally, "PolicyModels Server instance"). Used in page titles etc.
 customizations.texts.statement.label=Limited liability statement
 customizations.texts.statement.help=This statement appears on all public facing pages. It can be used to limit the liability of your organization, e.g. stating that the results are a recommendation, and do not replace consultation with a professional lawyer.
 customizations.texts.aboutProject.label=Parent Project Title
@@ -40,6 +42,8 @@ customization.styling.logo.help=The logo image will appear in the navigation bar
 customization.styling.deleteLogo=Delete logo
 customization.styling.uploadLogo=Upload logo
 customization.styling.noLogo=No logo image
+
+index.modelCatalogButton=See All Models
 
 interview.readme=README
 interview.question=Question

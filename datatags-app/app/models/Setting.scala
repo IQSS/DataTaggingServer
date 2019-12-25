@@ -1,7 +1,8 @@
 package models
 
 object SettingKey extends Enumeration {
-  val HOME_PAGE_TEXT,
+  val SERVER_NAME,
+      HOME_PAGE_TEXT,
       MODELS_PAGE_TEXT,
       ABOUT_PAGE_TEXT,
       FOOTER_TEXT,

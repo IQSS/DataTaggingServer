@@ -5,6 +5,7 @@ let urlField;
 function setup(){
     urlField = document.getElementById("fldAboutUrl");
     UiUtils.onEnter(urlField, save);
+    UiUtils.onEnter(document.getElementById("fldServerName"), save);
     UiUtils.onEnter(document.getElementById("fldFooterText"), save);
     UiUtils.onEnter(document.getElementById("fldStatement"),  save);
     UiUtils.onEnter(document.getElementById("fldAboutLabel"), save);
@@ -17,6 +18,7 @@ function save() {
         return;
     }
     const data = {};
+    data.SERVER_NAME=document.getElementById("fldServerName").value;
     data.FOOTER_TEXT=document.getElementById("fldFooterText").value;
     data.STATEMENT_TEXT=document.getElementById("fldStatement").value;
     data.PROJECT_NAVBAR_URL=document.getElementById("fldAboutUrl").value;

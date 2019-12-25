@@ -1,13 +1,13 @@
 package persistence
 
 import javax.inject.Inject
-
 import models.SettingKey
 import models.Setting
+import play.api.Logger
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 /**
@@ -15,6 +15,7 @@ import scala.concurrent.Future
   */
 class SettingsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvider) extends HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
+  private val logger = Logger(classOf[SettingsDAO])
   
   private val Settings = TableQuery[SettingTable]
   
@@ -27,6 +28,7 @@ class SettingsDAO @Inject() (protected val dbConfigProvider:DatabaseConfigProvid
   def store( aSetting:Setting ):Future[Boolean] = {
     if ( (aSetting.value == null) ||
          aSetting.value.trim.isEmpty) {
+      logger.info("deleting: " + aSetting.key.toString)
       db.run(
         Settings.filter( _.key === aSetting.key.toString ).delete
       ).map( _ > 0 )

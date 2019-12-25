@@ -19,14 +19,14 @@ class Application @Inject()(cached: Cached, models:ModelManager,
   
   def index = Action.async { implicit req =>
     settings.get( SettingKey.HOME_PAGE_TEXT ).map( stng =>
-      Ok(views.html.index(stng, TagsTable.rows, routes.Application.publicModelCatalog())
-   ))}
+      Ok(views.html.index(stng))
+  )}
   
   def aboutServer = Action.async{ implicit req =>
     for {
       textOpt <- settings.get(SettingKey.ABOUT_PAGE_TEXT)
     } yield {
-      Ok( textOpt.toString )
+      Ok( views.html.public.aboutServer(textOpt.map(_.value)) )
     }
   }
   

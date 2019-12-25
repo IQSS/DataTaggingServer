@@ -504,32 +504,67 @@ table.engine-trace {
   }
 }
 
+ul.image-links {
+  list-style: none;
+  li {
+    margin: .5em auto;
+    a {
+      span {
+        display: inline-block;
+        width: 150px;
+        text-align: right;
+        margin-right: .5em;
+        img {
+          height: 30px;
+          width: auto;
+        }
+      }
+    }
+  }
+}
+
 footer {
   direction: ltr;
   margin-top: 2em;
-  padding: 1em 0;
+  padding: 2em 0;
   background-color: #E8E8E8;
   font-size: 0.8em;
   border-top: 1px solid #888;
+  color: #888;
   text-align: center;
 
-  ul {
-    margin: 1em 0;
-
-    li {
-      color: #888;
-      text-align: left;
-
-      img {
-        vertical-align: text-bottom;
-      }
-    }
+  img {
+    vertical-align: bottom;
   }
 
   .commitTag {
     font-size: 9pt;
     font-family: "Source Code Pro", "Monaco", "Ubuntu Mono Regular", "Lucida Console", monospace;
-    color: #888;
+  }
+  a.footerLink {
+    font-size: 13pt;
+    display: inline-block;
+    margin: auto .5em;
+    vertical-align: middle;
+    color: #2a6496;
+    &:hover {
+      text-shadow: white -1px -1px 2px, #DDD 1px 1px 2px, white 1px -1px 2px, white 1px -1px 2px;
+      color: black;
+    }
+  }
+
+  .iqssSprite {
+    display: inline-block;
+    width: 38px;
+    height: 29px;
+    background-image: url("/assets/images/iqss-logo-sprites.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position-y: -29px;
+
+    &:hover{
+      background-position-y: 0;
+    }
   }
 }
 

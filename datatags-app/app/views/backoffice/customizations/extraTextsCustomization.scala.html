@@ -17,6 +17,11 @@
     <div class="col">
       <form action="#"  onsubmit="save(); return false;" id="mainForm">
         <div class="form-group">
+          <label for="fldStatement">@Messages("customizations.texts.serverName.label")</label>
+          <input type="text" class="form-control" id="fldServerName" value="@map.getOrElse(SettingKey.SERVER_NAME,"")">
+          <small>@Messages("customizations.texts.serverName.help")</small>
+        </div>
+        <div class="form-group">
           <label for="fldStatement">@Messages("customizations.texts.statement.label")</label>
           <input type="text" class="form-control" id="fldStatement" value="@map.getOrElse(SettingKey.STATEMENT_TEXT,"")">
           <small>@Messages("customizations.texts.statement.help")</small>

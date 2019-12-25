@@ -30,6 +30,7 @@ object BackOfficeSections extends Enumeration {
 }
 
 object PublicSection extends Enumeration {
+  val Index = Value
   val Models = Value("navbar.public.models")
   val AboutServer = Value("navbar.public.aboutServer")
   val Interview = Value
