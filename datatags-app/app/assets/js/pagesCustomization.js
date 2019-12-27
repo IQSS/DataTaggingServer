@@ -1,8 +1,8 @@
 /* jshint esversion:6 */
 
-let homeEditor;
-let modelsEditor;
-let aboutEditor;
+var homeEditor = null;
+var modelsEditor = null;
+var aboutEditor = null;
 const editors = {};
 const NAMES = ["home", "models", "about"];
 function customizationSetup() {

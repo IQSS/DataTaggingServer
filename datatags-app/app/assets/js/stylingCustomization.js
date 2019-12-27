@@ -68,8 +68,8 @@ function uploadLogo() {
         return;
     }
 
-    for (let i = 0; i < files.length; i++) {
-        let file = files[i];
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
 
         formData.append('logo', file);
     }
@@ -78,7 +78,7 @@ function uploadLogo() {
     fetch(jsRoutes.controllers.CustomizationCtrl.apiSetLogo().url, {
         method: 'POST',
         body: formData,
-    }).then(response => {
+    }).then(function(response){
         if( response.status === 200 ) {
             msg.success();
             setHasImage(true);
@@ -87,7 +87,7 @@ function uploadLogo() {
             msg.dismiss();
             return response.json();
         }
-    }).then( json => {
+    }).then( function(json){
         if ( json ) {
             Informationals.makeDanger("Error uploading logo", json.message, 3000).show();
         }
@@ -110,14 +110,14 @@ function deleteLogo() {
             const call = jsRoutes.controllers.CustomizationCtrl.apiDeleteLogo();
             fetch( call.url, {
                 method: call.method
-            }).then( resp => {
+            }).then( function(resp) {
                 if ( resp.status === 200 ) {
                     msg.success();
                     setHasImage(false);
                 } else {
                     return resp.json();
                 }
-            }).then( json=>{
+            }).then( function(json){
                msg.dismiss();
                if ( json ) {
                    Informationals.makeDanger("Error uploading logo", json.message, 3000).show();

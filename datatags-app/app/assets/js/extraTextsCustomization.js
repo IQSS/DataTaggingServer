@@ -1,6 +1,6 @@
 /* jshint esversion:6 */
 
-let urlField;
+var urlField = null;
 
 function setup(){
     urlField = document.getElementById("fldAboutUrl");
