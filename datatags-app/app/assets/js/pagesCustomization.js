@@ -20,7 +20,7 @@ function customizationSetup() {
         [{ 'font': [] }],
         [{ 'align': [] }],
 
-        ['clean']                                         // remove formatting button
+        ['link','clean']                                         // remove formatting button
     ];
 
     NAMES.forEach(function(name){

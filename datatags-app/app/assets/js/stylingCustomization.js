@@ -52,11 +52,13 @@ function cssStringifyAttributes( obj ) {
 }
 
 function setColor( selector, key, value ) {
-    $("input[type='color']"
-    ).filter(function(i,c){
-        const data = $(c).data();
-        return data.selector === selector && data.key===key;
-    }).val(value);
+    if ( value && value.length > 0 ) {
+        $("input[type='color']"
+        ).filter(function(i,c){
+            const data = $(c).data();
+            return data.selector === selector && data.key===key;
+        }).val(value);
+    }
 }
 
 function uploadLogo() {

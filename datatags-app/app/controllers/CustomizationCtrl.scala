@@ -5,10 +5,11 @@ import java.util.Base64
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicReference
 
+import com.google.common.collect.Streams
 import javax.inject.Inject
 import models._
 import persistence.{CommentsDAO, SettingsDAO}
-import play.api.{Configuration, Logger}
+import play.api.{Configuration, Environment, Logger}
 import play.api.cache.{AsyncCacheApi, Cached, SyncCacheApi}
 import play.api.i18n.I18nSupport
 import play.api.libs.json.{JsArray, JsError, JsObject, JsString, JsSuccess, Json}
@@ -23,7 +24,7 @@ import scala.util.Try
   * Controller for branding/customization.
   */
 class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, conf:Configuration, settings:SettingsDAO,
-                                  comments:CommentsDAO, cached:Cached,
+                                  comments:CommentsDAO, cached:Cached, env:Environment,
                                   cc:ControllerComponents ) extends InjectedController with I18nSupport {
   implicit private val ec = cc.executionContext
   private val logger = Logger(classOf[CustomizationCtrl])
@@ -76,12 +77,18 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, con
         mime <- settings.get(SettingKey.LOGO_IMAGE_MIME)
         logo <- settings.get(SettingKey.LOGO_IMAGE)
       } yield {
-        val sendData = if ( mime.isDefined && logo.isDefined ) {
-          (Base64.getDecoder.decode(logo.get.value), mime.get.value)
+        if ( mime.isDefined && logo.isDefined ) {
+          Ok(Base64.getDecoder.decode(logo.get.value)).as(mime.get.value)
         } else {
-          (Files.readAllBytes(Paths.get("public/images/pomo_logo.svg")), "image/svg+xml")
+          env.resourceAsStream("/public/images/pomo_logo.svg") match {
+            case Some(strm) => {
+              val svg = scala.io.Source.fromInputStream(strm, "utf-8").mkString
+              strm.close()
+              Ok(svg).as("image/svg+xml")
+            }
+            case None => InternalServerError("Logo image not found.")
+          }
         }
-        Ok(sendData._1)as(sendData._2 )
       }
     }
   }
@@ -104,10 +111,10 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, con
   def showStylingCustomization = LoggedInAction(cache, cc).async{ implicit req =>
     for {
       cssStylingSetting <- settings.get(SettingKey.BRANDING_CSS)
-      css = cssStylingSetting.map(_.value).getOrElse("/*---*/")
+      css = cssStylingSetting.map(_.value.trim).getOrElse("")
       hasImage <- settings.get(SettingKey.LOGO_IMAGE_MIME).map(_.isDefined)
     } yield {
-      val csses = css.split("/\\*---\\*/")
+      val csses = if (css.nonEmpty) css.split("/\\*---\\*/") else Array("","")
       val cssMap = parseCss(csses(0))
       Ok(views.html.backoffice.customizations.stylingCustomization(cssMap, csses(1), hasImage))
     }

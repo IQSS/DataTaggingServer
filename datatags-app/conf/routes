@@ -100,6 +100,7 @@ POST   /admin/localApi/models/:model/:version/unload controllers.ModelCtrl.unloa
 # Map static resources from the /public folder to the /assets URL path
 # GET  /assets/*file           controllers.Assets.at(path="/public", file)
 GET  /assets/*file        controllers.Assets.versioned(path="/public", file: Asset)
+GET  /favicon.ico         controllers.Assets.at(path="/public", file="favicon.ico")
 GET  /javascriptRoutes    controllers.Application.javascriptRoutes
 
 # Game and funs
