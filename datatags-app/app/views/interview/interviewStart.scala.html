@@ -1,0 +1,120 @@
+@import edu.harvard.iq.policymodels.externaltexts.MarkupString
+@import edu.harvard.iq.policymodels.externaltexts.Localization
+@( qKit:VersionKit, readmeOpt:Option[MarkupString], loc:Localization,
+        availableLanguages:Seq[String], interviewWelcomeMessage:Option[String],
+        allVersions:Seq[VersionMD]
+)(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
+
+@scripts = {
+  <script type="text/javascript" src="@routes.Application.javascriptRoutes"></script>
+  <script type="text/javascript">
+    function loadOtherVersion( version ) {
+        const dest = jsRoutes.controllers.InterviewCtrl.showStartInterview("@qKit.md.id.modelId",version, "@loc.getLanguage").url;
+        window.location.href = dest;
+    }
+    UiUtils.documentReady( function(){
+      JsUtils.addHost("#linkToLatest");
+    });
+  </script>
+}
+
+@extraHead = {
+@Helpers.whenRTL(loc){
+    <link rel="stylesheet" href="@routes.Assets.versioned("css/rtl.min.css")">
+  }
+}
+
+@import views.Helpers
+
+@templates.publicPages(qKit.policyModel.get.getMetadata.getTitle + ": " + Messages("interview.readme"), views.PublicSection.Interview, scripts, extraHead) {
+
+  <div class="row my-3">
+    <div class="col-md-10">
+        <h1>@loc.getLocalizedModelData.getTitle</h1>
+        @Helpers.nonEmpty(loc.getLocalizedModelData.getSubTitle){ sub => <h2>@sub</h2>}
+    </div>
+    <div class="col-md-2 d-flex flex-column">
+      <a href="@routes.InterviewCtrl.doStartInterview(qKit.md.id.modelId, qKit.md.id.version)" class="mb-1 btn btn-primary btn-100">
+        <div>@Messages("interview.start")</div>
+      </a>
+      @comps.changeLanguageMenu(loc, availableLanguages,
+      l=>routes.InterviewCtrl.showStartInterview(qKit.md.id.modelId, qKit.md.id.version, Some(l)))
+    </div>
+  </div>
+
+  @for( welcome <- interviewWelcomeMessage ) {
+    <div class="row my-3">
+      <div class="col">
+        <div class="alert alert-primary">
+          @welcome
+        </div>
+      </div>
+    </div>
+  }
+
+  @for( readme <- readmeOpt ) {
+    <div class="row my-3">
+      <div class="col">
+        <div class="mdRender readmeCtnr">
+          @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
+            <div class="float-eol">
+              @comps.comments("cmntReadme", qKit.md.id.modelId, qKit.md.id.version, Some(loc.getLanguage), "meta", "readme")
+            </div>}
+          @Helpers.render(readme)
+        </div>
+      </div>
+    </div>
+  }
+
+  @* metadata table *@
+  @for( pm <- qKit.policyModel ) {
+    <div class="row my-3">
+      <div class="col">
+        @comps.locVersionMedataTable(qKit.md, loc.getLocalizedModelData, pm.getMetadata)
+      </div>
+    </div>
+  }
+
+  @* All questions + 2nd start *@
+  <div class="row my-3">
+    <div class="col">
+      <div class="text-center">
+        <a href="@routes.InterviewCtrl.viewAllQuestions(qKit.md.id.modelId, qKit.md.id.version, Some(loc.getLanguage))" class="btn btn-outline-secondary btn-lg">@Messages("interview.intro.overview.question-list")</a>
+        <a href="@routes.InterviewCtrl.doStartInterview(qKit.md.id.modelId, qKit.md.id.version)" class="btn btn-primary btn-lg">@Messages("interview.start")</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col">
+      <details>
+        <summary>@Messages("interview.policySpace")</summary>
+        <h3>
+          @if( qKit.md.commentingStatus != CommentingStatus.Closed ) {
+            <div class="float-eol">
+            @comps.comments("cmntPS", qKit.md.id.modelId, qKit.md.id.version, Some(loc.getLanguage), "meta", "policy-space")
+            </div>}</h3>
+        @comps.tagType(qKit.policyModel.get.getSpaceRoot, loc )
+      </details>
+    </div>
+  </div>
+  <div class="row my-3">
+    <div class="col">
+      @Messages("interview.model.permalinkToLatest")
+      <a id="linkToLatest" href="@routes.ModelCtrl.showLatestVersion(qKit.md.id.modelId)">@routes.ModelCtrl.showLatestVersion(qKit.md.id.modelId)</a>
+    </div>
+  </div>
+  @if( allVersions.length > 1 ) {
+    <div class="row my-3">
+      <div class="col">
+        <label for="sltOtherVersions">@Messages("interview.version.meta.otherVersions")</label>
+
+        <select onchange="loadOtherVersion(this.value)" name="otherVersions" id="sltOtherVersions" class="custom-select" style="width:auto">
+          @for( v <- allVersions ){
+            <option value="@v.id.version" @if(v.id==qKit.md.id){selected}>@v.id.version (@Helpers.dateTimeFormat(v.lastUpdate))</option>
+          }
+        </select>
+      </div>
+    </div>
+  }
+}

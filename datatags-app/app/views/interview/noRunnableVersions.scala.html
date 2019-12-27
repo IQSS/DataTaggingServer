@@ -1,0 +1,20 @@
+@(vKit:VersionKit)(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
+
+@templates.publicPages(Messages("interview.chooseLoc.title"), views.PublicSection.Interview) {
+
+  <div class="row my-3">
+    <div class="col">
+      <div class="alert alert-danger">
+        <strong>Sorry, this model does not have any publicly available version.</strong>
+        Such version may be available at a later time.
+        <small>Model id: @vKit.md.id</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="row my-3">
+    <div class="col text-center">
+      <a href="@routes.Application.publicModelCatalog">Return to Model Catalog</a>
+    </div>
+  </div>
+}

@@ -1,5 +1,5 @@
 @(cs:CommentingStatus.Value)
 @cs match {
-  case CommentingStatus.Closed             => {<span class="badge badge-default">feedbacks closed</span>}
-  case CommentingStatus.Everyone           => {<span class="badge badge-success">feedbacks open</span>}
+  case CommentingStatus.Closed   => {<span class="badge badge-secondary">feedback closed</span>}
+  case CommentingStatus.Everyone => {<span class="badge badge-success">feedback open</span>}
 }

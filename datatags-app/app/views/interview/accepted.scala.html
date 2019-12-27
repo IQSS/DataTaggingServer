@@ -94,7 +94,7 @@
           </form>
         }
         case None => {
-          <a href="@routes.InterviewCtrl.interviewIntro(session.kit.md.id.modelId, session.kit.md.id.version)" class="btn btn-primary">@Messages("interview.startAgain")</a>
+          <a href="@routes.InterviewCtrl.showStartInterview(session.kit.md.id.modelId, session.kit.md.id.version)" class="btn btn-primary">@Messages("interview.startAgain")</a>
         }
       }
     </div>

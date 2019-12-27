@@ -27,7 +27,7 @@
   @comps.pageTitleRow(model.title + " (v" + ver.md.id.version + ")"){
       @ver.policyModel match {
         case None      => {<button type="button" class="btn btn-secondary" disabled>Processing...</button>}
-        case Some(kit) => {@if(ver.md.runningStatus == RunningStatus.Runnable){<a class="btn btn-primary" href="@routes.InterviewCtrl.interviewIntro(ver.md.id.modelId, ver.md.id.version)"><i class="fa fa-play"></i> Run</a>}}
+        case Some(kit) => {@if(ver.md.runningStatus == RunningStatus.Runnable){<a class="btn btn-primary" href="@routes.InterviewCtrl.showStartInterview(ver.md.id.modelId, ver.md.id.version)"><i class="fa fa-play"></i> Run</a>}}
       }
       <a class="btn btn-secondary" href="@routes.ModelCtrl.showEditVersionPage(ver.md.id.modelId, ver.md.id.version)">
         <i class="fa fa-edit"></i> Edit

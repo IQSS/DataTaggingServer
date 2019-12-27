@@ -5,10 +5,12 @@ import javax.inject.{Inject, Singleton}
 import models.KitKey
 import play.api.{Configuration, Logger}
 
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
+import scala.collection.parallel.CollectionConverters._
 import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
 
+// TODO long-run: Replace local TrieMap with usage of Cache. Then remove singleton.
 @Singleton
 class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
   private val allLocalizations: TrieMap[KitKey, mutable.Map[String,Localization]] = TrieMap()
@@ -55,42 +57,63 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
   
   def localization( kitId:KitKey, localizationName:String ): Localization = {
     allLocalizations.get(kitId).flatMap( _.get(localizationName) ) match {
-      case Some(loc) => loc
+      case Some(loc) => loc // return from cache
       case None => {
-        if ( ! allLocalizations.contains(kitId) ) {
-          allLocalizations(kitId) = TrieMap()
-        }
-        val locMap = allLocalizations(kitId)
-  
-        val locLoad = new LocalizationLoader()
-        
-        try {
-          val loc = locLoad.load(models.getPolicyModel(kitId).get, localizationName)
-          if ( ! locLoad.getMessages.isEmpty ) {
-            logger.warn("Messages on localization «" + localizationName + "» for model «" + kitId + "»")
-            for ( m <- locLoad.getMessages.asScala ) {
-              logger.warn(m.getLevel.toString + ": " + m.getMessage)
+        models.getPolicyModel(kitId) match {
+          case None => {
+            logger.warn(s"Requested to load localization '$localizationName' for kit $kitId, but kit not found.")
+            null
+          }
+          case Some(pm) =>{
+            // legitimate cache miss! load and cache.
+            if ( ! allLocalizations.contains(kitId) ) {
+              allLocalizations(kitId) = TrieMap()
             }
-          }
-    
-          if ( locLoad.hasErrors ) {
-            logger.warn("Errors loading localization «" + localizationName + "» for model «" + kitId + "»" )
-            loadTrivialLocalization(kitId)
-          } else {
-            locMap(localizationName) = loc
-            logger.debug("Loaded localization «" + localizationName + "» for model «" + kitId + "»")
-            loc
-          }
-        } catch {
-          case l:LocalizationException => {
-            logger.warn(s"Error while loading localization '$localizationName' for kit $kitId: ${l.getMessage}")
-            loadTrivialLocalization(kitId)
-          }
+            val locMap = allLocalizations(kitId)
+      
+            val locLoad = new LocalizationLoader()
+            
+            try {
+              val loc = locLoad.load(pm, localizationName)
+              if ( ! locLoad.getMessages.isEmpty ) {
+                logger.warn("Messages on localization «" + localizationName + "» for model «" + kitId + "»")
+                for ( m <- locLoad.getMessages.asScala ) {
+                  logger.warn(m.getLevel.toString + ": " + m.getMessage)
+                }
+              }
+        
+              if ( locLoad.hasErrors ) {
+                logger.warn("Errors loading localization «" + localizationName + "» for model «" + kitId + "»" )
+                loadTrivialLocalization(kitId)
+              } else {
+                locMap(localizationName) = loc
+                logger.debug("Loaded localization «" + localizationName + "» for model «" + kitId + "»")
+                loc
+              }
+            } catch {
+              case l:LocalizationException => {
+                logger.warn(s"Error while loading localization '$localizationName' for kit $kitId: ${l.getMessage}")
+                loadTrivialLocalization(kitId)
+              }
+            } // try-catch
+          } // some(pm)
         }
       }
     }
   }
 
+  def localizationsFor(kitId:KitKey):Set[Localization] = {
+    models.getPolicyModel(kitId) match {
+      case None => {
+        logger.warn(s"PolicyModel $kitId not found when attempting to load all localizations")
+        Set()
+      }
+      case Some(pm) => {
+        pm.getLocalizations.asScala.toSet.par.map( locName => localization(kitId, locName) ).seq.toSet
+      }
+    }
+  }
+  
   def removeLocalizations(kitKey: KitKey) = {
     if ( allLocalizations.contains(kitKey)) {
       allLocalizations.remove(kitKey)

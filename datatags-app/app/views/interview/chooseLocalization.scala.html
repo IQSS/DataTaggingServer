@@ -1,0 +1,26 @@
+@import edu.harvard.iq.policymodels.externaltexts.Localization
+@import edu.harvard.iq.policymodels.externaltexts.LocalizedModelData
+@(vKit:VersionKit, localizations:Set[Localization])(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
+
+@templates.publicPages(Messages("interview.chooseLoc.title"), views.PublicSection.Interview) {
+
+  <div class="row my-3">
+    <div class="col">
+      <ul class="localizationCards">
+        @for(loc <- localizations.toSeq.sortBy(_.getLanguage)){
+          @defining(loc.getLocalizedModelData){lmd=>
+            <li@if(lmd.getDirection == LocalizedModelData.Direction.RTL){ class="text-ltr"}>
+              <a href="@routes.InterviewCtrl.showStartInterview(vKit.md.id.modelId, vKit.md.id.version, Some(loc.getLanguage))">
+                <h3>@lmd.getTitle</h3>
+                @Helpers.nonEmpty(lmd.getSubTitle){ res => <h4>@res</h4>}
+                @for(kw<-lmd.getKeywords){ <span class="badge badge-info">@kw</span>  }
+                <div class="text-eol"><code>@loc.getLanguage()</code></div>
+              </a>
+            </li>
+          }
+        }
+      </ul>
+    </div>
+  </div>
+  
+}

@@ -2,18 +2,18 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+# TODO deprecate - ModelCtrl has nothing to do with interviews.
+GET  /models/:modelId/latest/start            controllers.ModelCtrl.startLatestVersion(modelId, localizationName:Option[String]?=None)
+
 # Home page
 GET  /                                        controllers.Application.index
 GET  /about/                                  controllers.Application.aboutServer
 GET  /models/                                 controllers.Application.publicModelCatalog
 GET  /models/tagDownload                      controllers.InterviewCtrl.downloadTags
-GET  /models/:modelId                         controllers.Application.showModel(modelId)
-GET  /models/:modelName/latest                controllers.ModelCtrl.showLatestVersion(modelName)
-GET  /models/:modelId/latest/start            controllers.ModelCtrl.startLatestVersion(modelId, localizationName:Option[String]?=None)
-GET  /models/:modelId/:versionNum/            controllers.InterviewCtrl.interviewIntroDirect(modelId, versionNum:Int)
-GET  /models/:modelId/:versionNum/intro       controllers.InterviewCtrl.interviewIntro(modelId, versionNum:Int)
-GET  /models/:modelId/:versionNum/start       controllers.InterviewCtrl.startInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
-GET  /models/:modelId/:versionNum/postReadme  controllers.InterviewCtrl.startInterviewPostReadme(modelId, versionNum:Int)
+GET  /models/:modelId/                        controllers.ModelCtrl.showLatestVersion(modelId)
+GET  /models/:modelId/start                   controllers.InterviewCtrl.initiateInterview(modelId)
+GET  /models/:modelId/:versionNum/            controllers.InterviewCtrl.showStartInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
+GET  /models/:modelId/:versionNum/start       controllers.InterviewCtrl.doStartInterview(modelId, versionNum:Int)
 GET  /models/:modelId/:versionNum/q/:nodeId   controllers.InterviewCtrl.askNode(modelId, versionNum:Int, nodeId, loc:String)
 POST /models/:modelId/:versionNum/q/:nodeId   controllers.InterviewCtrl.answer(modelId, versionNum:Int, nodeId)
 GET  /models/:modelId/:versionNum/accept      controllers.InterviewCtrl.accept(modelId, versionNum:Int, loc:String)

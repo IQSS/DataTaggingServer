@@ -31,29 +31,11 @@ class Application @Inject()(cached: Cached, models:ModelManager,
   }
   
   def publicModelCatalog = Action.async { implicit req =>
-    models.listAllModels().map( mdls =>
-     Ok( views.html.modelCatalog(mdls.sortBy(_.title)) )
-    )
-  }
-
-  def showModel(id:String) = Action.async { implicit req =>
-    if ( LoggedInAction.userPresent(req) ) {
-      Future(Redirect(routes.ModelCtrl.showModelPage(id)))
+    for {
+      models <- models.listAllPubliclyRunnableModels()
+      text   <- settings.get(SettingKey.MODELS_PAGE_TEXT )
+    } yield Ok( views.html.public.modelCatalog(models.sortBy(_.title), text.map(_.value)) )
     
-    } else {
-      
-      for {
-        modelOpt <- models.getModel(id)
-        versions <- models.listVersionsMDFor(id).map(seq => seq.filter(_.publicationStatus==PublicationStatus.Published) )
-
-      } yield {
-        modelOpt match {
-          case None => NotFound(views.html.errorPages.NotFound("Policy Model does not exist."))
-          case Some(model) => Ok(
-            views.html.publicModelViewer(model, versions.filter(v => v.runningStatus != RunningStatus.Failed)))
-        }
-      }
-    }
   }
 
   def javascriptRoutes = cached("jsRoutes") {
@@ -62,8 +44,7 @@ class Application @Inject()(cached: Cached, models:ModelManager,
         routing.JavaScriptReverseRouter("jsRoutes")(
           routes.javascript.InterviewCtrl.askNode,
           routes.javascript.InterviewCtrl.answer,
-          routes.javascript.InterviewCtrl.interviewIntro,
-          routes.javascript.InterviewCtrl.startInterview,
+          routes.javascript.InterviewCtrl.showStartInterview,
           routes.javascript.InterviewCtrl.accessByLink,
           routes.javascript.ModelCtrl.apiDoDeleteModel,
           routes.javascript.ModelCtrl.showModelsList,

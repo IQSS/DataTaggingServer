@@ -1,0 +1,77 @@
+@import edu.harvard.iq.policymodels.model.metadata.PolicyModelData
+@import edu.harvard.iq.policymodels.model.metadata.BaseModelData
+@(versionMd:VersionMD, bmd:BaseModelData , md:PolicyModelData)(implicit req:Request[_], msgs: MessagesProvider)
+<table class="table table-condensed table-borderless">
+  <tbody>
+    @for( version <- Option(md.getVersion) ) {
+      <tr>
+        <th>@Messages("interview.version.meta.version")</th>
+        <td>@version</td>
+      </tr>
+    }
+    @if( bmd.getAuthors.size > 0 ) {
+      <tr>
+        <th>@Messages("interview.version.meta.authors")</th>
+        <td>
+          <ul class="authorList my-0">
+          @for( a<-md.getAuthors ){<li> @comps.author(a)</li>}
+          </ul>
+        </td>
+      </tr>
+    }
+    @for( rd <- Option(md.getReleaseDate) ) {
+      <tr>
+        <th>@Messages("interview.version.meta.releaseDate")</th>
+        <td>@rd</td>
+      </tr>
+    }
+    @if( bmd.getKeywords.size > 0 ) {
+      <tr>
+        <th>@Messages("interview.version.meta.keywords")</th>
+        <td>@bmd.getKeywords.asScala.mkString(", ")</td>
+      </tr>
+    }
+    @if( bmd.getReferences.size > 0 ) {
+      <tr>
+        <th>@Messages("interview.version.meta.references")</th>
+        <td>
+          <ul class="p-0">
+          @for( ref <- md.getReferences ) {
+            <li>
+              @if(ref.getUrl != null ) {
+                <a href="@ref.getUrl">@ref.getTitle @ref.getText</a>
+              }else{
+                @ref.getText
+              }
+              @for(doi<-Option(ref.getDoi)){ <small>(doi:<a href="https://doi.org/@doi" target="_blank">@doi</a>)</small>}
+            </li>
+          }
+          </ul>
+        </td>
+      </tr>
+    }
+    @if( versionMd.visualizations.nonEmpty ) {
+      <tr>
+        <th>
+          @Messages("interview.intro.overview.visualizations")
+        </th>
+        <td>
+          @for(viz <- versionMd.visualizations) {
+            @if(viz._2.nonEmpty) {
+              <div>
+                @Messages("interview.intro.overview." + viz._1):
+                <ul class="list-inline my-0" style="display:inline-block">
+                @for(p <- viz._2) {
+                  <li class="list-inline-item">
+                    <a href="@routes.ModelCtrl.visualizationFile(versionMd.id.modelId, versionMd.id.version, p, viz._1)">@p</a>
+                  </li>
+                }
+                </ul>
+              </div>
+            }
+          }
+        </td>
+      </tr>
+    }
+  </tbody>
+</table>

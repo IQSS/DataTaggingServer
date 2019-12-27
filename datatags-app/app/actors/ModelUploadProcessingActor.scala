@@ -35,7 +35,7 @@ class ModelUploadProcessingActor @Inject()(conf:Configuration, @Named("visualize
   
   override def receive: Receive = {
     case PrepareModel(path, version) => {
-      val ttl = "[UPP] " + version.id.modelId + "/" + version.id.version + ": "
+      val ttl = "[MUPA] " + version.id.modelId + "/" + version.id.version + ": "
       logger.info(ttl + "Received request to prepare model")
       val modelPath = modelsFolderPath.resolve(version.id.modelId).resolve(version.id.version.toString + "/model")
       
@@ -43,7 +43,7 @@ class ModelUploadProcessingActor @Inject()(conf:Configuration, @Named("visualize
         logger.info(ttl + "Deleting content of old " + modelPath)
         try {
           Files.list(modelPath).iterator().asScala.foreach(delete)
-        }catch{
+        } catch {
           case ioe:IOException => {
             logger.error("[Exp] delete old files - " + ioe.getStackTrace.mkString("\n"), ioe)
           }
@@ -81,7 +81,7 @@ class ModelUploadProcessingActor @Inject()(conf:Configuration, @Named("visualize
   private def unzip(zipFile:Path, destination:Path) = {
     val zis = new ZipInputStream(Files.newInputStream(zipFile))
     try {
-      Stream.continually(zis.getNextEntry).takeWhile(_ != null).foreach { zipEntry =>
+      LazyList.continually(zis.getNextEntry).takeWhile(_ != null).foreach { zipEntry =>
         if (!zipEntry.isDirectory) {
           val extractedFilePath = destination.resolve(zipEntry.getName)
           val extractedFileFolder = extractedFilePath.getParent
@@ -103,14 +103,14 @@ class ModelUploadProcessingActor @Inject()(conf:Configuration, @Named("visualize
           val outStream = Files.newOutputStream(extractedFilePath)
           try {
             val buffer = new Array[Byte](4096)
-            Stream.continually(zis.read(buffer)).takeWhile(_ != -1).foreach(outStream.write(buffer, 0, _))
+            LazyList.continually(zis.read(buffer)).takeWhile(_ != -1).foreach(outStream.write(buffer, 0, _))
           } finally {
             outStream.close()
           }
         }
       }
-    } catch{
-      case uoe: UnsupportedOperationException => logger.info("[UPP] UnsupportedOperationException from setPosixFilePermissions", uoe)
+    } catch {
+      case uoe: UnsupportedOperationException => logger.info("[MUPA] UnsupportedOperationException from setPosixFilePermissions", uoe)
       case ioe: IOException => {
         logger.error("[Exp] IOException while unzipping- " + ioe.getMessage, ioe)
       }

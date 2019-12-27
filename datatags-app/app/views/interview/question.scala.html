@@ -40,7 +40,7 @@
             <div class="card-header bg-secondary text-white d-flex">
               <div class="flex-grow-1">@Messages("interview.answerFeed")</div>
               <div class="flex-grow-0">
-                <a href="@routes.InterviewCtrl.startInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))" class="btn btn-sm btn-outline-light">@Messages("interview.restart")</a>
+                <a href="@routes.InterviewCtrl.showStartInterview(session.kit.md.id.modelId, session.kit.md.id.version, Some(session.localization.getLanguage))" class="btn btn-sm btn-outline-light">@Messages("interview.restart")</a>
                 <button onclick="toggleCard(this,'answerHistory')" type="button" class="btn btn-sm btn-outline-light"><i class="fa fa-chevron-circle-down"></i></button>
               </div>
             </div>

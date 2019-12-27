@@ -1,0 +1,30 @@
+@import models.PageCustomizationData
+@(models:Seq[Model], textOpt:Option[String],
+)(implicit req:Request[_], msgs:MessagesProvider, pcd:PageCustomizationData)
+
+@templates.publicPages("Models", views.PublicSection.Models) {
+  <div class="row my-3">
+    <div class="col">
+      <h1>@Messages("modelsCatalog.title")</h1>
+    </div>
+  </div>
+  @for( text <- textOpt ) {
+    <div class="row my-3">
+      <div class="col">
+        <div class="ql-edited">@Html(text)</div>
+      </div>
+    </div>
+  }
+  <div class="row my-3">
+    <div class="col">
+      <ul class="list-unstyled">
+      @for(model <- models) {
+        <li>
+          <h4><a href="@routes.InterviewCtrl.initiateInterview(model.id)">@model.title</a></h4>
+          @Helpers.nonEmpty(model.note){ note => <p>@model.note</p> }
+        </li>
+      }
+      </ul>
+    </div>
+  </div>
+}

@@ -16,7 +16,7 @@ var Question = function() {
     },
 
     startOver: function( questionnaireId ) {
-      window.location = router.startInterview(questionnaireId).absoluteURL();
+      window.location = router.showStartInterview(questionnaireId).absoluteURL();
     }
 
 
@@ -24,17 +24,17 @@ var Question = function() {
 
 };}();
 
-var UP   = "fa-chevron-circle-up";
-var DOWN = "fa-chevron-circle-down";
+var qUP   = "fa-chevron-circle-up";
+var qDOWN = "fa-chevron-circle-down";
 
 function toggleCard(button, divId) {
     $("#" + divId).slideToggle();
     var iconEmt = button.getElementsByTagName("i")[0];
-    if ( iconEmt.className.indexOf(UP) >= 0 ) {
-        iconEmt.classList.remove(UP);
-        iconEmt.classList.add(DOWN);
+    if ( iconEmt.className.indexOf(qUP) >= 0 ) {
+        iconEmt.classList.remove(qUP);
+        iconEmt.classList.add(qDOWN);
     } else {
-        iconEmt.classList.remove(DOWN);
-        iconEmt.classList.add(UP);
+        iconEmt.classList.remove(qDOWN);
+        iconEmt.classList.add(qUP);
     }
 }

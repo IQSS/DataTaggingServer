@@ -21,7 +21,7 @@ import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import util.FileUtils
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.collection.concurrent.TrieMap
 import scala.collection.mutable
 import scala.concurrent.duration._
@@ -76,38 +76,23 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
       FileUtils.delete(modelStorage.resolve(id))
     })
   }
-
-  def listVersionsMDFor(modelId:String ):Future[Seq[VersionMD]] = {
-    db.run{
-      Versions.filter( _.modelId === modelId ).sortBy( _.version.desc ).result
+  
+  def listVersionsFor( modelId:String ):Future[Seq[VersionMD]] = {
+    db.run {
+      Versions.filter(_.modelId === modelId).sortBy(_.version.desc).result
     }
   }
-
-  def listVersionFor( modelId:String ):Future[Seq[VersionMD]] = {
-      db.run {
-        Versions.filter(_.modelId === modelId).sortBy(_.version.desc).result
-      }
-  }
-
+  
   def listProcessingVersion:Future[Seq[VersionMD]] = {
     db.run {
       Versions.filter(_.runningStatus === "Processing").result
     }
   }
 
-  def listAllVersions:Future[Seq[VersionMD]] = db.run(Versions.result)
-
   def maxVersionNumberFor( modelId:String ):Future[Option[Int]] = {
     db.run {
       Versions.filter( _.modelId===modelId ).map( _.version ).max.result
     }
-  }
-
-  def latestPublicVersion( modelId:String ):Future[Option[VersionMD]] = {
-    db.run {
-      Versions.filter(version => version.modelId===modelId &&  version.publicationStatus === PublicationStatus.Published.toString )
-        .sortBy( _.version.desc ).take(1).result
-    }.map( list => list.headOption )
   }
 
   def getModelVersion(modelId:String, versionNum:Int):Future[Option[VersionMD]] = {
@@ -144,12 +129,37 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
   }
 
   def getLatestVersion( modelId:String ):Future[Option[VersionMD]] = {
-    for {
-      maxVersionNum <- db.run( Versions.filter( _.modelId === modelId ).map( _.version ).max.result )
-      maxVersion    <- db.run( Versions.filter(r => (r.version === maxVersionNum) && (r.version===maxVersionNum) ).result )
-    } yield maxVersion.headOption
+    getLatestVersionOfTable(
+      Versions.filter( _.modelId === modelId )
+    )
   }
-
+  
+  private val publiclyRunnableVersions =  Versions.filter( r => r.publicationStatus === PublicationStatus.Published.toString &&
+                                                                r.runningStatus === RunningStatus.Runnable.toString )
+  
+  def listAllPubliclyRunnableModels():Future[Seq[Model]] = db.run(
+    publiclyRunnableVersions.join(Models).on( (v,m)=> v.modelId === m.id )
+      .map(_._2).distinct.result
+  )
+  
+  def getLatestPublishedVersion(modelId:String ):Future[Option[VersionMD]] = {
+    getLatestVersionOfTable(
+      publiclyRunnableVersions.filter( r => r.modelId === modelId )
+    )
+  }
+  
+  def listPubliclyRunnableVersionsFor(modelId:String):Future[Seq[VersionMD]] = {
+    db.run {
+      publiclyRunnableVersions.filter( r => r.modelId===modelId)
+        .sortBy( _.version.desc)
+        .result
+    }
+  }
+  
+  private def getLatestVersionOfTable(modelVersionsTable: Query[VersionsTable, VersionMD, Seq]) = {
+    db.run( modelVersionsTable.sortBy(_.version.desc).take(1).result ).map( _.headOption )
+  }
+  
   def getModelVersionByAccessLink( link:String ):Future[Option[VersionMD]] = {
     db.run {
       Versions.filter( _.accessLink === link ).result
@@ -186,7 +196,7 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
 
   /**
     * Loads a single kit from the given path. Adds the kit to the kit collection.
- *
+    *
     * @param path path to the policy model folder.
     * @param md version metadata.
     * @return the kit loading result.
@@ -202,6 +212,7 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
       if ( loadedVer.runningStatus == RunningStatus.Runnable ) {
         vizActor ! VisualizationActor.CreateVisualizationFiles(md.id, loadedPM.get(loadedVer.id).orNull)
       }
+      updateVersion(loadedVer)
     })
   }
 
@@ -234,9 +245,11 @@ class ModelManager @Inject() (protected val dbConfigProvider:DatabaseConfigProvi
         }
       }
       //add messages to DB and change status
-      val updatedMD = md.copy(runningStatus = runningStatus, messages = msgs.map(m => m.getLevel + "\n%%%\n" + m.getMessage).mkString("\n%%%\n"),
-        pmTitle = model.getMetadata.getTitle, pmSubTitle = Option(model.getMetadata.getSubTitle).getOrElse(""))
-      updateVersion(updatedMD)
+      val updatedMD = md.copy(runningStatus = runningStatus,
+        messages = msgs.map(m => m.getLevel.toString + "\n%%%\n" + m.getMessage).mkString("\n%%%\n"),
+        pmTitle = model.getMetadata.getTitle,
+        pmSubTitle = Option(model.getMetadata.getSubTitle).getOrElse(""))
+//      updateVersion(updatedMD)
       loadedPM(md.id) = model
       return updatedMD
     }

@@ -1,20 +1,15 @@
 @(originalPath:String)
 
 @templates.bsBase("PolicyModels: Address not found")(Html("")){
-  <div class="row">
-    <div class="col-md-12" style="padding-top: 3em;">
-      &nbsp;
+
+  <div class="row my-5">
+    <div class="col text-center">
+        <pre><code style="font-size: 3em">[404: not found]</code></pre>
+        <pre><code>@originalPath</code></pre>
     </div>
   </div>
-  <div class="row">
-    <div class="col-md-12">
-      <div>
-        <pre style="font-size: 3em"><code>[404: not found]</code></pre>
-      </div>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
+  <div class="row my-3">
+    <div class="col">
       <div class="alert alert-danger">
         <strong>Sorry, there is no page in the requested address.</strong>
         Maybe it moved, or maybe it was mis-typed.

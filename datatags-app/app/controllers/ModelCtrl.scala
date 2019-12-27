@@ -127,7 +127,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
   def showModelPage(id:String) = LoggedInAction(cache, cc).async { implicit req =>
     for {
       modelOpt <- models.getModel(id)
-      versions <- models.listVersionFor(id)
+      versions <- models.listVersionsFor(id)
     } yield {
       modelOpt match {
         case None => NotFound("Model does not exist.")
@@ -283,17 +283,20 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     })
   }
 
+  // TODO: What's the interplay between this and `startLatestVersion`?
+  // TODO: Shouldn't we also require the latest version is runnable?
+  // TODO: Maybe move both to InterviewCtrl, and merge with initiate/startInterview?
   def showLatestVersion(modelId:String) = Action.async { implicit req =>
-    models.latestPublicVersion(modelId).map( {
+    models.getLatestPublishedVersion(modelId).map( {
       case None => NotFound("No public version was found")
-      case Some(ver) => TemporaryRedirect( routes.InterviewCtrl.interviewIntro(modelId, ver.id.version).url )
+      case Some(ver) => TemporaryRedirect( routes.InterviewCtrl.showStartInterview(modelId, ver.id.version).url )
     })
   }
 
   def startLatestVersion(modelId:String, localizationName:Option[String]) = Action.async {
-    models.latestPublicVersion(modelId).map( {
+    models.getLatestPublishedVersion(modelId).map( {
       case None => NotFound("No public version was found")
-      case Some(ver) => TemporaryRedirect( routes.InterviewCtrl.startInterview(modelId, ver.id.version, localizationName).url )
+      case Some(ver) => TemporaryRedirect( routes.InterviewCtrl.showStartInterview(modelId, ver.id.version, localizationName).url )
     })
   }
   

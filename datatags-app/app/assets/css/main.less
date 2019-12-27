@@ -14,6 +14,8 @@ h1, h2, h3 {
 
 .bg-light-transparent {
   background-color: rgba(255,255,255,.6);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .disabled {
@@ -37,6 +39,20 @@ h1, h2, h3 {
   }
 }
 
+.btn-100 {
+  display: flex;
+  align-self: stretch;
+  flex-grow: 1;
+  align-items:center;
+  justify-content: center;
+  border-radius: 1em;
+}
+
+.l10nMenu {
+  display: flex;
+  align-items: center;
+}
+
 .startButtonsCtnr {
   text-align: center;
   padding: @borderRadiusStd;
@@ -48,6 +64,12 @@ h1, h2, h3 {
     box-shadow: 0 4px 8px rgba(0,0,0,.5);
     margin: .2em;
   }
+}
+
+.readmeCtnr {
+  padding: 1em;
+  background-color: rgba(0,0,0,.1);
+  border-radius: 1em;
 }
 
 @media (max-width: 576px) {
@@ -457,9 +479,8 @@ table.engine-trace {
   .smallNote {
     color: darken(@theme4,20%);
     font-size: 11pt;
-    p {
-      margin: 0;
-    }
+    margin-bottom: 0;
+    margin-top: 0;
   }
 
   .smallNote-slot {
@@ -661,7 +682,7 @@ footer {
 
   .question {
     display: list-item;
-    margin-left: 1.5em;
+    margin: 1em;
     list-style: none;
   }
 }
@@ -670,6 +691,7 @@ footer {
 .visualizationList {
   list-style: none;
   padding: 4px;
+  margin: 0;
   display: inline-block;
 
   li {
@@ -732,6 +754,15 @@ footer {
 
 .text-code {
   font-family: "Source Code Pro", "Monaco", "Ubuntu Mono Regular", "Lucida Console", monospace;
+}
+
+.text-ltr {
+  direction: ltr;
+  text-align: right;
+
+  .text-eol {
+    text-align: left;
+  }
 }
 
 table>tbody>tr>td.noteTd {
@@ -846,6 +877,10 @@ ul.localizations {
   float:right;
 }
 
+.text-eol {
+  text-align: right;
+}
+
 details > summary:focus {
   outline: none;
 }
@@ -907,4 +942,30 @@ details summary .detailedSlotTitle {
 
 nav ol.breadcrumb {
   margin-bottom: 0;
+}
+
+@locCardRadius: 1em;
+ul.localizationCards {
+  list-style: none;
+  padding: 0;
+
+  li {
+    margin: 1em 0;
+    a {
+      padding: @locCardRadius;
+      border-radius: @locCardRadius;
+      display: block;
+      border: 1px solid black;
+      &:hover {
+        text-decoration: none;
+        background-color: rgba(255,255,255,.6);
+        box-shadow: 0 0 8px rgba(0,0,0,.6);
+      }
+      &:active {
+        text-decoration: none;
+        background-color: rgba(255,255,255,.9);
+        box-shadow: 0 0 4px rgba(0,0,0,.7);
+      }
+    }
+  }
 }

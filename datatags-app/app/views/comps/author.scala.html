@@ -18,9 +18,8 @@
   }else{
     <em>@g.getName</em>
   }
-  @if( g.getContact!=null && g.getContact.nonEmpty){
-   (contact: @g.getContact)
-}
+  @Helpers.nonEmpty(g.getContact){ c => (@c)}
+
 }
 
 @a match {

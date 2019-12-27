@@ -17,6 +17,7 @@ resolvers += "Typesafe repository releases" at "http://repo.typesafe.com/typesaf
 resolvers += Resolver.sonatypeRepo("releases")
 
 libraryDependencies ++= Seq(
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
   caffeine,
   ws,
   guice,
@@ -38,7 +39,7 @@ libraryDependencies ++= Seq(
 )
 
 TwirlKeys.templateImports ++= Seq("views.Helpers", "views.Helpers._",
-                                  "scala.collection.JavaConverters._")
+                                  "scala.jdk.CollectionConverters._")
 
 LessKeys.compress in Assets := true
 

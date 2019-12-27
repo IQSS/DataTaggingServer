@@ -2,7 +2,7 @@ package views
 
 import scala.xml.{Elem, PCData}
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.text.SimpleDateFormat
 import java.util
 import java.util.{Date, Optional}
@@ -25,6 +25,8 @@ import edu.harvard.iq.policymodels.model.decisiongraph.DecisionGraph
 import edu.harvard.iq.policymodels.model.policyspace.slots.AbstractSlot
 import edu.harvard.iq.policymodels.util.PolicySpaceHelper
 import models.{CommentingStatus, InterviewSession, Note, PublicationStatus}
+
+import scala.collection.IterableOnce
 
 object Helpers {
   
@@ -53,7 +55,6 @@ object Helpers {
   def hasContent( so:Option[String]) = so.nonEmpty && so.get.trim.nonEmpty
   
   def askNodeToMarkdown(n:AskNode) = {
-    import scala.collection.JavaConverters._
     if ( n.getTermNames.isEmpty ) n.getText
     else {
       (Seq(n.getText, "##### Terms") ++
@@ -212,7 +213,7 @@ object Helpers {
     if ( s!=null && s.trim.nonEmpty ) block(s) else Html("")
   }
   def ifNotEmpty(so:Option[String])(block:String=>Html):Html = so.map(s=>ifNotEmpty(s)(block)).getOrElse(Html(""))
-  def ifNotEmpty[T]( col:TraversableOnce[T])(block:TraversableOnce[T]=>Html):Html = if(col!=null && col.nonEmpty) block(col) else Html("")
+  def ifNotEmpty[T]( col:IterableOnce[T])(block:IterableOnce[T]=>Html):Html = if(col!=null && col.iterator.nonEmpty) block(col) else Html("")
   def ifEmpty( s:String )(block:Html):Html = if ( s == null || s.trim.isEmpty ) block else Html("")
   
   

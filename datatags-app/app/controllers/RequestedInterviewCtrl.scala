@@ -58,11 +58,12 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
 
   def start(uniqueLinkId: String) = Action.async { implicit request =>
     cache.get[RequestedInterviewSession](uniqueLinkId) match {
-   	  case None => Future(NotFound("Sorry - requested interview not found. Please try again using the system that sent you here."))
+   	  case None => Future(
+        NotFound(views.html.errorPages.NotFound("Sorry - requested interview not found. Please try again using the system that sent you here.")))
    	  case Some(requestedInterview) => {
        for {
          modelOpt <- models.getModel(requestedInterview.kitId.modelId)
-         verOpt <- modelOpt.map(model => models.getVersionKit(requestedInterview.kitId)).getOrElse(Future(None))
+         verOpt   <- modelOpt.map(model => models.getVersionKit(requestedInterview.kitId)).getOrElse(Future(None))
        } yield {
          (modelOpt, verOpt) match {
             case (Some(model), Some(ver)) => {
@@ -72,8 +73,9 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
                 InterviewHistory(userSession.key, ver.md.id.modelId, ver.md.id.version, "", "requested", request.headers.get("User-Agent").get))
               cache.set(userSession.key.toString, userSession)
 
-              Ok( views.html.interview.intro(ver, requestedInterview.message) )
-                .withSession( request2session + ("uuid" -> userSession.key.toString)+( InterviewSessionAction.KEY -> userSession.key.toString ))
+//              Ok( views.html.interview.interviewStart(ver, requestedInterview.message) )
+//                .withSession( request2session + ("uuid" -> userSession.key.toString)+( InterviewSessionAction.KEY -> userSession.key.toString ))
+              Ok("This feature is on hold and will be fixes shortly. Sorry.")
             }
             case _ => NotFound("Model or version not found")
           }

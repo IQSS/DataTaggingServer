@@ -45,11 +45,23 @@ customization.styling.noLogo=No logo image
 
 index.modelCatalogButton=See All Models
 
-interview.readme=README
+interview.readme=About this interview
+interview.intro.overview.decision-graph=Decision Graph
+interview.intro.overview.policy-space=Policy Space
+interview.intro.overview.question-list=All Questions
+interview.intro.overview.visualizations=Visualizations
 interview.question=Question
 interview.model=Model
 interview.model.error.explain=and thus we cannot use it to conduct an interview. See the System Messages section below.
 interview.model.version=Model Version
+interview.version.meta.version=Version
+interview.version.meta.authors=Authors
+interview.version.meta.releaseDate=Release Date
+interview.version.meta.keywords=Keywords
+interview.version.meta.references=References
+interview.version.meta.otherVersions=Other Versions
+
+interview.model.permalinkToLatest=Permalink to latest version:
 
 interview.policySpace=Policy Space
 interview.decisionGraph=Decision Graph
@@ -98,7 +110,7 @@ interview.part=Part
 interview.section=Section
 interview.report.highlights=Result Highlights
 interview.report.detailedResults=Details Results
-
+interview.chooseLoc.title=Choose Language
 interview.someOf=Some of:
 interview.oneOf=One of:
 interview.changeLang=Change Language
@@ -106,6 +118,8 @@ interview.changeLang=Change Language
 feedback=Feedbacks
 feedback.exp=Feedbacks users left on various parts of this model.
 feedback.empty=No feedbacks
+
+modelsCatalog.title=Available Models
 
 ui.save=Save
 ui.cancel=Cancel

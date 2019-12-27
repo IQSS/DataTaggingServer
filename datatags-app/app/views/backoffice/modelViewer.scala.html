@@ -102,7 +102,7 @@
                   </button>
                   @v.runningStatus match {
                     case RunningStatus.Processing => {<button type="button" class="btn btn-secondary my-1" disabled>Processing...</button>}
-                    case RunningStatus.Runnable => {<a class="btn btn-primary btn-sm my-1" href="@routes.InterviewCtrl.interviewIntro(v.id.modelId, v.id.version)"><i class="fa fa-play"></i> Run</a>}
+                    case RunningStatus.Runnable => {<a class="btn btn-primary btn-sm my-1" href="@routes.InterviewCtrl.showStartInterview(v.id.modelId, v.id.version)" target="_blank"><i class="fa fa-play"></i> Run</a>}
                     case _ => {}
                   }
                 </td>
