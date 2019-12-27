@@ -101,7 +101,7 @@
   <div class="row my-3">
     <div class="col">
       @Messages("interview.model.permalinkToLatest")
-      <a id="linkToLatest" href="@routes.ModelCtrl.showLatestVersion(qKit.md.id.modelId)">@routes.ModelCtrl.showLatestVersion(qKit.md.id.modelId)</a>
+      <a style="display:inline-block; direction:ltr" id="linkToLatest" href="@routes.ModelCtrl.showLatestVersion(qKit.md.id.modelId)">@routes.ModelCtrl.showLatestVersion(qKit.md.id.modelId)</a>
     </div>
   </div>
   @if( allVersions.length > 1 ) {
