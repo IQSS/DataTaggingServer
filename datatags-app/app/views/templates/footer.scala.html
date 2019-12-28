@@ -13,7 +13,7 @@
     <div class="row my-2">
       @for( ft <- pcd.flatMap(_.footer)) {
         <div class="col-sm text-left">
-          @ft
+          @Html(ft)
         </div>
       }
       <div class="col text-right">

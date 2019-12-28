@@ -114,9 +114,10 @@ class CustomizationCtrl @Inject()(cache:SyncCacheApi, asCache:AsyncCacheApi, con
       css = cssStylingSetting.map(_.value.trim).getOrElse("")
       hasImage <- settings.get(SettingKey.LOGO_IMAGE_MIME).map(_.isDefined)
     } yield {
-      val csses = if (css.nonEmpty) css.split("/\\*---\\*/") else Array("","")
-      val cssMap = parseCss(csses(0))
-      Ok(views.html.backoffice.customizations.stylingCustomization(cssMap, csses(1), hasImage))
+      val cssParts = if (css.nonEmpty) css.split("/\\*---\\*/") else Array("","")
+      val structuredCss = parseCss(cssParts(0))
+      val customCssCode = if (cssParts.length>1) cssParts(1) else ""
+      Ok(views.html.backoffice.customizations.stylingCustomization(structuredCss, customCssCode, hasImage))
     }
   }
   
