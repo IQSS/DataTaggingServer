@@ -16,7 +16,7 @@
 <form action="@routes.UsersCtrl.doLogin" method="POST" style="margin: 20vh auto">
   <div class="row my-5">
     <div class="col">
-      <div class="card mx-auto border-secondary shadow-lg" style="width: 36rem">
+      <div class="card mx-auto border-secondary shadow-lg" style="max-width: 36rem">
         <div class="card-header bg-secondary shadow-sm text-light">
           Log In to PolicyModels Server
         </div>
@@ -43,7 +43,7 @@
         <div class="card-footer">
           <div class="d-flex">
             <div>
-              <a class="btn btn-outline-secondary" href="@routes.UsersCtrl.showForgotPassword">forgot password?</a>
+              <a class="text-muted" href="@routes.UsersCtrl.showForgotPassword">forgot password?</a>
             </div>
             <div class="flex-grow-1 text-right">
               <a class="btn btn-secondary" href="/">Cancel</a>
