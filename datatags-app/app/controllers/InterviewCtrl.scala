@@ -40,6 +40,11 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
   private val logger = Logger( classOf[InterviewCtrl] )
   
+  def initiateInterviewRedirect(modelId:String) = Action { req =>
+    TemporaryRedirect( routes.InterviewCtrl.initiateInterview(modelId).url )
+  }
+  
+  
   /**
     * The default public entry point for interviews. Parametrized by the model, we need to
     * get the latest public version, and then either start, or let the user choose

@@ -26,8 +26,10 @@
       <h3>
         @model.title
       </h3>
-      <h6>Permalink to latest published version:</h6>
-      <a class="publicLink" id="linkToLatest" target="_blank" href="@routes.ModelCtrl.showLatestVersion(model.id)">@routes.ModelCtrl.showLatestVersion(model.id)</a>
+      <h6>@Messages("modelviewer.permalink.title")</h6>
+      @defining(routes.InterviewCtrl.initiateInterview(model.id)){ latestModelUrl =>
+        <a class="publicLink btn-block" id="linkToLatest" target="_blank" href="@latestModelUrl">@latestModelUrl</a>}
+      <small class="text-muted">@Messages("modelviewer.permalink.help")</small>
     </div>
     @if(enableEdits){
       <div class="col text-right">

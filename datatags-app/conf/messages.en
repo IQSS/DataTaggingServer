@@ -121,5 +121,8 @@ feedback.empty=No feedbacks
 
 modelsCatalog.title=Available Models
 
+modelviewer.permalink.title=Permalink to latest version
+modelviewer.permalink.help=This link will direct users to the latest, publicly available, and runnable version. If no such version exists (e.g. because all versions were made private), users will see a "page not found" message.
+
 ui.save=Save
 ui.cancel=Cancel

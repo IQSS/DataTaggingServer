@@ -282,17 +282,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
         Ok("Deleted version %d".format(version))}
     })
   }
-
-  // TODO: What's the interplay between this and `startLatestVersion`?
-  // TODO: Shouldn't we also require the latest version is runnable?
-  // TODO: Maybe move both to InterviewCtrl, and merge with initiate/startInterview?
-  def showLatestVersion(modelId:String) = Action.async { implicit req =>
-    models.getLatestPublishedVersion(modelId).map( {
-      case None => NotFound("No public version was found")
-      case Some(ver) => TemporaryRedirect( routes.InterviewCtrl.showStartInterview(modelId, ver.id.version).url )
-    })
-  }
-
+  
   def startLatestVersion(modelId:String, localizationName:Option[String]) = Action.async {
     models.getLatestPublishedVersion(modelId).map( {
       case None => NotFound("No public version was found")

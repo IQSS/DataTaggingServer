@@ -101,7 +101,9 @@
   <div class="row my-3">
     <div class="col">
       @Messages("interview.model.permalinkToLatest")
-      <a style="display:inline-block; direction:ltr" id="linkToLatest" href="@routes.ModelCtrl.showLatestVersion(qKit.md.id.modelId)">@routes.ModelCtrl.showLatestVersion(qKit.md.id.modelId)</a>
+      @defining(routes.InterviewCtrl.initiateInterview(qKit.md.id.modelId)){ latestModelUrl =>
+        <a class="publicLink" id="linkToLatest" target="_blank" href="@latestModelUrl">@latestModelUrl</a>
+      }
     </div>
   </div>
   @if( allVersions.length > 1 ) {

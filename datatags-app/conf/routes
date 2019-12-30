@@ -2,15 +2,12 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# TODO deprecate - ModelCtrl has nothing to do with interviews.
-GET  /models/:modelId/latest/start            controllers.ModelCtrl.startLatestVersion(modelId, localizationName:Option[String]?=None)
-
 # Home page
 GET  /                                        controllers.Application.index
 GET  /about/                                  controllers.Application.aboutServer
 GET  /models/                                 controllers.Application.publicModelCatalog
 GET  /models/tagDownload                      controllers.InterviewCtrl.downloadTags
-GET  /models/:modelId/                        controllers.ModelCtrl.showLatestVersion(modelId)
+GET  /models/:modelId/                        controllers.InterviewCtrl.initiateInterviewRedirect(modelId)
 GET  /models/:modelId/start                   controllers.InterviewCtrl.initiateInterview(modelId)
 GET  /models/:modelId/:versionNum/            controllers.InterviewCtrl.showStartInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
 GET  /models/:modelId/:versionNum/start       controllers.InterviewCtrl.doStartInterview(modelId, versionNum:Int)
