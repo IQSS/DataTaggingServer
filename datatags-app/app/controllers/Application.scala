@@ -10,6 +10,32 @@ import play.api.{Configuration, routing}
 
 import scala.concurrent.Future
 
+object Application {
+  private val jsRoutes = Seq(
+    routes.javascript.InterviewCtrl.askNode,
+    routes.javascript.InterviewCtrl.answer,
+    routes.javascript.InterviewCtrl.showStartInterview,
+    routes.javascript.InterviewCtrl.accessByLink,
+    routes.javascript.ModelCtrl.apiDoDeleteModel,
+    routes.javascript.ModelCtrl.showModelsList,
+    routes.javascript.CustomizationCtrl.apiSetCustomization,
+    routes.javascript.CustomizationCtrl.apiSetCustomizations,
+    routes.javascript.CustomizationCtrl.apiGetPageCustomizations,
+    routes.javascript.CustomizationCtrl.apiSetCustomization,
+    routes.javascript.CustomizationCtrl.apiSetLogo,
+    routes.javascript.CustomizationCtrl.getServerLogo,
+    routes.javascript.CustomizationCtrl.apiDeleteLogo,
+    routes.javascript.CommentsCtrl.apiAddComment,
+    routes.javascript.CommentsCtrl.apiSetCommentStatus,
+    routes.javascript.CommentsCtrl.deleteComment,
+    routes.javascript.ModelCtrl.deleteVersion,
+    routes.javascript.ModelCtrl.showModelPage,
+    routes.javascript.ModelCtrl.showVersionPage,
+    routes.javascript.InterviewCtrl.askNode
+  )
+  
+  val jsRoutesHash = Math.abs(jsRoutes.map(_.name).map(_.hashCode).reduce( (a,b)=> a^b))
+}
 
 class Application @Inject()(cached: Cached, models:ModelManager,
                             conf:Configuration, cc:ControllerComponents, custCtrl:CustomizationCtrl,
@@ -38,32 +64,11 @@ class Application @Inject()(cached: Cached, models:ModelManager,
     
   }
 
+  
+  
   def javascriptRoutes = cached("jsRoutes") {
     Action { implicit request =>
-      Ok(
-        routing.JavaScriptReverseRouter("jsRoutes")(
-          routes.javascript.InterviewCtrl.askNode,
-          routes.javascript.InterviewCtrl.answer,
-          routes.javascript.InterviewCtrl.showStartInterview,
-          routes.javascript.InterviewCtrl.accessByLink,
-          routes.javascript.ModelCtrl.apiDoDeleteModel,
-          routes.javascript.ModelCtrl.showModelsList,
-          routes.javascript.CustomizationCtrl.apiSetCustomization,
-          routes.javascript.CustomizationCtrl.apiSetCustomizations,
-          routes.javascript.CustomizationCtrl.apiGetPageCustomizations,
-          routes.javascript.CustomizationCtrl.apiSetCustomization,
-          routes.javascript.CustomizationCtrl.apiSetLogo,
-          routes.javascript.CustomizationCtrl.getServerLogo,
-          routes.javascript.CustomizationCtrl.apiDeleteLogo,
-          routes.javascript.CommentsCtrl.apiAddComment,
-          routes.javascript.CommentsCtrl.apiSetCommentStatus,
-          routes.javascript.CommentsCtrl.deleteComment,
-          routes.javascript.ModelCtrl.deleteVersion,
-          routes.javascript.ModelCtrl.showModelPage,
-          routes.javascript.ModelCtrl.showVersionPage,
-          routes.javascript.InterviewCtrl.askNode
-        )
-      ).as("text/javascript")
+      Ok(routing.JavaScriptReverseRouter("jsRoutes")(Application.jsRoutes: _*)).as("text/javascript")
     }
   }
   

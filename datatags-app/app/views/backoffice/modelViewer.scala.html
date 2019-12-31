@@ -21,23 +21,12 @@
 
 @templates.backend("Model Editor", views.BackOfficeSection.Models, scripts ) {
 
-  <div class="row my-2 d-flex flex-row">
-    <div class="col flex-grow-1">
-      <h3>
-        @model.title
-      </h3>
-      <h6>@Messages("modelviewer.permalink.title")</h6>
-      @defining(routes.InterviewCtrl.initiateInterview(model.id)){ latestModelUrl =>
-        <a class="publicLink btn-block" id="linkToLatest" target="_blank" href="@latestModelUrl">@latestModelUrl</a>}
-      <small class="text-muted">@Messages("modelviewer.permalink.help")</small>
-    </div>
+  @comps.pageTitleRow(model.title){
     @if(enableEdits){
-      <div class="col text-right">
         <a class="btn btn-secondary" href="@routes.ModelCtrl.showEditModelPage(model.id)">
           <i class="fa fa-edit"></i> Edit</a>
-      </div>
     }
-  </div>
+  }
   @if( model.note.trim.nonEmpty ) {
     <div class="row my-2">
       <div class="col">
@@ -45,6 +34,15 @@
       </div>
     </div>
   }
+
+  <div class="row my-2">
+    <div class="col">
+      <h6>@Messages("modelviewer.permalink.title")</h6>
+      @defining(routes.InterviewCtrl.initiateInterview(model.id)){ latestModelUrl =>
+        <a class="publicLink btn-block" id="linkToLatest" target="_blank" href="@latestModelUrl">@latestModelUrl</a>}
+      <small class="text-muted">@Messages("modelviewer.permalink.help")</small>
+    </div>
+  </div>
 
   <div class="row my-2 d-flex flex-row">
     <div class="col flex-grow-1">
