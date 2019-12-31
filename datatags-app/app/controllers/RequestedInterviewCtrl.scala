@@ -7,7 +7,7 @@ import play.api._
 import play.api.mvc._
 import play.api.cache.SyncCacheApi
 import play.api.libs.ws._
-import play.api.libs.json.{JsError, Json}
+import play.api.libs.json.{JsError, JsValue, Json}
 import models._
 import _root_.util.Jsonizer
 import edu.harvard.iq.policymodels.externaltexts.TrivialLocalization
@@ -36,26 +36,37 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
     MessagesImpl(langs.availables.head, messagesApi)
   }
 
-  def apiRequestInterview(modelId:String, versionNum:Int) = Action(cc.parsers.tolerantJson(maxLength = 1024*1024*10)) { implicit request =>
+  def apiRequestInterview(modelId:String, versionNum:Int) = Action(cc.parsers.tolerantJson(maxLength = 1024*1024*10)).async{ request =>
     val kitKey = KitKey(modelId,versionNum)
-    models.getPolicyModel(kitKey) match {
-      case Some(_) => {
-        request.body.validate[RequestedInterviewData](JSONFormats.requestedInterviewDataReader).fold(
-          errors => BadRequest(Json.obj("status" -> "error", "message" -> JsError.toJson(errors))),
-          interviewData => {
-            val requestedInterviewSession = RequestedInterviewSession(interviewData.callbackURL, interviewData.title,
-              interviewData.message, interviewData.returnButtonTitle, interviewData.returnButtonText, kitKey)
-            cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
-            // send response with interview URL
-            Created(routes.RequestedInterviewCtrl.start(requestedInterviewSession.key).url)
-          }
-        )
+    models.getVersionKit(kitKey).map({
+      case Some(_) => processInterviewRequest(kitKey, request)
+      case None => NotFound(Json.toJson("Model or version not found"))
+    })
+  }
+  
+  def apiRequestInterviewLatest( modelId:String ) = Action(cc.parsers.tolerantJson(maxLength = 1024*1024*10)).async { request =>
+    for {
+      latestPublicOpt <- models.getLatestPublishedVersion(modelId)
+    } yield {
+      latestPublicOpt match {
+        case None => NotFound(Json.toJson("Version or model not Found"))
+        case Some(verMd) => processInterviewRequest(verMd.id, request)
       }
-      case None => NotFound(Json.obj("message" -> ("Cannot find interview with id " + KitKey(modelId,versionNum))))
     }
-
   }
 
+  private def processInterviewRequest(kitKey:KitKey, request:Request[JsValue]) = {
+    request.body.validate[RequestedInterviewData](JSONFormats.requestedInterviewDataReader).fold(
+      errors => BadRequest(Json.obj("status" -> "error", "message" -> JsError.toJson(errors))),
+      interviewData => {
+        val requestedInterviewSession = RequestedInterviewSession(interviewData, kitKey)
+        cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
+        // send response with interview URL
+        Created(routes.RequestedInterviewCtrl.start(requestedInterviewSession.key).url)
+      }
+    )
+  }
+  
   def start(uniqueLinkId: String) = Action.async { implicit request =>
     cache.get[RequestedInterviewSession](uniqueLinkId) match {
    	  case None => Future(
@@ -75,7 +86,7 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
 
 //              Ok( views.html.interview.interviewStart(ver, requestedInterview.message) )
 //                .withSession( request2session + ("uuid" -> userSession.key.toString)+( InterviewSessionAction.KEY -> userSession.key.toString ))
-              Ok("This feature is on hold and will be fixes shortly. Sorry.")
+              Ok("This feature is on hold and will be fixes shortly. Sorry.\n\n" + requestedInterview.toString)
             }
             case _ => NotFound("Model or version not found")
           }
@@ -87,7 +98,7 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
   def postBackTo(uniqueLinkId: String) = InterviewSessionAction(cache, cc).async { implicit request =>
       val finalValue = request.userSession.tags.accept(Jsonizer)
       val json = Json.obj( "status"->"accept", "values"->finalValue )
-      val callbackURL = request.userSession.requestedInterview.get.callbackURL
+      val callbackURL = request.userSession.requestedInterview.get.data.callbackURL
       ws.url(callbackURL).post(Json.toJson(json)).map{ response =>
         response.status match {
           case 201 => Redirect(response.body)
@@ -97,7 +108,7 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
   }
 
   def unacceptableDataset(uniqueLinkId: String, reason: String) = InterviewSessionAction(cache, cc).async { implicit request =>
-      val callbackURL = request.userSession.requestedInterview.get.callbackURL
+      val callbackURL = request.userSession.requestedInterview.get.data.callbackURL
       val json = Json.obj( "status"->"reject", "reason"->reason )
       ws.url(callbackURL).post(Json.toJson(json)).map { response =>
         response.status match {

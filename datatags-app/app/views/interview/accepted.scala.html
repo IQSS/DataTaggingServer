@@ -88,9 +88,9 @@
     <div class="col text-center">
       @session.requestedInterview match {
         case Some(reqInt) => {
-          <p>@reqInt.returnButtonTitle</p>
+          <p>@reqInt.data.returnButtonTitle</p>
           <form action="@routes.RequestedInterviewCtrl.postBackTo(reqInt.key)" method="POST">
-            <button class="btn btn-primary" type="submit">@reqInt.returnButtonText</button>
+            <button class="btn btn-primary" type="submit">@reqInt.data.returnButtonText</button>
           </form>
         }
         case None => {

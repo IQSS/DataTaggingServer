@@ -14,7 +14,7 @@ import play.api.cache.SyncCacheApi
 import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, Langs}
-import play.api.libs.json.Json
+import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{ControllerComponents, InjectedController}
 
 import scala.jdk.CollectionConverters._
@@ -283,13 +283,6 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     })
   }
   
-  def startLatestVersion(modelId:String, localizationName:Option[String]) = Action.async {
-    models.getLatestPublishedVersion(modelId).map( {
-      case None => NotFound("No public version was found")
-      case Some(ver) => TemporaryRedirect( routes.InterviewCtrl.showStartInterview(modelId, ver.id.version, localizationName).url )
-    })
-  }
-  
   def visualizationFile(modelId:String, version:Int, suffix:String, fileType:String) = Action{ req =>
     val destPath = modelFolderPath.resolve("%s/%d/viz/%s.%s".format(modelId, version, fileType, suffix))
     logger.info("absolute path -" + destPath.toAbsolutePath)
@@ -339,6 +332,76 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
     }
     else {
       Future( Unauthorized("This endpoint is available from localhost only") )
+    }
+  }
+  
+  def apiListModels = Action.async{ req =>
+    for {
+      models <- models.listAllPubliclyRunnableModels()
+    } yield {
+      val jsons = models.map( mdl => (Json.obj("id"->mdl.id, "title"->mdl.title),
+                                               Option(if (mdl.note.trim.nonEmpty) mdl.note.trim else null)) )
+          .map( pair => pair._2.map( note => pair._1 ++ Json.obj("note"->note)).getOrElse(pair._1) )
+      Ok( Json.toJson(jsons) )
+    }
+  }
+  
+  def apiListVersions(modelId:String) = Action.async{ req =>
+    for {
+      modelOpt <- models.getModel(modelId)
+      versions <- models.listPubliclyRunnableVersionsFor(modelId)
+    } yield {
+      modelOpt match {
+        case None => NotFound(Json.toJson("model not found"))
+        case Some(mdl) => {
+          val basicRetVal = Json.obj(
+            "id" -> mdl.id,
+            "title" -> mdl.title,
+            "versions" -> versions.sortBy(_.id.version).map( v => Json.obj("id"->v.id.version, "title"->v.pmTitle ) )
+          )
+          val retVal = mdl.note.trim match {
+            case "" => basicRetVal
+            case s:String => basicRetVal ++ Json.obj("note"->s)
+          }
+          Ok(Json.toJson(retVal))
+        }
+      }
+    }
+  }
+  
+  def apiShowVersion(modelId:String, versionNum:Int) = Action.async{ req =>
+    val kitId = KitKey(modelId, versionNum)
+    for {
+      modelOpt <- models.getModel(modelId)
+      pmKitOpt <- models.getVersionKit(kitId)
+    } yield {
+      (modelOpt, pmKitOpt) match {
+        case (None, _) => NotFound(Json.toJson("Model not found"))
+        case (Some(model), None) => NotFound(Json.toJson("Version not found"))
+        case (Some(model), Some(kit)) => {
+          if  ( kit.md.publicationStatus != PublicationStatus.Published ) {
+            Unauthorized(Json.toJson("Version not public"))
+          } else if ( kit.md.runningStatus != RunningStatus.Runnable ) {
+            Forbidden(Json.toJson("Version not runnable"))
+          } else if ( kit.policyModel.isEmpty ) {
+            Forbidden(Json.toJson("Version not runnable"))
+          } else {
+            import JSONFormats.localizationDTOFmt
+            val localizations = locs.localizationsFor(kit.md.id)
+            val locJson = localizations.map( LocalizationDTO.create )
+              .map( d => d.language->d ).toMap
+            
+            val versionJson = Json.obj(
+              "model" -> Json.toJson(model.id),
+              "version" -> Json.toJson(kitId.version),
+              "title"  -> Json.toJson(kit.policyModel.get.getMetadata.getTitle),
+              "subtitle"  -> Json.toJson(kit.policyModel.get.getMetadata.getSubTitle),
+              "localizations" -> Json.toJson(locJson)
+            )
+            Ok(Json.toJson(versionJson))
+          }
+        }
+      }
     }
   }
 

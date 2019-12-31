@@ -1,6 +1,7 @@
 {
-"title":"Interview Title",
 "message":"Interview message, can be much longer",
 "returnButtonTitle": "Continue deposit process",
-"callbackURL":"http://localhost:9000/testPostback"
+"returnButtonText": "When you click the button, you'll be sent back to us",
+"callbackURL":"http://localhost:9000/testPostback",
+"localization":"en_US"
 }

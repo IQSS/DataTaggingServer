@@ -2,8 +2,15 @@ package controllers
 
 import java.sql.Timestamp
 
+import edu.harvard.iq.policymodels.externaltexts.Localization
 import models.{Comment, CommentDTO, RequestedInterviewData}
 import play.api.libs.json._
+
+case class LocalizationDTO( language:String, title:String, subtitle:Option[String] )
+object LocalizationDTO {
+  def create( loc:Localization ) = LocalizationDTO(loc.getLanguage, loc.getLocalizedModelData.getTitle,
+                                                    Option(loc.getLocalizedModelData.getSubTitle))
+}
 
 /**
   * Holds JSON format objects.
@@ -22,5 +29,6 @@ object JSONFormats {
   
   implicit val commentDTOFmt:Format[CommentDTO] = Json.format[CommentDTO]
   implicit val commentFmt:Format[Comment] = Json.format[Comment]
+  implicit val localizationDTOFmt:Format[LocalizationDTO] = Json.format[LocalizationDTO]
   
 }
