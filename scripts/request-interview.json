@@ -3,5 +3,5 @@
 "returnButtonTitle": "Continue deposit process",
 "returnButtonText": "When you click the button, you'll be sent back to us",
 "callbackURL":"http://localhost:9000/testPostback",
-"localization":"en_US"
+"localization":"en-US"
 }

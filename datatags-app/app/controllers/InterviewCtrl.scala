@@ -3,7 +3,7 @@ package controllers
 import java.sql.Timestamp
 
 import play.api.mvc._
-import play.api.cache.SyncCacheApi
+import play.api.cache.{AsyncCacheApi, SyncCacheApi}
 import edu.harvard.iq.policymodels.runtime._
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 import models._
@@ -33,7 +33,7 @@ object InterviewCtrl {
  * Controller for the interview part of the application.
  */
 class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelManager, locs:LocalizationManager,
-                              custCtrl:CustomizationCtrl,
+                              custCtrl:CustomizationCtrl, asyncCache: AsyncCacheApi,
                               langs:Langs, cc:ControllerComponents, interviewHistories: InterviewHistoryDAO) extends InjectedController with I18nSupport  {
 
   private implicit val ec:ExecutionContext = cc.executionContext
@@ -90,16 +90,19 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     * @param modelId
     * @param versionNum
     * @param localizationName
+    * @param sid Session ID. used if the session was prepared by some other action, e.g. in requested interview scenario.
     * @return
     */
-  def showStartInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None ) = Action.async{ implicit req =>
+  def showStartInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None, sid:Option[String]=None ) = Action.async{ implicit req =>
     val kitId = KitKey(modelId, versionNum)
     for {
       modelOpt <- models.getModel(modelId)
       pmKitOpt <- models.getVersionKit(kitId)
       allowed = canView(req, pmKitOpt.get.md)
       allVersions <- if (allowed) models.listVersionsFor(modelId) else models.listPubliclyRunnableVersionsFor(kitId.modelId)
+      sessionDataOpt = sid.flatMap(cache.get[InterviewSession](_))
     } yield {
+      logger.info("sessionDataOpt:" + sessionDataOpt)
       (modelOpt, pmKitOpt) match {
         case ( _, None) => NotFound(views.html.errorPages.NotFound(s"Model '$kitId' not found"))
         case (Some(model), Some(pmKit)) => {
@@ -108,15 +111,24 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
               case None    => Conflict(s"PolicyModel at $kitId contains errors and cannot be loaded.")
               case Some(pm) => {
                 //// all good, start the interview flow
-                // setup session
-                val l10n = locs.localization(kitId, localizationName)
-                val userSession = InterviewSession.create( pmKit, model, l10n )
+                // setup session - or get one from the requested interview
+                val userSession = sessionDataOpt.filter( _.requestedInterview.exists(! _.started)) match {
+                  case None => {
+                    val loc = locs.localization(kitId, localizationName)
+                    InterviewSession.create( pmKit, model, loc )
+                  }
+                  case Some(s) => s.copy( requestedInterview = s.requestedInterview.map( _.copy(started=true)) )
+                }
+
                 cache.set(userSession.key.toString, userSession)
-                val lang = uiLangFor(l10n)
+                val l10n = userSession.localization
+                val lang = uiLangFor(userSession.localization)
                 val availableLocs:Seq[String] = pm.getLocalizations.asScala.toSeq
                 // add to DB InterviewHistory
                 if ( userSession.saveStat ) {
-                  val actionName = if(req.headers.get("Referer").isDefined && req.headers.get("Referer").get.endsWith("/accept")) "restart" else "website"
+                  val actionName = if (userSession.requestedInterview.isDefined ) "requested"
+                                   else if ( req.headers.get("Referer").exists(_.endsWith("/accept")) ) "restart"
+                                   else "website"
                   interviewHistories.addInterviewHistory(
                     InterviewHistory(userSession.key, pmKit.md.id.modelId, pmKit.md.id.version, localizationName.getOrElse(""), actionName, req.headers.get("User-Agent").get))
                 }
@@ -126,7 +138,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                 if ( allVersions.isEmpty ) {
                   Ok( views.html.interview.noRunnableVersions(pmKit) )
                 } else {
-                  Ok(views.html.interview.interviewStart(pmKit, readmeOpt, l10n, availableLocs, None, allVersions
+                  Ok(views.html.interview.interviewStart(pmKit, readmeOpt, l10n, availableLocs,
+                    userSession.requestedInterview.flatMap(_.data.message), allVersions
                     )(req, messagesApi.preferred(Seq(lang)), pcd)
                     ).withLang(lang).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
                 }

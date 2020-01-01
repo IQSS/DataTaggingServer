@@ -9,7 +9,7 @@ GET  /models/                                 controllers.Application.publicMode
 GET  /models/tagDownload                      controllers.InterviewCtrl.downloadTags
 GET  /models/:modelId/                        controllers.InterviewCtrl.initiateInterviewRedirect(modelId)
 GET  /models/:modelId/start                   controllers.InterviewCtrl.initiateInterview(modelId)
-GET  /models/:modelId/:versionNum/            controllers.InterviewCtrl.showStartInterview(modelId, versionNum:Int, localizationName:Option[String]?=None)
+GET  /models/:modelId/:versionNum/            controllers.InterviewCtrl.showStartInterview(modelId, versionNum:Int, localizationName:Option[String]?=None, sid:Option[String]?=None)
 GET  /models/:modelId/:versionNum/start       controllers.InterviewCtrl.doStartInterview(modelId, versionNum:Int)
 GET  /models/:modelId/:versionNum/q/:nodeId   controllers.InterviewCtrl.askNode(modelId, versionNum:Int, nodeId, loc:String)
 POST /models/:modelId/:versionNum/q/:nodeId   controllers.InterviewCtrl.answer(modelId, versionNum:Int, nodeId)

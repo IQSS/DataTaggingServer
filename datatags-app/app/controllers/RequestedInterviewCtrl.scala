@@ -10,12 +10,10 @@ import play.api.libs.ws._
 import play.api.libs.json.{JsError, JsValue, Json}
 import models._
 import _root_.util.Jsonizer
-import edu.harvard.iq.policymodels.externaltexts.TrivialLocalization
 import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager}
 import play.api.i18n.{Langs, MessagesApi, MessagesImpl, MessagesProvider}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 
 /**
@@ -27,10 +25,11 @@ import scala.concurrent.duration.Duration
   * @param cc
   */
 class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, interviewHistories: InterviewHistoryDAO,
-                                       custCtrl:CustomizationCtrl,
-                                       langs:Langs, messagesApi:MessagesApi, models:ModelManager, ec:ExecutionContext, cc:ControllerComponents, locs:LocalizationManager) extends InjectedController {
+                                       custCtrl:CustomizationCtrl, locs:LocalizationManager,
+                                       langs:Langs, messagesApi:MessagesApi, models:ModelManager, cc:ControllerComponents) extends InjectedController {
   private val logger = Logger(classOf[RequestedInterviewCtrl])
   private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
+  private implicit val ec: ExecutionContext = cc.executionContext
   
   implicit val messagesProvider: MessagesProvider = {
     MessagesImpl(langs.availables.head, messagesApi)
@@ -59,7 +58,7 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
     request.body.validate[RequestedInterviewData](JSONFormats.requestedInterviewDataReader).fold(
       errors => BadRequest(Json.obj("status" -> "error", "message" -> JsError.toJson(errors))),
       interviewData => {
-        val requestedInterviewSession = RequestedInterviewSession(interviewData, kitKey)
+        val requestedInterviewSession = RequestedInterviewSession(interviewData, kitKey, false)
         cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
         // send response with interview URL
         Created(routes.RequestedInterviewCtrl.start(requestedInterviewSession.key).url)
@@ -78,17 +77,13 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
        } yield {
          (modelOpt, verOpt) match {
             case (Some(model), Some(ver)) => {
-              val userSession = InterviewSession.create(ver, model, new TrivialLocalization(ver.policyModel.get)).updatedWithRequestedInterview(requestedInterview)
-              //Add to DB InterviewHistory
-              interviewHistories.addInterviewHistory(
-                InterviewHistory(userSession.key, ver.md.id.modelId, ver.md.id.version, "", "requested", request.headers.get("User-Agent").get))
+              val loc = locs.localization(requestedInterview.kitId, requestedInterview.data.localization)
+              val userSession = InterviewSession.create(ver, model, loc).updatedWithRequestedInterview(requestedInterview)
               cache.set(userSession.key.toString, userSession)
-
-//              Ok( views.html.interview.interviewStart(ver, requestedInterview.message) )
-//                .withSession( request2session + ("uuid" -> userSession.key.toString)+( InterviewSessionAction.KEY -> userSession.key.toString ))
-              Ok("This feature is on hold and will be fixes shortly. Sorry.\n\n" + requestedInterview.toString)
+              logger.info("Storing requested interview: " + userSession.key.toString) // REMOVE
+              Redirect(routes.InterviewCtrl.showStartInterview(model.id, ver.md.id.version, None, Some(userSession.key.toString)).url)
             }
-            case _ => NotFound("Model or version not found")
+            case _ => NotFound(views.html.errorPages.NotFound("Model or version not found"))
           }
        }
       }

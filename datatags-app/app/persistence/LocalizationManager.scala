@@ -50,10 +50,9 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
     * @param langOpt the language of the localization, if any
     * @return the localization requested, or a trivial localization of the model.
     */
-  def localization( kk:KitKey, langOpt:Option[String]):Localization = langOpt match {
-    case None => defaultLocalization(kk)
-    case Some(lang) => localization(kk,lang)
-  }
+  def localization( kk:KitKey, langOpt:Option[String]):Localization =
+    langOpt.map( lang => localization(kk,lang) ).getOrElse(defaultLocalization(kk))
+  
   
   def localization( kitId:KitKey, localizationName:String ): Localization = {
     allLocalizations.get(kitId).flatMap( _.get(localizationName) ) match {

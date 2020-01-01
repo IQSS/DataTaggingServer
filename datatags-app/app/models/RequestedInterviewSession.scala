@@ -20,10 +20,16 @@ case class RequestedInterviewData(callbackURL: String,
 
 /**
  * Holds the callback URL and the repository name for later use
+  *
+  * @param data Data that came from the client request.
+  * @param kitId
+  * @param started Whether the interview was started or not. Helps detecting stale requests.
+  *
  */
 case class RequestedInterviewSession(
   data:RequestedInterviewData,
-  kitId: KitKey) {
+  kitId: KitKey,
+  started:Boolean) {
 
   val key:String = java.util.UUID.randomUUID().toString
   val sessionStart:Date = new Date
