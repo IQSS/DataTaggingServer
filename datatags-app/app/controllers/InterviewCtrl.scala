@@ -404,7 +404,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       format.map( _.trim.toLowerCase ) match {
         case None         => Ok( views.html.interview.transcript(session, noteMap, availableLanguages) ).withLang(lang)
         case Some("html") => Ok( views.html.interview.transcript(session, noteMap, availableLanguages) ).withLang(lang)
-        case Some("xml")  => Ok( Helpers.transcriptAsXml(session, noteMap) ).
+        case Some("xml")  => Ok( views.XmlFormats.interview(session, noteMap) ).
                                     withHeaders( s"Content-disposition"->s"attachment; filename=${session.kit.md.pmTitle.replaceAll(" ", "_")}-Transcript.xml")
         case _ => BadRequest("Unknown format")
       }

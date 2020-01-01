@@ -35,10 +35,9 @@ POST /api/1/models/:modelId/requests       controllers.RequestedInterviewCtrl.ap
 POST /api/1/models/:modelId/:ver/requests  controllers.RequestedInterviewCtrl.apiRequestInterview(modelId, ver:Int)
 
 # requested interviews
-POST	/api/1/interviewRequest/:modelId/:versionNum  controllers.RequestedInterviewCtrl.apiRequestInterview(modelId, versionNum:Int)
-GET  /requestedInterviews/:uuid             controllers.RequestedInterviewCtrl.start(uuid: String)
-POST	/postBackTo/:uniqueLinkId				            controllers.RequestedInterviewCtrl.postBackTo(uniqueLinkId: String)
-POST 	/unacceptableDataset/:uniqueLinkId/:reason	controllers.RequestedInterviewCtrl.unacceptableDataset(uniqueLinkId: String, reason: String)
+GET  /requestedInterviews/:uuid/start          controllers.RequestedInterviewCtrl.start(uuid: String)
+POST /requestedInterviews/:uuid/accept				 controllers.RequestedInterviewCtrl.postBackTo(uuid: String)
+POST /requestedInterviews/:uuid/reject/:reason controllers.RequestedInterviewCtrl.unacceptableDataset(uuid: String, reason: String)
 
 # Back-office
 GET     /admin/models/new     controllers.ModelCtrl.showNewModelPage

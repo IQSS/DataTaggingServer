@@ -58,7 +58,7 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
     request.body.validate[RequestedInterviewData](JSONFormats.requestedInterviewDataReader).fold(
       errors => BadRequest(Json.obj("status" -> "error", "message" -> JsError.toJson(errors))),
       interviewData => {
-        val requestedInterviewSession = RequestedInterviewSession(interviewData, kitKey, false)
+        val requestedInterviewSession = RequestedInterviewSession(interviewData, kitKey, started=false)
         cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
         // send response with interview URL
         Created(routes.RequestedInterviewCtrl.start(requestedInterviewSession.key).url)
