@@ -1,7 +1,7 @@
 package util
 
 import java.nio.file.{Files, Path}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object FileUtils {
   

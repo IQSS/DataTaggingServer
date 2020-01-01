@@ -7,6 +7,8 @@ import java.sql.Timestamp
 import java.util.UUID
 
 import play.api.Logger
+
+import scala.collection.immutable.ArraySeq
 /*
  * Table classes for Slick live in this file.
  */
@@ -34,8 +36,8 @@ object Mappers {
   )
 
   implicit val specialSlots = MappedColumnType.base[Seq[String], String](
-    (ss:Seq[String]) => ss.mkString(","),
-    (s:String) => if(s == "") Seq() else s.split(",")
+    (strSeq:Seq[String]) => strSeq.mkString(","),
+    (string:String) => if(string.trim.isEmpty) Seq() else ArraySeq.unsafeWrapArray(string.split(","))
   )
 
   def setsToMap(top:Seq[String], collapse:Seq[String], hidden:Seq[String]):Map[String, String] = {

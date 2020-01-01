@@ -1,7 +1,7 @@
 package models
 
 import java.util.{Date, UUID}
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import edu.harvard.iq.policymodels.externaltexts.Localization
 import edu.harvard.iq.policymodels.model.decisiongraph.Answer

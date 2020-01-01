@@ -7,7 +7,7 @@ import play.api.cache.{AsyncCacheApi, SyncCacheApi}
 import edu.harvard.iq.policymodels.runtime._
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 import models._
-import _root_.util.{Jsonizer, Visibuilder}
+import _root_.util.{Jsonizer, VisiBuilder}
 import javax.inject.Inject
 import com.ibm.icu.text.SimpleDateFormat
 import edu.harvard.iq.policymodels.externaltexts.{Localization, MarkupString}
@@ -367,7 +367,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "accept"))
     }
     val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
-    val topVisibility = session.tags.accept(new Visibuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
+    val topVisibility = session.tags.accept(new VisiBuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
       session.kit.md.topValues, ""))
     Ok( views.html.interview.accepted(session, codeOpt, topVisibility.topValues, topVisibility.topSlots, availableLocs
                                      )(request, messagesApi.preferred(Seq(lang)), pcd) ).withLang(lang)(messagesApi)

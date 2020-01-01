@@ -5,7 +5,7 @@ import edu.harvard.iq.policymodels.model.policyspace.slots.CompoundSlot
 import edu.harvard.iq.policymodels.runtime._
 import edu.harvard.iq.policymodels.model.decisiongraph._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 /*** 

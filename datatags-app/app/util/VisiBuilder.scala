@@ -3,12 +3,12 @@ package util
 import edu.harvard.iq.policymodels.model.policyspace.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
 
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 case class ReportTopVisibility(topValues:Seq[AbstractValue],
                                topSlots:Seq[(String, AbstractValue)])
 
-class Visibuilder(topSlots:Seq[String], topValues:Seq[String], typesPath:String) extends AbstractValue.Visitor[ReportTopVisibility] {
+class VisiBuilder(topSlots:Seq[String], topValues:Seq[String], typesPath:String) extends AbstractValue.Visitor[ReportTopVisibility] {
   override def visitToDoValue(toDoValue: ToDoValue): ReportTopVisibility = {
     val pathSlot = if(typesPath == "") toDoValue.getSlot.getName else typesPath + "-" + toDoValue.getSlot.getName
     val pathValue = pathSlot + "-" + toDoValue.getInfo
@@ -30,7 +30,7 @@ class Visibuilder(topSlots:Seq[String], topValues:Seq[String], typesPath:String)
   override def visitCompoundValue(compoundValue: CompoundValue): ReportTopVisibility = {
     val pathSlot = if(typesPath == "") compoundValue.getSlot.getName else typesPath + "-" + compoundValue.getSlot.getName
     compoundValue.getNonEmptySubSlots.asScala.map(slot => compoundValue.get(slot).accept(
-      new Visibuilder(topSlots, topValues, pathSlot))).fold(
+      new VisiBuilder(topSlots, topValues, pathSlot))).fold(
       ReportTopVisibility(Seq(), //values
       if(topSlots.contains(pathSlot)) Seq((typesPath,compoundValue)) else Seq()) //slots
     )((a, b) => ReportTopVisibility(a.topValues ++ b.topValues, a.topSlots ++ b.topSlots))

@@ -34,7 +34,7 @@ class LocalizationManager @Inject() (conf:Configuration, models:ModelManager){
         }
       }
       case Some(locs) => {
-        val locsNoTrivial = locs - TrivialLocalization.LANGUAGE_NAME
+        val locsNoTrivial = (locs.toMap - TrivialLocalization.LANGUAGE_NAME)
         locsNoTrivial.size match {
           case 0 => loadTrivialLocalization(kk)
           case 1 => locsNoTrivial.values.iterator.next

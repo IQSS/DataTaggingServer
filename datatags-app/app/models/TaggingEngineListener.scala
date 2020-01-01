@@ -11,7 +11,7 @@ class TaggingEngineListener extends edu.harvard.iq.policymodels.runtime.RuntimeE
 
   var exception:DataTagsRuntimeException = _
   private val _traversedNodes = collection.mutable.Buffer[Node]()
-  private val sections = collection.mutable.ArrayStack[SectionNode]()
+  private val sections = collection.mutable.Stack[SectionNode]()
 
   override def runStarted(p1: RuntimeEngine): Unit = {}
 

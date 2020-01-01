@@ -4,7 +4,7 @@ import edu.harvard.iq.policymodels.model.policyspace.values._
 import play.api.libs.json._
 import play.api.libs.json.Json
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 // TODO merge with controllers.JSONFormats
 object Jsonizer extends AbstractValue.Visitor[JsValue]{
