@@ -490,7 +490,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
   }
 
-  def currentAskNode(kit:PolicyModel, engineState: RuntimeEngineState ) = {
+  def currentAskNode(kit:PolicyModel, engineState: RuntimeEngineState ):AskNode = {
     kit.getDecisionGraph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
   }
   

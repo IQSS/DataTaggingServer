@@ -2,6 +2,6 @@
 "message":"Interview message, can be much longer",
 "returnButtonTitle": "Continue deposit process",
 "returnButtonText": "When you click the button, you'll be sent back to us",
-"callbackURL":"http://localhost:9000/testPostback",
+"callbackURL":"http://localhost:9000/test/postBack",
 "localization":"en-US"
 }

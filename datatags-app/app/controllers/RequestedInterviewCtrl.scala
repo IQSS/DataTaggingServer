@@ -10,8 +10,9 @@ import play.api.libs.ws._
 import play.api.libs.json.{JsError, JsValue, Json}
 import models._
 import _root_.util.Jsonizer
-import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager}
+import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager, NotesDAO}
 import play.api.i18n.{Langs, MessagesApi, MessagesImpl, MessagesProvider}
+import views.XmlFormats
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration.Duration
@@ -26,7 +27,8 @@ import scala.concurrent.duration.Duration
   */
 class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, interviewHistories: InterviewHistoryDAO,
                                        custCtrl:CustomizationCtrl, locs:LocalizationManager,
-                                       langs:Langs, messagesApi:MessagesApi, models:ModelManager, cc:ControllerComponents) extends InjectedController {
+                                       notes:NotesDAO,  langs:Langs, messagesApi:MessagesApi,
+                                       models:ModelManager, cc:ControllerComponents) extends InjectedController {
   private val logger = Logger(classOf[RequestedInterviewCtrl])
   private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
   private implicit val ec: ExecutionContext = cc.executionContext
@@ -80,7 +82,6 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
               val loc = locs.localization(requestedInterview.kitId, requestedInterview.data.localization)
               val userSession = InterviewSession.create(ver, model, loc).updatedWithRequestedInterview(requestedInterview)
               cache.set(userSession.key.toString, userSession)
-              logger.info("Storing requested interview: " + userSession.key.toString) // REMOVE
               Redirect(routes.InterviewCtrl.showStartInterview(model.id, ver.md.id.version, None, Some(userSession.key.toString)).url)
             }
             case _ => NotFound(views.html.errorPages.NotFound("Model or version not found"))
@@ -89,28 +90,21 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
       }
    }
   }
-
-  def postBackTo(uniqueLinkId: String) = InterviewSessionAction(cache, cc).async { implicit request =>
-      val finalValue = request.userSession.tags.accept(Jsonizer)
-      val json = Json.obj( "status"->"accept", "values"->finalValue )
-      val callbackURL = request.userSession.requestedInterview.get.data.callbackURL
-      ws.url(callbackURL).post(Json.toJson(json)).map{ response =>
-        response.status match {
-          case 201 => Redirect(response.body)
-          case _ => InternalServerError("Bad response from originating server:" + response.body + "\n\n("+response.status+")")
-        }
+  
+  def reportInterviewResults = InterviewSessionAction(cache, cc).async { implicit request =>
+    val session = request.userSession
+    for {
+      noteMap <- notes.getNotesForInterview(session.key)
+      xmlPayload = XmlFormats.interview(session, noteMap)
+      callbackURL = request.userSession.requestedInterview.get.data.callbackURL
+      response <- ws.url(callbackURL).post(xmlPayload)
+    } yield {
+      response.status match {
+        case 201 => Redirect(response.body)
+        case 200 => Redirect(response.body)
+        case _ => InternalServerError("Bad response from originating server:" + response.body + "\n\n("+response.status+")")
       }
+    }
   }
-
-  def unacceptableDataset(uniqueLinkId: String, reason: String) = InterviewSessionAction(cache, cc).async { implicit request =>
-      val callbackURL = request.userSession.requestedInterview.get.data.callbackURL
-      val json = Json.obj( "status"->"reject", "reason"->reason )
-      ws.url(callbackURL).post(Json.toJson(json)).map { response =>
-        response.status match {
-          case 201 => Redirect(response.body)
-          case _ => InternalServerError("Bad response from originating server:" + response.body + "\n\n("+response.status+")")
-        }
-      }
-  }
-
+  
 }

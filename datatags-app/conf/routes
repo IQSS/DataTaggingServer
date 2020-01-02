@@ -35,23 +35,22 @@ POST /api/1/models/:modelId/requests       controllers.RequestedInterviewCtrl.ap
 POST /api/1/models/:modelId/:ver/requests  controllers.RequestedInterviewCtrl.apiRequestInterview(modelId, ver:Int)
 
 # requested interviews
-GET  /requestedInterviews/:uuid/start          controllers.RequestedInterviewCtrl.start(uuid: String)
-POST /requestedInterviews/:uuid/accept				 controllers.RequestedInterviewCtrl.postBackTo(uuid: String)
-POST /requestedInterviews/:uuid/reject/:reason controllers.RequestedInterviewCtrl.unacceptableDataset(uuid: String, reason: String)
+GET  /requestedInterviews/:uuid/start controllers.RequestedInterviewCtrl.start(uuid: String)
+POST /requestedInterviews/finish      controllers.RequestedInterviewCtrl.reportInterviewResults
 
 # Back-office
-GET     /admin/models/new     controllers.ModelCtrl.showNewModelPage
-POST    /admin/models/        controllers.ModelCtrl.doSaveNewModel
+GET     /admin/models/new      controllers.ModelCtrl.showNewModelPage
+POST    /admin/models/         controllers.ModelCtrl.doSaveNewModel
 GET     /admin/models/:id/edit controllers.ModelCtrl.showEditModelPage(id)
-POST    /admin/models/:id     controllers.ModelCtrl.doSaveModel(id)
-DELETE  /admin/models/:id     controllers.ModelCtrl.apiDoDeleteModel(id)
-GET     /admin/models/          controllers.ModelCtrl.showModelsList
-GET     /admin/models/:id       controllers.ModelCtrl.showModelPage(id)
+POST    /admin/models/:id      controllers.ModelCtrl.doSaveModel(id)
+DELETE  /admin/models/:id      controllers.ModelCtrl.apiDoDeleteModel(id)
+GET     /admin/models/         controllers.ModelCtrl.showModelsList
+GET     /admin/models/:id      controllers.ModelCtrl.showModelPage(id)
 
-GET     /admin/                      controllers.CustomizationCtrl.index
-GET     /admin/login                 controllers.UsersCtrl.showLogin
-POST    /admin/login                 controllers.UsersCtrl.doLogin
-POST    /admin/logout                controllers.UsersCtrl.doLogout
+GET     /admin/        controllers.CustomizationCtrl.index
+GET     /admin/login   controllers.UsersCtrl.showLogin
+POST    /admin/login   controllers.UsersCtrl.doLogin
+POST    /admin/logout  controllers.UsersCtrl.doLogout
 
 POST    /admin/models/:modelId/versions/           controllers.ModelCtrl.uploadNewVersion(modelId)
 GET     /admin/models/:modelId/versions/new/edit   controllers.ModelCtrl.showNewVersionPage(modelId)
@@ -69,8 +68,8 @@ GET     /admin/customization/analytics controllers.CustomizationCtrl.showAnalyti
 GET     /admin/api/customization/pages controllers.CustomizationCtrl.apiGetPageCustomizations
 POST    /admin/api/customization/logo  controllers.CustomizationCtrl.apiSetLogo
 DELETE  /admin/api/customization/logo  controllers.CustomizationCtrl.apiDeleteLogo
+PATCH   /admin/api/customization/      controllers.CustomizationCtrl.apiSetCustomizations
 PUT     /admin/api/customization/:key  controllers.CustomizationCtrl.apiSetCustomization(key)
-PUT     /admin/api/customization/      controllers.CustomizationCtrl.apiSetCustomizations
 
 GET     /admin/users/                controllers.UsersCtrl.showUserList
 GET     /admin/users/new             controllers.UsersCtrl.showNewUserPage
@@ -111,5 +110,6 @@ GET	    /test/tagsDisplay/:modelId/:versionNum  controllers.TestCtrl.showTagTree
 PUT     /test/models/:name  controllers.TestCtrl.addVersionedModel(name)
 GET     /test/models/       controllers.TestCtrl.listVersionedModels
 GET     /test/models/:name  controllers.TestCtrl.showModel(name)
+POST    /test/postBack      controllers.TestCtrl.testPostBack
 GET     /test/xml/:count    controllers.TestCtrl.getXmlText(count:Int)
 

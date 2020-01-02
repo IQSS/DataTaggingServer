@@ -30,9 +30,17 @@
   </div>
   <div class="row my-2">
     <div class="col text-center">
-      <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None, None)" class="btn btn-primary">
-        <i class="fa fa-book"></i>&nbsp;@Messages("interview.transcript")
-      </a>
+      <div class="btn-group rtl-aware">
+        <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None, None)" class="btn btn-primary">
+          <i class="fa fa-book"></i>&nbsp;@Messages("interview.transcript")
+        </a>
+        <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class="sr-only">Toggle Dropdown</span>
+        </button>
+        <div class="dropdown-menu">
+          <a class="dropdown-item" href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, Some("xml"), None)">@Messages("interview.download.xml")</a>
+        </div>
+      </div>
     </div>
   </div>
   <div class="row my-2">
@@ -44,17 +52,29 @@
         <div class="card-body">
           @comps.answerHistory(session.answerHistory, session.kit.md.id, false, session.kit.serializer, session.localization)
         </div>
+        <div class="card-footer text-center">
+          <div class="btn-group rtl-aware">
+            <a href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, None, None)" class="btn btn-primary">
+              <i class="fa fa-book"></i>&nbsp;@Messages("interview.transcript")
+            </a>
+            <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+              <span class="sr-only">Toggle Dropdown</span>
+            </button>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="@routes.InterviewCtrl.transcript(session.kit.md.id.modelId, session.kit.md.id.version, Some("xml"), None)">@Messages("interview.download.xml")</a>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="row my-2">
     <div class="col text-center">
-
       @session.requestedInterview match {
         case Some(reqInt) => {
           <p>@reqInt.data.returnButtonTitle</p>
-          <form action="@routes.RequestedInterviewCtrl.unacceptableDataset(reqInt.key, node.getReason)" method="POST">
+          <form action="@routes.RequestedInterviewCtrl.reportInterviewResults()" method="POST">
             <button class="btn btn-primary" type="submit">@reqInt.data.returnButtonText</button>
           </form>
         }

@@ -3,7 +3,7 @@ package views
 import scala.jdk.CollectionConverters._
 import scala.xml.{Elem, PCData}
 import edu.harvard.iq.policymodels.model.policyspace.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
-import edu.harvard.iq.policymodels.runtime.RuntimeEngineStatus
+import edu.harvard.iq.policymodels.model.decisiongraph.nodes.RejectNode
 import models.{InterviewSession, Note}
 
 /**
@@ -23,7 +23,16 @@ object XmlFormats {
     </metadata>
     
     val statusValue = session.engineState.getStatus.name()
-    val result = <result status={statusValue}>{policyValueAsXml(session.tags)}</result>
+    
+    val rejectionReason = getRejectionReason(session) match {
+      case None => scala.xml.Null
+      case Some(reason) => <rejectionReason>{reason}</rejectionReason>
+    }
+    
+    val result = <result status={statusValue}>
+      {policyValueAsXml(session.tags)}
+      {rejectionReason}
+    </result>
     
     val questionTextMap = session.answerHistory.map( ans =>
       ans.question.getId -> session.localization.getNodeText(ans.question.getId).orElse(Helpers.askNodeToMarkdown(ans.question))).toMap
@@ -58,6 +67,21 @@ object XmlFormats {
         {cm.getNonEmptySubSlots.asScala.map(cm.get).map( policyValueAsXml )}
       </compound>
       case td:ToDoValue      => <todo slot={td.getSlot.getName} />
+    }
+  }
+  
+  def getRejectionReason(session:InterviewSession):Option[String] = {
+    val nodeId = session.engineState.getCurrentNodeId
+    val nodeOpt = session.kit.policyModel.map(_.getDecisionGraph.getNode(nodeId))
+    
+    nodeOpt match {
+      case None => None
+      case Some(node) => {
+        node match {
+          case rn:RejectNode => Some(rn.getReason)
+          case _ => None
+        }
+      }
     }
   }
 }

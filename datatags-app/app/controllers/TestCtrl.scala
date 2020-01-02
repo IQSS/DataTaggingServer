@@ -15,7 +15,9 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
 class TestCtrl @Inject()(implicit ec: ExecutionContext, models:ModelManager, locs:LocalizationManager) extends InjectedController with I18nSupport{
-
+  
+  val logger = Logger(classOf[TestCtrl])
+  
   /**
 	 * test server for postBackTo in RequestedInterview
    */
@@ -61,6 +63,11 @@ class TestCtrl @Inject()(implicit ec: ExecutionContext, models:ModelManager, loc
       {list}
     </base>
     Ok( elem )
+  }
+  
+  def testPostBack = Action { req =>
+    logger.info(req.body.asXml.toString)
+    Created("http://www.google.com/q=interview complete")
   }
   
   def generateInstance(tt:AbstractSlot):AbstractValue = {
