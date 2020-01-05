@@ -4,6 +4,8 @@
 @import collection.mutable.Set
 @import scala.jdk.CollectionConverters._
 @import scala.collection.mutable
+@import edu.harvard.iq.policymodels.model.decisiongraph.nodes.PartNode
+@import util.PolicyModelsUtils
 @(verKit: VersionKit, availableLanguages:Seq[String], loc:Localization
 )(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
 
@@ -21,15 +23,21 @@
 }
 
 @visitSectionNode( nd:SectionNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
-  @defining( Helpers.o2o(loc.getSectionTexts(nd.getId)).getOrElse(new LocalizationTexts(nd.getTitle, null,null)) ) { lt =>
-    <div class="node section">
-      <h4>@Messages("interview.section"): @lt.name</h4>
-      @if( lt.smallNote != null ){ <p>@lt.smallNote</p> }
-      @if( lt.bigNote != null ){ @Helpers.renderMarkdown(lt.bigNote) }
-      @visitNode(nd.getStartNode, baseLevel, visited)
-    </div>
-    @visitNode(nd.getNextNode, baseLevel, visited)
+  @if( PolicyModelsUtils.hasAskNodes(nd.getStartNode) ) {
+    @defining(Helpers.o2o(loc.getSectionTexts(nd.getId)).getOrElse(new LocalizationTexts(nd.getTitle, null, null))) { lt =>
+      <div class="node section">
+        <h4>@Messages("interview.section"): @lt.name</h4>
+        @if(lt.smallNote != null) {
+          <p>@lt.smallNote</p>
+        }
+        @if(lt.bigNote != null) {
+          @Helpers.renderMarkdown(lt.bigNote)
+        }
+        @visitNode(nd.getStartNode, baseLevel, visited)
+      </div>
+    }
   }
+  @visitNode(nd.getNextNode, baseLevel, visited)
 }
 
 @visitPartNode( nd:PartNode, baseLevel:Boolean, visited:Set[String] ) = {
@@ -95,13 +103,23 @@
       <h1>
         @Messages("interview.allQuestions")
       </h1>
+      <div class="alert alert-info alert-withIcon">
+        <div class="alert-icon">
+          <i class="fa fa-info-circle fa-3x"></i>
+        </div>
+        <div class="alert-body">
+          @Messages("interview.allQuestions.explanation")
+        </div>
+      </div>
     </div>
   </div>
   <div class="row">
     <div class="col">
       <div class="allQuestions">
         @visitNode( verKit.policyModel.get.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
-        @for( nd <- verKit.policyModel.get.getDecisionGraph.nodes.filter(_.isInstanceOf[PartNode]) ) {
+        @for( nd <- verKit.policyModel.get.getDecisionGraph.nodes
+                          .filter(_.isInstanceOf[PartNode])
+                          .filter(PolicyModelsUtils.hasAskNodes) ) {
           @visitPartNode(nd.asInstanceOf[PartNode], true, Set() )
         }
       </div>

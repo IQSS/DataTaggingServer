@@ -85,6 +85,9 @@ interview.currentTags=Current Tags (intermediate result)
 interview.currentTags.help=This is the current result. It will likely change as the interview progresses.
 interview.currentTags.explain=This space will contain the resultant policy. It will be updated as we go along.
 interview.allQuestions=All Interview Questions
+interview.allQuestions.explanation=All interview questions are listed below. Use this screen to review \
+  questions in isolation. Question order during the interview may change. In particular, based on user's answers \
+  during the interview, some questions might not be shown at all.  
 interview.download.xml=Download as xml
 interview.download.json=Download Policy as JSON
 interview.result=Result

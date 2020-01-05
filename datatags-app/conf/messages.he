@@ -85,6 +85,8 @@ interview.currentTags=תוצאות ביניים
 interview.currentTags.help=זוהי תוצאת הראיון הנוכחית. היא עשויה להשתנות בהמשך הראיון.
 interview.currentTags.explain=שטח זה יכיל את המדיניות הנובעת מהשאלון. זה יעודכן ככל שנתקדם.
 interview.allQuestions=כל שאלות הראיון
+interview.allQuestions.explanation=במסך זו מוצגות כל השאלות בראיון. סדר הצגת השאלות בעת הראיון עצמו מושפע מתשובות המרואיין, ועשוי להיות שונה מהמוצג כאן.\
+בפרט, יכול להיות ששאלות המופיעות כאן לא יוצגו בראיון עצמו.
 interview.download.xml=הורד כ-XML
 interview.download.json=הורד כ-Json
 interview.result=תוצאה

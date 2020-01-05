@@ -573,6 +573,27 @@ ul.image-links {
   }
 }
 
+@media( max-width: 668px ){
+  ul.image-links {
+    padding: 0;
+    li {
+      margin: .5em auto 1em auto;
+
+      a {
+        display: block;
+        text-align: center;
+        width: auto;
+        margin-right:0;
+        span {
+          display: block;
+          text-align: center;
+          margin: 0 auto;
+        }
+      }
+    }
+  }
+}
+
 footer {
   direction: ltr;
   margin-top: 2em;
@@ -612,7 +633,7 @@ footer {
     background-size: cover;
     background-position-y: -29px;
 
-    &:hover{
+    &:hover, &:active{
       background-position-y: 0;
     }
   }
@@ -893,6 +914,21 @@ ul.localizations {
 
 .text-eol {
   text-align: right;
+}
+
+.alert-withIcon {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  .alert-icon {
+    display: flex;
+  }
+  .alert-icon::after {
+    content: '';
+    display: block;
+    width: 1em;
+    height: 100%;
+  }
 }
 
 details > summary:focus {
