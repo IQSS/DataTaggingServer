@@ -153,7 +153,14 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       }
     }
   }
-
+  
+  /**
+    * Start the interview in its latest version. Backward compatibility for supporting KLO cards.
+    * @param modelId
+    * @return
+    */
+  def doStartInterviewLatest(modelId:String) = initiateInterview(modelId)
+  
   def doStartInterview(modelId:String, versionNum:Int) = InterviewSessionAction( cache, cc ) { implicit req =>
     val session = req.userSession
     val rte = new RuntimeEngine

@@ -2,6 +2,9 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+# Backwards compatibility for KLO cards.
+GET  /models/:modelId/latest/start            controllers.InterviewCtrl.doStartInterviewLatest(modelId)
+
 # Home page
 GET  /                                        controllers.Application.index
 GET  /about/                                  controllers.Application.aboutServer
