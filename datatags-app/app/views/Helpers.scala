@@ -16,7 +16,7 @@ import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
 import com.vladsch.flexmark.ext.tables.TablesExtension
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.data.{DataKey, MutableDataSet}
+import com.vladsch.flexmark.util.data.{DataHolder, DataKey, DataSet, MutableDataHolder, MutableDataSet}
 import edu.harvard.iq.policymodels.externaltexts.{Localization, LocalizationTexts, LocalizedModelData, MarkupFormat, MarkupString}
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes.{AskNode, SectionNode}
 import edu.harvard.iq.policymodels.model.policyspace.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
@@ -30,25 +30,52 @@ import scala.collection.IterableOnce
 
 object Helpers {
   
-  private val MARKDOWN_OPTIONS_FULL = new MutableDataSet()
-  MARKDOWN_OPTIONS_FULL.set(Parser.EXTENSIONS, util.Arrays.asList(
-      TablesExtension.create(),
-      StrikethroughExtension.create(),
-      FootnoteExtension.create(),
-      AutolinkExtension.create()
-  ))
-  MARKDOWN_OPTIONS_FULL.set(HtmlRenderer.SOFT_BREAK, "<br />\n")
+  def makeDataHolder(map:Map[DataKey[_],AnyRef]) = {
+    val ds = new DataSet()
+    val dsm = ds.getAll.asScala.asInstanceOf[scala.collection.mutable.Map[DataKey[_],AnyRef]]
+    for ( kv <- map ) {
+      dsm(kv._1.asInstanceOf[DataKey[_]]) = kv._2
+    }
+    ds
+  }
   
-  private val MARKDOWN_OPTIONS_MINIMAL = new MutableDataSet()
-  MARKDOWN_OPTIONS_MINIMAL.set(Parser.EXTENSIONS, util.Arrays.asList(
-    StrikethroughExtension.create()
-  ))
-  MARKDOWN_OPTIONS_MINIMAL.set(HtmlRenderer.SOFT_BREAK, "<br />\n")
-  MARKDOWN_OPTIONS_MINIMAL.set(HtmlRenderer.DO_NOT_RENDER_LINKS.asInstanceOf[DataKey[Any]], true)
-  MARKDOWN_OPTIONS_MINIMAL.set(HtmlRenderer.NO_P_TAGS_USE_BR.asInstanceOf[DataKey[Any]], true)
+//  def makeDataHolder(map:Map[DataKey[_],AnyRef]) = new DataHolder(){
+//    override def getAll: java.util.Map[DataKey[_], AnyRef] = map.asJava
+//
+//    override def keySet(): java.util.Collection[DataKey[_]] = map.keys.toSet.asJava
+//
+//    override def contains(key: DataKey[_]): Boolean = map.contains(key)
+//
+//    override def get[T](key: DataKey[T]): T = {
+//      val res = map.asJava.get(key)
+//      if ( res != null ) res.asInstanceOf[T]
+//      else null.asInstanceOf[T]
+//    }
+//
+//    override def toMutable: MutableDataHolder = new MutableDataSet() // naiive impl, don't use.
+//
+//    override def toImmutable: DataHolder = this
+//
+//  }
   
-  private val TEXT_OPTIONS = new MutableDataSet()
-  TEXT_OPTIONS.set(HtmlRenderer.SOFT_BREAK, "<br />\n")
+  private val MARKDOWN_OPTIONS_FULL = new MutableDataSet().setAll(makeDataHolder(Map[DataKey[_], AnyRef](
+      (Parser.EXTENSIONS -> Seq(TablesExtension.create(),
+        StrikethroughExtension.create(),
+        FootnoteExtension.create(),
+        AutolinkExtension.create()).asJava),
+      (HtmlRenderer.SOFT_BREAK -> "<br />\n")
+  ))).toImmutable
+  
+  private val MARKDOWN_OPTIONS_MINIMAL = new MutableDataSet().setAll(makeDataHolder(Map[DataKey[_], AnyRef](
+    (Parser.EXTENSIONS -> Seq(StrikethroughExtension.create()).asJava),
+    (HtmlRenderer.SOFT_BREAK -> "<br />\n"),
+    (HtmlRenderer.DO_NOT_RENDER_LINKS-> true.asInstanceOf[AnyRef]),
+    (HtmlRenderer.NO_P_TAGS_USE_BR->true.asInstanceOf[AnyRef])
+  ))).toImmutable
+  
+  private val TEXT_OPTIONS = new MutableDataSet().setAll(makeDataHolder(Map[DataKey[_], AnyRef](
+    (HtmlRenderer.SOFT_BREAK -> "<br />\n")
+  ))).toImmutable
   
   def hasContent(s: String) = (s != null) && s.trim.nonEmpty
   
