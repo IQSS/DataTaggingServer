@@ -6,19 +6,23 @@
 @import scala.collection.mutable
 @import edu.harvard.iq.policymodels.model.decisiongraph.nodes.PartNode
 @import util.PolicyModelsUtils
-@(verKit: VersionKit, availableLanguages:Seq[String], loc:Localization
+@import java.util.concurrent.atomic.AtomicInteger
+@(verKit: VersionKit, availableLanguages:Seq[String], loc:Localization, counter:AtomicInteger=new AtomicInteger(0)
 )(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
 
-@visitAskNode( nd:AskNode, baseLevel:Boolean, visited:Set[String] ) = {
+@nextNum() = {<span class="questionNum">@counter.incrementAndGet()</span>}
+
+@visitAskNode( nd:AskNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
   <div class="question">
-    @comps.questionPanel(nd, verKit, loc, Seq(), enableComments = true, false, showId = true, false, None)
+    @comps.questionPanel(nd, verKit, loc, Seq(), enableComments = true, false, showId = true, false, None, nextNum())
   </div>
   @for( a <- nd.getAnswers ) {
     @visitNode( nd.getNodeFor(a), baseLevel, visited )
   }
 }
 
-@visitCallNode( cn:CallNode, baseLevel:Boolean, visited:Set[String] ) = {
+@visitCallNode( cn:CallNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
+  @visitNode(cn.getCalleeNode, baseLevel, visited)
   @visitNode(cn.getNextNode, baseLevel, visited)
 }
 
@@ -86,6 +90,9 @@
 @templates.publicPages(Messages("interview.questions")+":" + verKit.policyModel.get.getMetadata.getVersion, views.PublicSection.Interview, extraHead = extraHead ) {
   <div class="row">
     <div class="col">
+      <a href="@routes.InterviewCtrl.showStartInterview(verKit.md.id.modelId, verKit.md.id.version, Some(loc.getLanguage))">@comps.backArrow(loc) @Messages("interview.back")</a>
+    </div>
+    <div class="col">
       <div class="d-flex justify-content-end align-items-baseline">
       @comps.changeLanguageMenu(loc, availableLanguages,
         l=>routes.InterviewCtrl.viewAllQuestions(verKit.md.id.modelId, verKit.md.id.version, Some(l)))
@@ -93,12 +100,7 @@
     </div>
   </div>
   <div class="row">
-    <div class="col-md-12">
-      <a href="@routes.InterviewCtrl.showStartInterview(verKit.md.id.modelId, verKit.md.id.version, Some(loc.getLanguage))">@comps.backArrow(loc) @Messages("interview.back")</a>
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-md-12">
+    <div class="col">
       <h1>
         @Messages("interview.allQuestions")
       </h1>
@@ -114,12 +116,14 @@
   </div>
   <div class="row">
     <div class="col">
-      <div class="allQuestions">
-        @visitNode( verKit.policyModel.get.getDecisionGraph.getStart, baseLevel = true, Set[String]() )
-        @for( nd <- verKit.policyModel.get.getDecisionGraph.nodes
-                          .filter(_.isInstanceOf[PartNode])
-                          .filter(PolicyModelsUtils.hasAskNodes) ) {
-          @visitPartNode(nd.asInstanceOf[PartNode], true, Set() )
+      <div class="allQuestions">@defining( mutable.Set[String]()) { visited =>
+          @visitNode(verKit.policyModel.get.getDecisionGraph.getStart, baseLevel = true, visited)
+          @for(nd <- verKit.policyModel.get.getDecisionGraph.nodes
+                    .filter( n => ! visited(n.getId) )
+                    .filter(_.isInstanceOf[PartNode])
+                    .filter(PolicyModelsUtils.hasAskNodes)) {
+            @visitPartNode(nd.asInstanceOf[PartNode], baseLevel=true, visited)
+          }
         }
       </div>
     </div>

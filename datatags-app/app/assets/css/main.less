@@ -1,10 +1,6 @@
 @import "globals.less";
-body {
-  //background-color: @bodyBackground;
-}
 
 h1, h2, h3 {
-  //background-color: @dataTagsBlue;
   text-shadow: 0 1px 1px rgba(0,0,0,0.25);
 }
 
@@ -175,6 +171,16 @@ h1, h2, h3 {
         background-color: white;
       }
     }
+  }
+}
+
+.author {
+  .name {
+    font-weight: bold;
+    display: block;
+  }
+  .affiliation {
+    font-style: italic;
   }
 }
 
@@ -656,6 +662,15 @@ footer {
 .authorList {
   padding: 0;
   list-style: none;
+}
+
+.questionNum {
+  padding: .2em;
+  color: black;
+  font-family: "Source Code Pro", "Monaco", "Ubuntu Mono Regular", "Lucida Console", monospace;
+  background-color: #FFA;
+  border-radius: 0 0 2px 2px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.5);
 }
 
 @ar-controls-width: 13em;

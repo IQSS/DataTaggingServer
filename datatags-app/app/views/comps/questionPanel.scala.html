@@ -1,11 +1,12 @@
  @import edu.harvard.iq.policymodels.externaltexts.Localization
 @import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
 @(questionNode:AskNode, versionKit:VersionKit, loc:Localization,
-        answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean, allowNotes:Boolean, note:Option[String])(implicit msgs: MessagesProvider)
+        answerHistory:Seq[AnswerRecord], enableComments:Boolean, interactive:Boolean, showId:Boolean,
+        allowNotes:Boolean, note:Option[String]=None, hdrWgt:Html=Html(""))(implicit msgs: MessagesProvider)
 
 <div class="card border-info questionPanel">
   <div class="card-header bg-info text-white d-flex">
-    <div class="flex-grow-1">
+    <div class="flex-grow-1">@hdrWgt
       @if(showId){<span class="nodeIdBadge">@questionNode.getId</span>}@Messages("interview.selectAnswer")
     </div>
     @if( enableComments ) {

@@ -419,6 +419,23 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   }
   
   
+  def viewQuestionCodebook(modelId:String, versionNum:Int, localizationName:Option[String]) = Action.async { implicit req =>
+    for {
+      verOpt <- models.getVersionKit(KitKey(modelId, versionNum))
+    } yield {
+      verOpt match {
+        case Some(versionKit) => {
+          val loc = locs.localization(versionKit.md.id, localizationName)
+          val optLang = loc.getLocalizedModelData.getUiLanguage.toOption
+          val lang = optLang.map(l => langs.preferred(Seq(Lang(l), langs.availables.head))).getOrElse(langs.availables.head)
+          Ok(views.html.interview.questionCodebook(versionKit, loc)(req, messagesApi.preferred(Seq(lang)), pcd)).withLang(lang)
+        }
+        case None => NotFound("Model not found")
+      }
+    }
+    
+  }
+  
   def viewAllQuestions(modelId:String, versionNum:Int, localizationName:Option[String]) = Action.async { implicit req =>
     val kitId = KitKey(modelId, versionNum)
     for{

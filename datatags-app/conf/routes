@@ -23,6 +23,7 @@ GET  /models/:modelId/:versionNum/transcript  controllers.InterviewCtrl.transcri
 GET  /models/:modelId/:versionNum/reject      controllers.InterviewCtrl.reject(modelId, versionNum:Int, loc:String)
 POST /models/:modelId/:versionNum/revisit     controllers.InterviewCtrl.revisit(modelId, versionNum:Int)
 GET  /models/:modelId/:versionNum/allQuestions controllers.InterviewCtrl.viewAllQuestions(modelId, versionNum:Int, localizationName:Option[String]?=None)
+GET  /models/:modelId/:versionNum/codebook     controllers.InterviewCtrl.viewQuestionCodebook(modelId, versionNum:Int, localizationName:Option[String]?=None)
 GET  /models/:modelId/:versionNum/visualizations/:fileType/:format controllers.ModelCtrl.visualizationFile(modelId:String, versionNum:Int, format:String, fileType:String)
 
 GET  /branding/logo  controllers.CustomizationCtrl.getServerLogo

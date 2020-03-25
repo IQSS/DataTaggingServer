@@ -2,27 +2,19 @@
 @(a:AuthorData)
 
 @person( p:PersonAuthorData ) = {
-@if(p.getUrl!=null && p.getUrl.trim.nonEmpty){
-  <a href="@p.getUrl">@p.getName</a>
-}else{
-  @p.getName
-}
-  @Helpers.nonEmpty(p.getAffiliation){ affiliation => <em>@affiliation</em> }<br>
-  @Helpers.nonEmpty(p.getEmail){ email => <small><a href="mailto:@email">@email</a></small> }
-  @Helpers.nonEmpty(p.getOrcid){ orcid => <small>ORCiD: <a href="http://orcid.org/@p.getOrcid">@p.getOrcid</a></small> }
+  @Helpers.nonEmpty(p.getAffiliation){ affiliation => <span class="affiliation">@affiliation</span> }
+  @Helpers.nonEmpty(p.getEmail){ email => <span class="email"><a href="mailto:@email">@email</a></span> }
+  @Helpers.nonEmpty(p.getOrcid){ orcid => <span class="orcid">ORCiD: <a href="http://orcid.org/@p.getOrcid">@p.getOrcid</a></span> }
 }
 
 @group( g:GroupAuthorData ) = {
-  @if(g.getUrl!=null && g.getUrl.trim.nonEmpty){
-    <em><a href="@g.getUrl">@g.getName</a></em>
-  }else{
-    <em>@g.getName</em>
+  @Helpers.nonEmpty(g.getContact){ c => <span class="contact">@c</span>}
+}
+<div class="author">
+  <span class="name">@a.getName</span>
+  @a match {
+    case p:PersonAuthorData => {@person(p)}
+    case g:GroupAuthorData  => {@group(g)}
   }
-  @Helpers.nonEmpty(g.getContact){ c => (@c)}
-
-}
-
-@a match {
-  case p:PersonAuthorData => {@person(p)}
-  case g:GroupAuthorData  => {@group(g)}
-}
+  @Helpers.nonEmpty(a.getUrl){ url => <span class="url"><a href="@url">@url</a></span> }
+</div>

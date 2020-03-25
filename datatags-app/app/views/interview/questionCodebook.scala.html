@@ -1,0 +1,173 @@
+@import edu.harvard.iq.policymodels.externaltexts.Localization
+@import edu.harvard.iq.policymodels.externaltexts.LocalizationTexts
+@import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
+@import collection.mutable.Set
+@import scala.jdk.CollectionConverters._
+@import scala.collection.mutable
+@import edu.harvard.iq.policymodels.model.decisiongraph.nodes.PartNode
+@import util.PolicyModelsUtils
+@import java.util.concurrent.atomic.AtomicInteger
+@(verKit: VersionKit, loc:Localization, counter:AtomicInteger=new AtomicInteger(0)
+)(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
+
+@nextNum() = {<span class="questionNum">@counter.incrementAndGet()</span>}
+
+@visitAskNode( nd:AskNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
+  <tr>
+    <td>
+      <span class="questionNum">@nextNum()</span>
+      <span class="questionId">@nd.getId<span>
+    </td>
+    <td>
+      @defining( loc.getNodeText(nd.getId).orElse(Helpers.askNodeToMarkdown(nd)) ){ nodeText =>
+        @Helpers.renderMarkdown( nodeText )
+      }
+    </td>
+    <td>
+      <ol class="answerList">
+        @for( ans <- nd.getAnswers ){
+          <li>@loc.localizeAnswer(ans.getAnswerText)</li>
+        }
+      </ol>
+    </td>
+  </tr>
+@for( a <- nd.getAnswers ) {
+  @visitNode( nd.getNodeFor(a), baseLevel, visited )
+}
+}
+
+@visitCallNode( cn:CallNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
+  @visitNode(cn.getCalleeNode, baseLevel, visited)
+  @visitNode(cn.getNextNode, baseLevel, visited)
+}
+
+@visitPartNode( nd:PartNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
+  @visitNode(nd.getStartNode, baseLevel, visited)
+}
+
+
+@visitSectionNode( nd:SectionNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
+@if( PolicyModelsUtils.hasAskNodes(nd.getStartNode) ) {
+  @defining(Helpers.o2o(loc.getSectionTexts(nd.getId)).getOrElse(new LocalizationTexts(nd.getTitle, null, null))) { lt =>
+    <tr>
+      <th colspan="3" class="sectionStart">@Messages("codebook.questionTable.sectionStart", lt.name)</th>
+    </tr>
+   @headerRow
+   @visitNode(nd.getStartNode, baseLevel, visited)
+    <tr>
+      <th colspan="3" class="sectionEnd">@Messages("codebook.questionTable.sectionEnd", lt.name)</th>
+    </tr>
+  }
+}
+@visitNode(nd.getNextNode, baseLevel, visited)
+}
+
+@visitConsiderNode( c:ConsiderNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
+@for( a <- c.getAnswers ) {@visitNode( c.getNodeFor(a), baseLevel, visited )}
+@if( c.getElseNode != null ) {@visitNode(c.getElseNode, baseLevel, visited)}
+}
+
+@visitThroughNode( tn:ThroughNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {@visitNode( tn.getNextNode, baseLevel, visited )}
+
+@visitNode( nd:Node, baseLevel:Boolean, visited:mutable.Set[String] ) = {
+@if( !visited.contains(nd.getId) ){
+  @{visited.add(nd.getId);""}
+  @nd match {
+    case a:AskNode => {@visitAskNode(a, baseLevel, visited)}
+    case b:SectionNode => {@visitSectionNode(b, baseLevel, visited)}
+    case c:ConsiderNode => {@visitConsiderNode(c, baseLevel, visited)}
+    case ca:CallNode => {@visitCallNode(ca, baseLevel, visited)}
+    case t:ThroughNode => {@visitThroughNode(t, baseLevel, visited)}
+    case p:PartNode => {@visitPartNode(p, baseLevel, visited)}
+    case n:EndNode => {}
+    case n:RejectNode => {}
+    case n:ContinueNode => {}
+  }}
+}
+
+@headerRow={
+  <tr class="headerRow">
+    <th>@Messages("codebook.questionTable.head.id")</th>
+    <th>@Messages("codebook.questionTable.head.text")</th>
+    <th>@Messages("codebook.questionTable.head.answers")</th>
+  </tr>
+}
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <title>@loc.getLocalizedModelData.getTitle</title>
+
+    <link href="@routes.Assets.versioned("css/font-awesome.min.css")" rel="stylesheet">
+    <link href="@routes.Assets.versioned("lib/bootstrap/css/bootstrap.min.css")" rel="stylesheet">
+    <link rel="stylesheet" href="@routes.Assets.versioned("css/main.min.css")">
+    <link rel="stylesheet" href="@routes.Assets.versioned("css/questionCodebook.min.css")">
+    @whenRTL(loc){<link rel="stylesheet" href="@routes.Assets.versioned("css/rtl.min.css")">}
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col metadata">@defining(loc.getLocalizedModelData){lmd=>
+          <h1>@lmd.getTitle</h1>
+          @ifNotEmpty(lmd.getSubTitle){st=><h2>@st</h2>}
+            <div class="text-center">@Messages("interview.version.meta.productionDate") <em>@Helpers.formatDate(java.time.LocalDate.now())</em></div>
+          <table class="table metadataTable">
+            <tr>
+              <th>@Messages("interview.version.meta.version")</th>
+              <td>@verKit.policyModel.get.getMetadata.getVersion</td>
+            </tr><tr>
+              <th>@Messages("interview.version.meta.releaseDate")</th>
+              <td>@Helpers.formatDate(verKit.policyModel.get.getMetadata.getReleaseDate)</td>
+            </tr><tr>
+              <th>@Messages("interview.version.meta.localization")</th>
+              <td>@loc.getLanguage</td>
+            </tr><tr>
+              <th>@Messages("interview.version.meta.authors")</th>
+              <td>
+                <ol class="authorList">
+                  @for( a <- verKit.policyModel.get.getMetadata.getAuthors ){
+                    <li>@comps.author(a)</li>
+                  }
+                </ol>
+              </td>
+            </tr>
+          </table>
+        }
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <table class="table table-sm questionTable">
+            <tbody>
+              @if( ! verKit.policyModel.get.getDecisionGraph.getStart.isInstanceOf[SectionNode] ){@headerRow}
+              @defining( mutable.Set[String]()) { visited =>
+                @visitNode(verKit.policyModel.get.getDecisionGraph.getStart, baseLevel = true, visited)
+                @for(nd <- verKit.policyModel.get.getDecisionGraph.nodes
+                        .filter( n => ! visited(n.getId) )
+                        .filter(_.isInstanceOf[PartNode])
+                        .filter(PolicyModelsUtils.hasAskNodes)) {
+                  @visitPartNode(nd.asInstanceOf[PartNode], baseLevel=true, visited)
+                }
+              }
+              <tr><th class="endOfQuestionnaire" colspan="3">@Messages("codebook.questionTable.questionnaireEnd", loc.getLocalizedModelData.getTitle )</th></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <script src="@routes.Assets.versioned("lib/jquery/jquery.min.js")"></script>
+    <script src="@routes.Assets.versioned("lib/popper.js/umd/popper.js")"></script>
+    <script src="@routes.Assets.versioned("lib/bootstrap/js/bootstrap.min.js")"></script>
+    <script type="text/javascript">
+            $(document).ready( function(){
+              $("span[data-toggle='popover']").popover();
+              $("span[data-toggle='tooltip']").tooltip();
+            } );
+    </script>
+    @for( analyticsCode <- pcd.analyticsCode){@Html(analyticsCode)}
+  </body>
+</html>

@@ -4,6 +4,8 @@ import scala.xml.{Elem, PCData}
 import scala.collection.mutable.ArrayBuffer
 import scala.jdk.CollectionConverters._
 import java.text.SimpleDateFormat
+import java.time.{LocalDate, LocalDateTime}
+import java.time.format.DateTimeFormatter
 import java.util
 import java.util.{Date, Optional}
 
@@ -38,25 +40,6 @@ object Helpers {
     }
     ds
   }
-  
-//  def makeDataHolder(map:Map[DataKey[_],AnyRef]) = new DataHolder(){
-//    override def getAll: java.util.Map[DataKey[_], AnyRef] = map.asJava
-//
-//    override def keySet(): java.util.Collection[DataKey[_]] = map.keys.toSet.asJava
-//
-//    override def contains(key: DataKey[_]): Boolean = map.contains(key)
-//
-//    override def get[T](key: DataKey[T]): T = {
-//      val res = map.asJava.get(key)
-//      if ( res != null ) res.asInstanceOf[T]
-//      else null.asInstanceOf[T]
-//    }
-//
-//    override def toMutable: MutableDataHolder = new MutableDataSet() // naiive impl, don't use.
-//
-//    override def toImmutable: DataHolder = this
-//
-//  }
   
   private val MARKDOWN_OPTIONS_FULL = new MutableDataSet().setAll(makeDataHolder(Map[DataKey[_], AnyRef](
       (Parser.EXTENSIONS -> Seq(TablesExtension.create(),
@@ -227,6 +210,9 @@ object Helpers {
     val fmt = new SimpleDateFormat("yyyy-MM-dd hh:mm")
     fmt.format(d)
   }
+  
+  private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+  def formatDate( ldt: LocalDate ):String = ldt.format( dateFormatter )
   
   def nonEmpty( v:String )(f:String=>Html):Html = {
     if ( v != null && v.trim.nonEmpty ) {

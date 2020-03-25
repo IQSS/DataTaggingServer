@@ -79,6 +79,7 @@
   <div class="row my-3">
     <div class="col">
       <div class="text-center">
+        <a href="@routes.InterviewCtrl.viewQuestionCodebook(qKit.md.id.modelId, qKit.md.id.version, Some(loc.getLanguage))" target="_blank" class="btn btn-outline-secondary btn-lg">@Messages("interview.intro.overview.question-codebook")</a>
         <a href="@routes.InterviewCtrl.viewAllQuestions(qKit.md.id.modelId, qKit.md.id.version, Some(loc.getLanguage))" class="btn btn-outline-secondary btn-lg">@Messages("interview.intro.overview.question-list")</a>
         <a href="@routes.InterviewCtrl.doStartInterview(qKit.md.id.modelId, qKit.md.id.version)" class="btn btn-primary btn-lg">@Messages("interview.start")</a>
       </div>

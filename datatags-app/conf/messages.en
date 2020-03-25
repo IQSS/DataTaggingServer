@@ -49,6 +49,7 @@ interview.readme=About this interview
 interview.intro.overview.decision-graph=Decision Graph
 interview.intro.overview.policy-space=Policy Space
 interview.intro.overview.question-list=All Questions
+interview.intro.overview.question-codebook=Question Codebook
 interview.intro.overview.visualizations=Visualizations
 interview.question=Question
 interview.model=Model
@@ -59,7 +60,16 @@ interview.version.meta.authors=Authors
 interview.version.meta.releaseDate=Release Date
 interview.version.meta.keywords=Keywords
 interview.version.meta.references=References
+interview.version.meta.localization=Localization
 interview.version.meta.otherVersions=Other Versions
+interview.version.meta.productionDate=Production Date
+
+codebook.questionTable.head.id=Question number, id
+codebook.questionTable.head.text=Question text
+codebook.questionTable.head.answers=Answers
+codebook.questionTable.sectionStart=Section {0}
+codebook.questionTable.sectionEnd=End of section {0}
+codebook.questionTable.questionnaireEnd=End of {0} questionnaire
 
 interview.model.permalinkToLatest=Permalink to latest version:
 
