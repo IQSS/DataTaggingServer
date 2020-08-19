@@ -631,9 +631,19 @@ footer {
     margin: auto .5em;
     vertical-align: middle;
     color: #2a6496;
+
+    &.vert {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      i { font-size: 15pt; }
+      div { font-size: 10pt; }
+    }
+
     &:hover {
       text-shadow: white -1px -1px 2px, #DDD 1px 1px 2px, white 1px -1px 2px, white 1px -1px 2px;
       color: black;
+      text-decoration: none;
     }
   }
 
