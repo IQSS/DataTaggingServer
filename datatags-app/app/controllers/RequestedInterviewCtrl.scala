@@ -61,7 +61,9 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
       errors => BadRequest(Json.obj("status" -> "error", "message" -> JsError.toJson(errors))),
       interviewData => {
         val requestedInterviewSession = RequestedInterviewSession(interviewData, kitKey, started=false)
+        // FIXME use database, not cache
         cache.set(requestedInterviewSession.key, requestedInterviewSession, Duration(120, TimeUnit.MINUTES))
+        logger.info(s"processing interview request. Return: ${interviewData.callbackURL}")
         // send response with interview URL
         Created(routes.RequestedInterviewCtrl.start(requestedInterviewSession.key).url)
       }
@@ -82,7 +84,9 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
               val loc = locs.localization(requestedInterview.kitId, requestedInterview.data.localization)
               val userSession = InterviewSession.create(ver, model, loc).updatedWithRequestedInterview(requestedInterview)
               cache.set(userSession.key.toString, userSession)
-              Redirect(routes.InterviewCtrl.showStartInterview(model.id, ver.md.id.version, None, Some(userSession.key.toString)).url)
+//              Redirect(routes.InterviewCtrl.showStartInterview(model.id, ver.md.id.version, None, Some(userSession.key.toString)).url)
+              Redirect(routes.InterviewCtrl.doStartInterview(model.id, ver.md.id.version).url
+                      ).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
             }
             case _ => NotFound(views.html.errorPages.NotFound("Model or version not found"))
           }
@@ -93,12 +97,17 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
   
   def reportInterviewResults = InterviewSessionAction(cache, cc).async { implicit request =>
     val session = request.userSession
+    
     for {
       noteMap <- notes.getNotesForInterview(session.key)
       xmlPayload = XmlFormats.interview(session, noteMap)
       callbackURL = request.userSession.requestedInterview.get.data.callbackURL
-      response <- ws.url(callbackURL).post(xmlPayload)
+      response <- {
+        logger.info(s"Interview complete. Posting to : $callbackURL")
+        ws.url(callbackURL).post(xmlPayload)
+      }
     } yield {
+      logger.info(s"Got response: ${response.status}:|${response.body}|")
       response.status match {
         case 201 => Redirect(response.body)
         case 200 => Redirect(response.body)

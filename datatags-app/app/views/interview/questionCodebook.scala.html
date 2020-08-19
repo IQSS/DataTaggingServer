@@ -10,13 +10,12 @@
 @(verKit: VersionKit, loc:Localization, counter:AtomicInteger=new AtomicInteger(0)
 )(implicit req:Request[_], msgs: MessagesProvider, pcd:models.PageCustomizationData)
 
-@nextNum() = {<span class="questionNum">@counter.incrementAndGet()</span>}
 
 @visitAskNode( nd:AskNode, baseLevel:Boolean, visited:mutable.Set[String] ) = {
   <tr>
     <td>
-      <span class="questionNum">@nextNum()</span>
-      <span class="questionId">@nd.getId<span>
+      @defining(counter.incrementAndGet()){ nn => <span class="questionNum"><a id="@nn" href="#@nn">@nn</a></span> }
+      <span class="questionId"><a id="@nd.getId" href="#@nd.getId">@nd.getId</a></span>
     </td>
     <td>
       @defining( loc.getNodeText(nd.getId).orElse(Helpers.askNodeToMarkdown(nd)) ){ nodeText =>

@@ -62,7 +62,7 @@ object XmlFormats {
   def policyValueAsXml( pv:AbstractValue ):scala.xml.Elem = {
     pv match {
       case at:AtomicValue    => <atomic slot={at.getSlot.getName} ordinal={at.getOrdinal.toString} outOf={at.getSlot.values().size().toString}>{at.getName}</atomic>
-      case ag:AggregateValue => <aggreate slot={ag.getSlot.getName}>{ag.getValues.asScala.map(v=>v.getName).map( v => <value>{v}</value>)}</aggreate>
+      case ag:AggregateValue => <aggregate  slot={ag.getSlot.getName}>{ag.getValues.asScala.map(v=>v.getName).map( v => <value>{v}</value>)}</aggregate>
       case cm:CompoundValue  => <compound slot={cm.getSlot.getName}>
         {cm.getNonEmptySubSlots.asScala.map(cm.get).map( policyValueAsXml )}
       </compound>

@@ -100,7 +100,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       pmKitOpt <- models.getVersionKit(kitId)
       allowed = canView(req, pmKitOpt.get.md)
       allVersions <- if (allowed) models.listVersionsFor(modelId) else models.listPubliclyRunnableVersionsFor(kitId.modelId)
-      sessionDataOpt = sid.flatMap(cache.get[InterviewSession](_))
+      sessionDataOpt = sid.flatMap(cache.get[InterviewSession])
     } yield {
       logger.info("sessionDataOpt:" + sessionDataOpt)
       (modelOpt, pmKitOpt) match {
@@ -134,7 +134,6 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                 }
                 
                 val readmeOpt:Option[MarkupString] = l10n.getLocalizedModelData.getBestReadmeFormat.toOption.map(b => l10n.getLocalizedModelData.getReadme(b))
-                // TODO Replace the None below with requested interview welcome message.
                 if ( allVersions.isEmpty ) {
                   Ok( views.html.interview.noRunnableVersions(pmKit) )
                 } else {

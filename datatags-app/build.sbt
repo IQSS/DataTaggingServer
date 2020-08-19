@@ -10,6 +10,9 @@ maintainer := "mbarsinai@iq.harvard.edu"
 
 scalaVersion := "2.13.1"
 
+// Targeting JDK11, which is the current LTS
+javacOptions ++= Seq("-source", "11", "-target", "11")
+
 routesGenerator := InjectedRoutesGenerator
 
 resolvers += "Typesafe repository releases" at "https://repo.typesafe.com/typesafe/releases/"
@@ -48,3 +51,7 @@ includeFilter in (Assets, LessKeys.less) := "*.less"
 pipelineStages := Seq(uglify, digest, gzip)
 
 //javaOptions ++= Seq("--illegal-access=allow")
+
+// Disable documentation creation
+sources in (Compile, doc) := Seq.empty
+publishArtifact in (Compile, packageDoc) := false

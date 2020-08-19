@@ -135,8 +135,8 @@ class CommentTable(tag:Tag) extends Table[Comment](tag,"comments") {
   def * = (writer, comment, modelID, version, localization,
            targetType, targetContent, resolved, time, id) <> (Comment.tupled, Comment.unapply)
 }
+
 class SettingTable(tag:Tag) extends Table[Setting](tag, "settings") {
-  
   def key = column[String]("key", O.PrimaryKey)
   def value = column[String]("value")
   
