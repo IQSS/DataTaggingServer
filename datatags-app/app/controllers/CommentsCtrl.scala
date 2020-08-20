@@ -1,5 +1,6 @@
 package controllers
 
+import edu.harvard.iq.policymodels.model.decisiongraph.nodes.Node
 import javax.inject.Inject
 import models.{CommentDTO, KitKey, VersionKit}
 import play.api.libs.json._
@@ -53,7 +54,15 @@ class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:Loc
                   } else {
                     l10n.getLocalizedModelData.getBestReadmeFormat.asScala.map(l10n.getLocalizedModelData.getReadme(_))
                   }
-                  Ok(views.html.backoffice.commentViewer(commentOpt.get, aKit, l10n, readmeOpt)(req, messagesApi.preferred(req)))
+                  val content = comment.targetContent
+                  
+                  // PolicyModels throws an NPE in case the node is not found. So we resolve to try/catch.
+                  val target = try {
+                    aKit.policyModel.get.getDecisionGraph.getNode(content)
+                  } catch {
+                    case _:NullPointerException => null
+                  }
+                  Ok(views.html.backoffice.commentViewer(comment, Option(target), aKit, l10n, readmeOpt))
                 }
               }
             }

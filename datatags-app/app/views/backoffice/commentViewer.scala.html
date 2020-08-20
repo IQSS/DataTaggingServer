@@ -1,10 +1,8 @@
 @import edu.harvard.iq.policymodels.externaltexts.Localization
 @import edu.harvard.iq.policymodels.externaltexts.MarkupString
-@import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
-@import edu.harvard.iq.policymodels.model.decisiongraph.nodes.RejectNode
-@import edu.harvard.iq.policymodels.model.PolicyModel
+@import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 @import Helpers._
-@(cmt:Comment, kit:VersionKit, loc:Localization, readmeOpt:Option[MarkupString])(implicit request: RequestHeader, msgs: MessagesProvider)
+@(cmt:Comment, target:Option[Node], kit:VersionKit, loc:Localization, readmeOpt:Option[MarkupString])(implicit request: RequestHeader, msgs: MessagesProvider)
 
 @templates.backend("Comment Viewer", views.BackOfficeSection.Models ) {
   <div class="row my-2">
@@ -51,12 +49,20 @@
             }
           }
         } else {
-          @defining(kit.policyModel.get.getDecisionGraph.getNode(cmt.targetContent)) {
-            case ask: AskNode => {
-              @comps.questionPanel(ask, kit, loc, Seq(), enableComments=false, interactive=false, showId = true, false, None)
+          @target match {
+            case None => {
+              <div class="noData">
+                  <h3>@Messages("interview.comment.targetMissing")</h3>
+                  <p>
+                    @Messages("interview.comment.targetMissing.long")
+                  </p>
+                </div>
             }
-            case rej: RejectNode => {
-              @comps.rejectPanel(rej, kit.md.id, loc, Seq(), enableComments=false)
+            case Some(aNode) => {
+              @aNode match {
+                case ask: AskNode => {@comps.questionPanel(ask, kit, loc, Seq(), enableComments=false, interactive=false, showId = true, allowNotes=false, None)}
+                case rej: RejectNode => {@comps.rejectPanel(rej, kit.md.id, loc, Seq(), enableComments=false)}
+              }
             }
           }
         }
