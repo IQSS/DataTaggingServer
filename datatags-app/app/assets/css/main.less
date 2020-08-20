@@ -433,7 +433,6 @@ table.engine-trace {
     line-height: normal;
     margin: 2px;
     border: 1px solid rgba(0,0,0,0.4);
-    //white-space: nowrap;
     box-shadow: 0 1px 4px rgba(0,0,0,0.25)
   }
 }
@@ -971,13 +970,13 @@ details:open {
 .pageTitleRow-ctnr {
   display: flex;
   flex-direction: row;
-  flex-flow: wrap;
+  flex-flow: nowrap;
   border-bottom: 1px solid rgba(0,0,0,.1);
   margin: 1em 0;
 
   h1 {
     flex-grow: 1;
-    flex-shrink: 0;
+    flex-shrink: 1;
   }
   .pageTitleRow-component{
     flex-grow: 0;
@@ -1011,7 +1010,7 @@ details:open {
     .pageTitleRow-component {
       margin: .5em 0;
       order: 3;
-      text-align: center;
+      text-align: end;
     }
   }
 }

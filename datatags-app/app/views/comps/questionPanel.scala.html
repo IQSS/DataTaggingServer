@@ -36,7 +36,7 @@
         @if(listDis){<ul class="listDisplay list-unstyled">}
           @for( ans <- questionNode.getAnswers ) {
             @if(listDis){<li>}
-            <button type="button" @if(interactive){ class="btn btn-primary"
+            <button id="ans_@ans.getAnswerText.replaceAll(" ","_")" type="button" @if(interactive){ class="btn btn-primary"
             onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{ class="btn btn-outline-primary" disabled} >
             @loc.localizeAnswer(ans.getAnswerText)</button>
             @if(listDis){</li>}
