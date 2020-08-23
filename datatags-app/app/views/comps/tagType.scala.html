@@ -29,7 +29,7 @@
  <div class="tagtype tagtype-compound">
     @slotTypeTitle(tp, loc)
     <div class="typeValues">
-      @for( ft <- tp.getSubSlots ) {
+      @for( ft <- tp.getSubSlotsInDeclaraionOrder ) {
         @renderType( ft )
       }
     </div>
