@@ -2,28 +2,25 @@
 
 @content = {
   <div class="container">
-    <div class="row my-2">
-      <div class="col">
-        <h1>User Profile Editor</h1>
-      </div>
-    </div>
+
+    @comps.pageTitleRow("User Profile Editor"){ }
 
     <div class="row my-2">
       <div class="col">
         <ul class="nav nav-tabs">
           @if(activeFirst) {
-            <li class="nav-item tab-pane active"><a class="nav-link" data-toggle="tab" href="#userEditor">Edit User</a></li>
+            <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#userEditor">Edit User</a></li>
             @if(isNew) {
-              <li class="nav-item tab-pane disabled"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
+              <li class="nav-item disabled"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
             } else {
-              <li class="nav-item tab-pane"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
+              <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
             }
           }else{
-            <li class="nav-item tab-pane"><a class="nav-link" data-toggle="tab" href="#userEditor">Edit User</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#userEditor">Edit User</a></li>
             @if(isNew) {
-              <li class="nav-item tab-pane disabled active"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
+              <li class="nav-item disabled"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
             } else {
-              <li class="nav-item tab-pane active"><a class="nav-link" data-toggle="tab" href="#changePassword">Change Password</a></li>
+              <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#changePassword">Change Password</a></li>
             }
           }
 

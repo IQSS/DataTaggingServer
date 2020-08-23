@@ -32,16 +32,16 @@
         @if(allowNotes){
           <button type="button" class="toggleNoteBtn" onclick="$('#noteDiv').slideToggle(); $('#noteDiv textarea').focus()"><i class="fa fa-pencil"></i> @Messages("interview.note.add")</button>
         }
-        @defining(versionKit.md.listDisplay <= questionNode.getAnswers.size) { listDis =>
-        @if(listDis){<ul class="listDisplay list-unstyled">}
+        @defining(versionKit.md.listDisplay <= questionNode.getAnswers.size) { displayAsList =>
+        @if(displayAsList){<ul class="listDisplay list-unstyled">}
           @for( ans <- questionNode.getAnswers ) {
-            @if(listDis){<li>}
+            @if(displayAsList){<li>}
             <button id="ans_@ans.getAnswerText.replaceAll(" ","_")" type="button" @if(interactive){ class="btn btn-primary"
             onclick="$('#answerText')[0].value='@ans.getAnswerText'; $('#answerForm').submit();"}else{ class="btn btn-outline-primary" disabled} >
             @loc.localizeAnswer(ans.getAnswerText)</button>
-            @if(listDis){</li>}
+            @if(displayAsList){</li>}
           }
-          @if(listDis){</ul>}
+          @if(displayAsList){</ul>}
         }
       </div>
       @if( interactive ) {
