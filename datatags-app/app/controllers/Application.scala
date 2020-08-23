@@ -8,7 +8,7 @@ import persistence.{ModelManager, SettingsDAO}
 import play.api.i18n.I18nSupport
 import play.api.{Configuration, routing}
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object Application {
   private val jsRoutes = Seq(
@@ -38,10 +38,10 @@ object Application {
 }
 
 class Application @Inject()(cached: Cached, models:ModelManager,
-                            conf:Configuration, cc:ControllerComponents, custCtrl:CustomizationCtrl,
+                            cc:ControllerComponents, custCtrl:CustomizationCtrl,
                             settings:SettingsDAO ) extends InjectedController with I18nSupport {
-  implicit val ec = cc.executionContext
-  implicit def pcd = custCtrl.pageCustomizations()
+  implicit val ec: ExecutionContext = cc.executionContext
+  implicit def pcd: PageCustomizationData = custCtrl.pageCustomizations()
   
   def index = Action.async { implicit req =>
     settings.get( SettingKey.HOME_PAGE_TEXT ).map( stng =>
@@ -63,8 +63,6 @@ class Application @Inject()(cached: Cached, models:ModelManager,
     } yield Ok( views.html.public.modelCatalog(models.sortBy(_.title), text.map(_.value)) )
     
   }
-
-  
   
   def javascriptRoutes = cached("jsRoutes") {
     Action { implicit request =>

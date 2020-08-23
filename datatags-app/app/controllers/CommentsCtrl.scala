@@ -1,24 +1,23 @@
 package controllers
 
-import edu.harvard.iq.policymodels.model.decisiongraph.nodes.Node
 import javax.inject.Inject
-import models.{CommentDTO, KitKey, VersionKit}
+import models.{CommentDTO, KitKey}
 import play.api.libs.json._
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
 import play.api.Logger
 import play.api.cache.SyncCacheApi
-import play.api.i18n.{I18nSupport, MessagesImpl}
+import play.api.i18n.I18nSupport
 import play.api.mvc.{ControllerComponents, InjectedController}
 
 import scala.compat.java8.OptionConverters._
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class CommentsCtrl @Inject()(comments:CommentsDAO, models:ModelManager, locs:LocalizationManager,
                              cache:SyncCacheApi, cc:ControllerComponents) extends InjectedController with I18nSupport{
 
   import JSONFormats.commentDTOFmt
 
-  implicit private val ec = cc.executionContext
+  implicit private val ec: ExecutionContext = cc.executionContext
   private val logger = Logger(classOf[CommentsCtrl])
 
   def apiAddComment = Action(parse.tolerantJson).async { implicit req =>

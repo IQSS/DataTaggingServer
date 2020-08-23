@@ -1,6 +1,7 @@
 import com.google.inject.AbstractModule
 import java.time.Clock
 
+import controllers.ConfigValidator
 import persistence.ModelManager
 
 /**
@@ -22,6 +23,7 @@ class Module extends AbstractModule {
     // Ask Guice to create an instance of ApplicationTimer when the
     // application starts.
     bind(classOf[ModelManager]).asEagerSingleton()
+    bind(classOf[ConfigValidator]).asEagerSingleton()
   
   }
 
