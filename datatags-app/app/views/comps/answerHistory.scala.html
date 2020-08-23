@@ -11,12 +11,13 @@
                           @Helpers.renderMini(ar._1.question, loc)
                         </div>
                         <div class="ar-controls">
-                            <span class="badge">@loc.localizeAnswer(ar._1.answer.getAnswerText)</span>
-                            <button class="btn btn-outline-secondary btn-sm"
-                                data-toggle="tooltip" data-placement="top"
-                                title=@Messages("interview.question.change")
-                                onClick="$('#revisitIdx')[0].value='@ar._2'; $('#answerHistory').submit();">
-                                <i class="fa fa-history"></i> @Messages("interview.revisit")</button>
+
+                          <span class="badge badge-info badge-pill">@loc.localizeAnswer(ar._1.answer.getAnswerText)</span>
+                          <button class="btn btn-outline-secondary btn-sm"
+                              data-toggle="tooltip" data-placement="top"
+                              title=@Messages("interview.question.change")
+                              onClick="$('#revisitIdx')[0].value='@ar._2'; $('#answerHistory').submit();">
+                              <i class="fa fa-history"></i> @Messages("interview.revisit")</button>
                         </div>
                     </li>
                 }       

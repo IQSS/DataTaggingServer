@@ -2,7 +2,7 @@
 @if(stack.nonEmpty){
   <div class="row my-2">
     <div class="col">
-      <nav  aria-label="breadcrumb">
+      <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
           @for( p <- stack.zipWithIndex ) {
             @defining( Helpers.textsForSection(p._1, dg, loc) ) { lt =>
