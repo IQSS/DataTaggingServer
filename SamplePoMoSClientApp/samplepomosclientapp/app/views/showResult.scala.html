@@ -1,12 +1,19 @@
-@import play.api.libs.json.JsValue
-@import play.api.libs.json.Json
-@(res:JsValue)
+@import scala.xml.NodeSeq
+@(res:String)
 
-@main("Result") {
-<h1>Interview result</h1>
+@main("Result","") {
+<h1>Interview Result</h1>
+  <div class="padded">
+    <a href="@routes.HomeController.index()">Back to client page</a>
+  </div>
+  <p>
+    This is the response posted back to the client application, from the PolicyModels server.
+  </p>
 <pre><code>
-@Json.prettyPrint(res)
+@res
 </code></pre>
-<hr>
-<a href="@routes.HomeController.index()">Request another interview</a>
+
+  <div class="padded">
+    <a href="@routes.HomeController.index()">Back to client page</a>
+  </div>
 }

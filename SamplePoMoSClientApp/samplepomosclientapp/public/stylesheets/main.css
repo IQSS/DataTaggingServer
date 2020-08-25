@@ -1,3 +1,69 @@
+
+/* Basic font reset. Source: https://css-tricks.com/snippets/css/system-font-stack/ */
+/* Define the "system" font family */
+@font-face {
+    font-family: system;
+    font-style: normal;
+    font-weight: 300;
+    src: local(".SFNSText-Light"), local(".HelveticaNeueDeskInterface-Light"), local(".LucidaGrandeUI"), local("Ubuntu Light"), local("Segoe UI Light"), local("Roboto-Light"), local("DroidSans"), local("Tahoma");
+}
+
+/* Now, let's apply it on an element */
+body {
+    font-family: "system";
+}
+
+/* /Basic font reset */
+
+body.twoColumns {
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr;
+}
+
+header {
+    grid-column: span 2;
+    background-color: #CCC;
+    padding: 1em;
+    border-bottom: 3px solid #888;
+    margin: 0 0 1em 0;
+}
+
+.controls {
+    padding: 0 .5em;
+    border-right:  3px solid #888;
+}
+
+.consoleCtnr {
+    padding: 0 .5em;
+    background-color: #353;
+    color: #590;
+}
+
+#console {
+    background-color: #222;
+    color: #00AA00;
+    font-family: Menlo, Consolas, monospace;
+    font-size: 9pt;
+    white-space: pre;
+    padding: 0 .5em .5em .5em;
+}
+
+code {
+    font-family: Menlo, Consolas, monospace;
+    font-size: 9pt;
+}
+
+#console .input {
+    color: #CCF;
+}
+
+#console div {
+    margin: .1em 0;
+}
+
 label {
     display: inline-block;
     width: 150px;
@@ -10,53 +76,62 @@ small {
     margin-top: .2em;
 }
 
-textarea {
-    vertical-align: top;
-    width: 300px;
-}
-
 input {
     width: 300px;
 }
 
-#queryArea {
-    float: right;
-    width: 40%;
-    border: 1px solid #888;
-    background-color: #DDD;
-    border-radius: 5px;
-    margin: 0 0 0 1em;
-    padding: 1em;
+section {
+    border-top: 1px solid #DDD;
+    padding: 1em 0;
 }
 
-pre {
+h2 {
+    color: #7A7;
+    margin: 0 0 .5em 0;
+    padding: .5em 0;
+}
+
+.httpButton {
+    position: relative;
+    top: -3px;
+    font-family: Menlo, Consolas, monospace;
+    border: 2px solid #888;
     background-color: #EEE;
-    padding: .3em;
-    -webkit-box-shadow: inset 0px 0px .2em #FFF;
-    -moz-box-shadow: inset 0px 0px .2em #FFF;
-    box-shadow: inset 0px 0px .2em #FFF;
+    border-radius: 0 4px 6px 0;
+    padding: 3px;
+    margin-right: 1em;
+    box-shadow: 0 3px 3px rgba(0,0,0,.25);
 }
 
-ul.errors {
-    margin-top:0;
-    padding: 4px;
-    background-color: #FCC;
-    color: #F00;
-    list-style: none;
+.httpButton:hover {
+    background-color: #EFF;
+    border-color: #088;
+}
+.httpButton:active {
+    top: 0;
+    box-shadow: 0 0 1px rgba(0,0,0,.5);
 }
 
-.bigButton {
-    font-size: 2em;
+.httpField {
+    font-family: Menlo, Consolas, monospace;
+    font-size: 9pt;
+}
+
+#interviewReady {
+    border: 1px solid blue;
+    background-color: #AAF;
+    padding: 1em;
+    margin: .5em 0;
+    border-radius: 1em;
+    text-align: center;
+    display: none;
+}
+
+.padded {
+    margin: .5em 0;
     padding: .5em;
-    border: 2px solid black;
-    margin: 5px;
-}
+    text-align: center;
+    background-color: #ADA;
+    color: #080;
 
-.bigButton:hover {
-    background-color: yellow;
-}
-
-.bigButton:active {
-    background-color: blue;
-    color: white;
 }

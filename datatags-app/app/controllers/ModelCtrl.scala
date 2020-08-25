@@ -15,7 +15,7 @@ import play.api.data.Form
 import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, Langs}
 import play.api.libs.json.{JsString, Json}
-import play.api.mvc.{ControllerComponents, InjectedController}
+import play.api.mvc.{ControllerComponents, InjectedController, Result}
 
 import scala.jdk.CollectionConverters._
 import scala.concurrent.Future
@@ -342,7 +342,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
       val jsons = models.map( mdl => (Json.obj("id"->mdl.id, "title"->mdl.title),
                                                Option(if (mdl.note.trim.nonEmpty) mdl.note.trim else null)) )
           .map( pair => pair._2.map( note => pair._1 ++ Json.obj("note"->note)).getOrElse(pair._1) )
-      Ok( Json.toJson(jsons) )
+      cors(Ok( Json.toJson(jsons) ))
     }
   }
   
@@ -352,7 +352,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
       versions <- models.listPubliclyRunnableVersionsFor(modelId)
     } yield {
       modelOpt match {
-        case None => NotFound(Json.toJson("model not found"))
+        case None => cors(NotFound(Json.toJson("model not found")))
         case Some(mdl) => {
           val basicRetVal = Json.obj(
             "id" -> mdl.id,
@@ -363,7 +363,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
             case "" => basicRetVal
             case s:String => basicRetVal ++ Json.obj("note"->s)
           }
-          Ok(Json.toJson(retVal))
+          cors(Ok(Json.toJson(retVal)))
         }
       }
     }
@@ -376,15 +376,15 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
       pmKitOpt <- models.getVersionKit(kitId)
     } yield {
       (modelOpt, pmKitOpt) match {
-        case (None, _) => NotFound(Json.toJson("Model not found"))
-        case (Some(model), None) => NotFound(Json.toJson("Version not found"))
+        case (None, _) => cors(NotFound(Json.toJson("Model not found")))
+        case (Some(model), None) => cors(NotFound(Json.toJson("Version not found")))
         case (Some(model), Some(kit)) => {
           if  ( kit.md.publicationStatus != PublicationStatus.Published ) {
-            Unauthorized(Json.toJson("Version not public"))
+            cors(Unauthorized(Json.toJson("Version not public")))
           } else if ( kit.md.runningStatus != RunningStatus.Runnable ) {
-            Forbidden(Json.toJson("Version not runnable"))
+            cors(Forbidden(Json.toJson("Version not runnable")))
           } else if ( kit.policyModel.isEmpty ) {
-            Forbidden(Json.toJson("Version not runnable"))
+            cors(Forbidden(Json.toJson("Version not runnable")))
           } else {
             import JSONFormats.localizationDTOFmt
             val localizations = locs.localizationsFor(kit.md.id)
@@ -398,7 +398,7 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
               "subtitle"  -> Json.toJson(kit.policyModel.get.getMetadata.getSubTitle),
               "localizations" -> Json.toJson(locJson)
             )
-            Ok(Json.toJson(versionJson))
+            cors(Ok(Json.toJson(versionJson)))
           }
         }
       }
@@ -413,5 +413,8 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
       Future( Unauthorized("This endpoint is available from localhost only") )
     }
   }
+  
+  def cors( res:Result ) = res.withHeaders("Access-Control-Allow-Origin"->"*")
+  
 }
 
