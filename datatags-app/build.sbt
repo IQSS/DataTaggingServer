@@ -48,7 +48,7 @@ LessKeys.compress in Assets := true
 
 includeFilter in (Assets, LessKeys.less) := "*.less"
 
-pipelineStages := Seq(uglify, digest, gzip)
+pipelineStages := Seq(digest, gzip)
 
 //javaOptions ++= Seq("--illegal-access=allow")
 
