@@ -1,0 +1,64 @@
+# A Dockerized Server Development Environment
+
+This directory contains sources for a http://docker.com/[Docker] development environment container. The built image will have all the required development tools (e.g. Java, Scala, PostgreSQL...).
+
+The one thing the container does not have is the source code - this should be on the host computer, and will be made available to the Docker image using volume mapping (the `-v` flag).
+
+IMPORTANT: This guide assumes Docker is already installed and running.
+
+WARNING: This container is not meant for production use.
+
+## Building the container:
+
+Using your terminal, type as follows:
+
+[source, bash]
+----
+docker build path-to-this-directory -t pomos:dev
+----
+
+This should build the image and publish it to your local image repo.
+
+## Running the container:
+
+No it's time to run a container based on the image from the previous stage. On the terminal, type:
+
+[source, bash]
+----
+docker run -it -vXXXX:/var/pomos -p9000:9000 -p5432:5432 pomos:dev<1>
+----
+<1> XXXX is the path to the `datatags-app` directory
+
+Once the docker started:
+[source, bash]
+----
+su play      <.>
+cd /var/pomos <.>
+sbt -Dsbt.coursier.home="/var/coursier"  <.>
+run           <.>
+----
+<.> Switch to the `play` user
+<.> Gets you to the SBT project directory.
+<.> Starts SBT (with specific Coursier directory). This will take a while.
+<.> Starts Play's server. Lots of `stdout` action here as well.
+
+After SBT starts Play's server, point your browser (on the host machine) to http://localhost:9000/
+
+You should be seeing a PoMos server page.
+
+IMPORTANT: When running the server for the first time, you'll see a warning screen asking you to apply the initial database evolution. Apply it.
+
+### Adding the First User
+
+For security reasons, the first user needs to be added from the localhost. So here this means the container running the server - this can't be done from the host computer. To so this:
+
+. Find the id of the running container using `docker container ls`
+.. Assume that container's id is `60f640f356d9`
+. Log into the container using `docker exec -it 60f640f356d9 /bin/bash`
+. Add a new user using the server's REST API, by typing:
+[source, bash]
+----
+curl -X POST -d '{"username": "admin", "password":"pass"}' http://localhost:9000/admin/api/users/
+----
+
+You can now start developing the PolicyModels Server.

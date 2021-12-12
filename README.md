@@ -98,5 +98,9 @@ An example client application is [available in this repository](SamplePoMoSClien
 
 * Configuration: see conf/application.conf
 * Add a user via API from localhost (useful for adding first user):
-
-    `echo '{"username": "admin", "password":"pass"}' | http POST localhost:9000/admin/api/users/`
+    * using cURL:
+      
+        `curl -X POST -d '{"username": "admin", "password":"pass"}' http://localhost:9000/admin/api/users/` 
+    * using httpie:
+    
+        `echo '{"username": "admin", "password":"pass"}' | http POST localhost:9000/admin/api/users/`
