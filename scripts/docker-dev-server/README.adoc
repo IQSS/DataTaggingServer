@@ -1,3 +1,13 @@
+ifndef::env-github[:icons: font]
+ifdef::env-github[]
+:status:
+:outfilesuffix: .adoc
+:caution-caption: :fire:
+:important-caption: :exclamation:
+:note-caption: :page_with_curl:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
 # A Dockerized Server Development Environment
 
 This directory contains sources for a http://docker.com/[Docker] development environment container. The built image will have all the required development tools (e.g. Java, Scala, PostgreSQL...).
@@ -47,6 +57,8 @@ After SBT starts Play's server, point your browser (on the host machine) to http
 You should be seeing a PoMos server page.
 
 IMPORTANT: When running the server for the first time, you'll see a warning screen asking you to apply the initial database evolution. Apply it.
+
+IMPORTANT: On some machines, you might need to change the owner and group of `/var/pomos` to `play`. Do this by running `chown -R play:play /var/pomos` from the running Docker container.
 
 ### Adding the First User
 
