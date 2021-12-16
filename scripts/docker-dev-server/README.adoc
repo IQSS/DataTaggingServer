@@ -3,7 +3,7 @@ ifdef::env-github[]
 :status:
 :outfilesuffix: .adoc
 :caution-caption: :fire:
-:important-caption: :exclamation:
+:important-caption: :bangbang:
 :note-caption: :page_with_curl:
 :tip-caption: :bulb:
 :warning-caption: :warning:
