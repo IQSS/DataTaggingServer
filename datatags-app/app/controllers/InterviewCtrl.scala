@@ -43,7 +43,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   def initiateInterviewRedirect(modelId:String) = Action { req =>
     TemporaryRedirect( routes.InterviewCtrl.initiateInterview(modelId).url )
   }
-  
+
   
   /**
     * The default public entry point for interviews. Parametrized by the model, we need to
@@ -132,7 +132,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                   interviewHistories.addInterviewHistory(
                     InterviewHistory(userSession.key, pmKit.md.id.modelId, pmKit.md.id.version, localizationName.getOrElse(""), actionName, req.headers.get("User-Agent").get))
                 }
-                
+
                 val readmeOpt:Option[MarkupString] = l10n.getLocalizedModelData.getBestReadmeFormat.toOption.map(b => l10n.getLocalizedModelData.getReadme(b))
                 if ( allVersions.isEmpty ) {
                   Ok( views.html.interview.noRunnableVersions(pmKit) )
@@ -175,7 +175,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       interviewHistories.addRecord(
         InterviewHistoryRecord(session.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + rte.getCurrentNode.getId))
     }
-  
+
     val availableLocs:Seq[String] = session.kit.policyModel.get.getLocalizations.asScala.toSeq
     Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None, availableLocs)(req, messagesApi.preferred(req), pcd))
   }

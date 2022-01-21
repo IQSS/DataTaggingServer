@@ -3,9 +3,11 @@ package controllers
 import java.sql.Timestamp
 import java.util.UUID
 import java.nio.file.{Files, Paths}
-
 import edu.harvard.iq.policymodels.externaltexts.{Localization, TrivialLocalization}
+import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
 import edu.harvard.iq.policymodels.model.policyspace.slots.AbstractSlot
+import edu.harvard.iq.policymodels.runtime.RuntimeEngine
+
 import javax.inject.Inject
 import models._
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
@@ -345,7 +347,13 @@ class ModelCtrl @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:M
       cors(Ok( Json.toJson(jsons) ))
     }
   }
-  
+
+  def testInterviewConnection() = Action{ req =>
+      Ok( "[{\n\t\"questionID\": 1,\n\t\"question\": \"Are you a woman?\",\n\t\"answers\": [\"Yes\", \"No\"]\n},\n{\n\t\"questionID\": 2,\n\t\"question\": \"How old are you?\",\n\t\"answers\": [\"1-14\",\"15-18\",\"19-65\",\"66+\"]\n},\n{\n\t\"questionID\": 3,\n\t\"question\": \"How did your employment end?\",\n\t\"answers\": [\"Resignation\", \"Lawful Termination\", \"Unlawful Termination\", \"Death\"]\n},\n{\n\t\"questionID\": 4,\n\t\"question\": \"What is your favorite chip?\",\n\t\"answers\": [\"Pringles\", \"Lays\", \"Walkers\", \"Tapuchips\", \"Other\"]\n},\n{\n\t\"questionID\": 5,\n\t\"question\": \"How has your day been?\",\n\t\"answers\":  [\"Best day of my life\", \"Great\", \"Ok\", \"Bad\", \"Straight up agony\"]\n},\n{\n\t\"questionID\": 6,\n\t\"question\": \"What is your favorite animal\",\n\t\"answers\": [\"Dog\", \"Cat\", \"Mouse\", \"Frog\", \"Hedgehog\", \"Bee\", \"Wolf\", \"Other\"]\n},\n{\n\t\"questionID\": 7,\n\t\"question\": \"Who is the best?\",\n\t\"answers\": [\"Shady\", \"Shelly\", \"Eilon\", \"Tbh none of them\"]\n},\n{\n\t\"questionID\": 8,\n\t\"question\": \"Are you an israeli citizan\",\n\t\"answers\": [\"Yes\", \"No\"]\n},\n{\n\t\"questionID\": 9,\n\t\"question\": \"Who is the best friend?\",\n\t\"answers\": [\"Ross\", \"Chandler\", \"Monica\", \"Rachel\", \"Pheobe\", \"Joey\"]\n},\n{\n\t\"questionID\": 10,\n\t\"question\": \"HIMYM or Seinfeld?\",\n\t\"answers\": [\"HIMYM\", \"Seinfeld\", \"F.r.i.e.n.d.s\", \"other\"]\n}]" )
+  }
+
+
+
   def apiListVersions(modelId:String) = Action.async{ req =>
     for {
       modelOpt <- models.getModel(modelId)
