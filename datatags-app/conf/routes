@@ -12,7 +12,6 @@ GET  /models/                                 controllers.Application.publicMode
 GET  /models/tagDownload                      controllers.InterviewCtrl.downloadTags
 GET  /models/:modelId/                        controllers.InterviewCtrl.initiateInterviewRedirect(modelId)
 GET  /models/:modelId/start                   controllers.InterviewCtrl.initiateInterview(modelId)
-
 GET  /models/:modelId/:versionNum/            controllers.InterviewCtrl.showStartInterview(modelId, versionNum:Int, localizationName:Option[String]?=None, sid:Option[String]?=None)
 GET  /models/:modelId/:versionNum/start       controllers.InterviewCtrl.doStartInterview(modelId, versionNum:Int)
 GET  /models/:modelId/:versionNum/q/:nodeId   controllers.InterviewCtrl.askNode(modelId, versionNum:Int, nodeId, loc:String)
@@ -39,22 +38,9 @@ GET  /api/1/models/:modelId/               controllers.ModelCtrl.apiListVersions
 GET  /api/1/models/:modelId/:ver           controllers.ModelCtrl.apiShowVersion(modelId,ver:Int)
 POST /api/1/models/:modelId/requests       controllers.RequestedInterviewCtrl.apiRequestInterviewLatest(modelId)
 POST /api/1/models/:modelId/:ver/requests  controllers.RequestedInterviewCtrl.apiRequestInterview(modelId, ver:Int)
-GET  /api/1/models/testInterviewConnection controllers.ModelCtrl.testInterviewConnection()
-
-##todo
-##1)start return uuid/interview id
-#POST  /api/:modelId/:versionNum/startinterview   controllers.InterviewCtrl.startinterviewAPI(modelId, versionNum)
-##2) modelid ,ver, localization , => uuid, and first question
-# POST /api/1/interview/:interviewID controllers.InterviewCtrl.startinterviewAPI(interviewID)
-##3) answer question
-# POST /api/1/interview/:interviewID/:answerBthF67Dm9
-GET  /apiInterviewCtrl/models/    controllers.APIInterviewCtrl.apiListModels
-##todo
 
 # requested interviews
-#start interview
 GET  /requestedInterviews/:uuid/start controllers.RequestedInterviewCtrl.start(uuid: String)
-#finish interview
 POST /requestedInterviews/finish      controllers.RequestedInterviewCtrl.reportInterviewResults
 
 # Back-office
@@ -132,3 +118,27 @@ GET     /test/models/:name  controllers.TestCtrl.showModel(name)
 POST    /test/postBack      controllers.TestCtrl.testPostBack
 GET     /test/xml/:count    controllers.TestCtrl.getXmlText(count:Int)
 
+
+##todo
+##1)start return uuid/interview id
+#POST  /api/:modelId/:versionNum/startinterview   controllers.InterviewCtrl.startinterviewAPI(modelId, versionNum)
+##2) modelid ,ver, localization , => uuid, and first question
+# POST /api/1/interview/:interviewID controllers.InterviewCtrl.startinterviewAPI(interviewID)
+##3) answer question
+# POST /api/1/interview/:interviewID/:answerBthF67Dm9
+GET  /apiInterviewCtrl/models/    controllers.APIInterviewCtrl.apiListModels
+GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start   controllers.APIInterviewCtrl.startInterview(modelId, versionNum:Int,localizationName,sid:Option[String]?=None)
+##todo
+#1)initiateInterview
+#2)showStartInterview showed the first question!
+#3)do start
+#loop till finish (the last ques) when finish return result:
+#   4)answer!
+
+
+#1)http://localhost:9000/models/1/start
+#2) do start http://localhost:9000/models/1/1/?localizationName=English-Raw
+#3)dostart interview --> node
+#3) ask node 4)answer
+# requested interviews
+#start interview

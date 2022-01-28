@@ -229,13 +229,16 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       { answerReq =>
         val kitKey = KitKey(modelId, versionNum)
         // See if we can re-use the session data we have.
+        //check already opened session
         // TODO - test index rather than node id, to allow loops.
         var session = if ( request.userSession != null &&
                            request.userSession.engineState != null &&
                            request.userSession.engineState.getCurrentNodeId == reqNodeId ) {
           // yes
           request.userSession
-        } else {
+        }
+        //open new session
+        else {
           // no, rebuild from serialized history
           request.userSession.kit.serializer.decode(answerReq.history, request.userSession)
         }
