@@ -119,6 +119,28 @@ POST    /test/postBack      controllers.TestCtrl.testPostBack
 GET     /test/xml/:count    controllers.TestCtrl.getXmlText(count:Int)
 
 
+
+
+#returns modelsid and versions
+GET  /apiInterviewCtrl/models/    controllers.APIInterviewCtrl.apiListModels
+#returns nodeId + localizations(languages)
+GET  /apiInterviewCtrl/:modelId/start       controllers.APIInterviewCtrl.initiateInterview(modelId)
+#returns sid of the user
+GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start   controllers.APIInterviewCtrl.startInterview(modelId, versionNum:Int,localizationName,sid:Option[String]?=None)
+#returns the first question and starts the interview serrtion
+GET  /apiInterviewCtrl/:modelId/:versionNum/startInterview       controllers.APIInterviewCtrl.doStartInterview(modelId, versionNum:Int)
+
+
+
+
+
+
+
+
+
+
+
+
 ##todo
 ##1)start return uuid/interview id
 #POST  /api/:modelId/:versionNum/startinterview   controllers.InterviewCtrl.startinterviewAPI(modelId, versionNum)
@@ -126,8 +148,8 @@ GET     /test/xml/:count    controllers.TestCtrl.getXmlText(count:Int)
 # POST /api/1/interview/:interviewID controllers.InterviewCtrl.startinterviewAPI(interviewID)
 ##3) answer question
 # POST /api/1/interview/:interviewID/:answerBthF67Dm9
-GET  /apiInterviewCtrl/models/    controllers.APIInterviewCtrl.apiListModels
-GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start   controllers.APIInterviewCtrl.startInterview(modelId, versionNum:Int,localizationName,sid:Option[String]?=None)
+
+
 ##todo
 #1)initiateInterview
 #2)showStartInterview showed the first question!
@@ -135,7 +157,17 @@ GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start   controller
 #loop till finish (the last ques) when finish return result:
 #   4)answer!
 
-
+#use explination:
+#1) curl http://localhost:9000/apiInterviewCtrl/models/
+#       returns-->modelId,Version
+#2) curl http://localhost:9000/apiInterviewCtrl/1/start
+#       returns-->nodeId + listOf<languageId>
+#3) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start
+#      where 1/1/English-Raw/ is  modelid/versionId/languageID,          returns --> Sid
+#4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start?sid= Sid
+#???
+#5)
+# to check nodes : [decision-graph.dg]sInitialFiltering , [decision-graph.dg][#1], [decision-graph.dg], DecisionGraph-1
 #1)http://localhost:9000/models/1/start
 #2) do start http://localhost:9000/models/1/1/?localizationName=English-Raw
 #3)dostart interview --> node

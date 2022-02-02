@@ -69,11 +69,10 @@ class RequestedInterviewCtrl @Inject()(cache:SyncCacheApi, ws:WSClient, intervie
       }
     )
   }
-  
+  //todo make sure what does
   def start(uniqueLinkId: String) = Action.async { implicit request =>
     cache.get[RequestedInterviewSession](uniqueLinkId) match {
-   	  case None => Future(
-        NotFound(views.html.errorPages.NotFound("Sorry - requested interview not found. Please try again using the system that sent you here.")))
+   	  case None => Future(NotFound(views.html.errorPages.NotFound("Sorry - requested interview not found. Please try again using the system that sent you here.")))
    	  case Some(requestedInterview) => {
        for {
          modelOpt <- models.getModel(requestedInterview.kitId.modelId)

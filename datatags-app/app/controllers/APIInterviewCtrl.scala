@@ -7,7 +7,6 @@ import edu.harvard.iq.policymodels.runtime._
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 import models._
 import _root_.util.{Jsonizer, VisiBuilder}
-
 import javax.inject.Inject
 import com.ibm.icu.text.SimpleDateFormat
 import edu.harvard.iq.policymodels.externaltexts.{Localization, MarkupString}
@@ -86,6 +85,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
       cors(Ok( Json.toJson(jsons) ))
     }
   }
+
   /**
    * Logged in users can view any model. Anyone can view a published model. People with the correct link
    * can view only what their link allows.
@@ -93,66 +93,43 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
    * @param ver model version to be views
    * @return can the request view the model
    */
-  private def canView(r:Request[_], ver:VersionMD ):Boolean = {
-    if ( ver.publicationStatus == PublicationStatus.Published ) return true
-    if ( LoggedInAction.userPresent(r) ) return true
-
-    if ( ver.publicationStatus == PublicationStatus.LinkOnly ) {
-      return r.session.get(InterviewCtrl.INVITED_INTERVIEW_KEY) match {
-        case None => false
-        case Some(lineSessionStr) => {
-          val allowedKitKey = KitKey.parse(lineSessionStr)
-          allowedKitKey == ver.id
+  def initiateInterview(modelId:String) = Action.async{ implicit req =>
+    for {
+      latestPublicOpt <- models.getLatestPublishedVersion(modelId)
+      kitKeyOpt = latestPublicOpt.map( _.id )
+      pmKitOpt <- kitKeyOpt.map( models.getVersionKit ).getOrElse( Future(None) )
+    } yield {
+      (latestPublicOpt, pmKitOpt) match {
+        case (None, _) => cors(NotFound(Json.toJson(s"Model $modelId not found.") ))  // no model
+        case (_, None) => cors(Conflict(Json.toJson(s"Model $modelId contains errors.") ))  // no model
+        case (Some(versionMD), Some(pmKit)) => {
+          pmKit.policyModel match {
+            case None => cors(Conflict( Json.toJson(s"Model $modelId contains errors.") )) // non-runnable version #2
+            case Some(md) => {
+              // We have a models AND a pmKit, check for localizations
+              md.getLocalizations.size() match {
+//                case 0 => TemporaryRedirect(routes.InterviewCtrl.showStartInterview(modelId,versionMD.id.version,None).url)
+//                case 1 => {
+//                  val locName = Some(md.getLocalizations.iterator().next())
+//                  TemporaryRedirect(routes.InterviewCtrl.showStartInterview(modelId,versionMD.id.version,locName).url)
+//                }
+                case _ => {
+                  val localizations = locs.localizationsFor(pmKit.md.id)
+                  val localizationJson = Json.toJson(localizations.toList.toString())
+                  //todo check if needed pmKit to return as json
+                  //val pmKitJsom =  Json.toJson(pmKit.md.)
+                  val NodeId = Json.toJson(md.getDecisionGraph.getStart.getId)
+                  //val Node = Json.toJson(md.getDecisionGraph.getNode(md.getDecisionGraph.getId).toString)
+                  cors(Ok(Json.toJson(NodeId,localizationJson))  )
+                }
+              }
+            }
+          }
         }
       }
     }
-
-    false
   }
 
-//  /**
-//   * Start the interview in its latest version. Backward compatibility for supporting KLO cards.
-//   * @param modelId
-//   * @return
-//   */
-//  def doStartInterviewLatest(modelId:String) = initiateInterview(modelId)
-//  /**
-//   * The default public entry point for interviews. Parametrized by the model, we need to
-//   * get the latest public version, and then either start, or let the user choose
-//   * a localization.
-//   * @param modelId
-//   * @return interview start or localization selection.
-//   */
-//  def initiateInterview(modelId:String) = Action.async{ implicit req =>
-//    for {
-//      latestPublicOpt <- models.getLatestPublishedVersion(modelId)
-//      kitKeyOpt = latestPublicOpt.map( _.id )
-//      pmKitOpt <- kitKeyOpt.map( models.getVersionKit ).getOrElse( Future(None) )
-//    } yield {
-//      (latestPublicOpt, pmKitOpt) match {
-//        case (None, _) => NotFound( views.html.errorPages.NotFound(s"Model $modelId not found.") ) // no model
-//        case (_, None) => Conflict( views.html.errorPages.NotFound(s"Model $modelId contains errors.") ) // non-runnable version
-//        case (Some(versionMD), Some(pmKit)) =>
-//          pmKit.policyModel match {
-//            case None => Conflict( views.html.errorPages.NotFound(s"Model $modelId contains errors.") ) // non-runnable version #2
-//            case Some(md) => {
-//              // We have a models AND a pmKit, check for localizations
-//              val localizations = locs.localizationsFor(pmKit.md.id)
-//              val json = Json.obj(
-//                "version" -> pmKit.md.id.version,
-//                "modelId" -> pmKit.md.id.modelId,
-//                "runingStatus" -> pmKit.md.runningStatus,
-//                "localizations" -> localizations.toString(),
-//                //"versionMD.id" -> versionMD.id,
-//              )
-//              val shadyToReturn = (localizations,pmKit)
-//              ok(startInterview(pmKit.md.id.modelId,pmKit.md.id.version))
-//
-//            }
-//          }
-//      }
-//    }
-//  }
   /**
    * starts the interview
    * @param modelId
@@ -223,12 +200,54 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
+  //todo fix the issue
+  def doStartInterview(modelId:String, versionNum:Int) = InterviewSessionAction( cache, cc ) { implicit req =>
+    val session = req.userSession
+    val rte = new RuntimeEngine
+    rte.setModel(session.kit.policyModel.get)
+    val l = rte.setListener(new TaggingEngineListener)
+    rte.start()
+    val updated = session.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
+    cache.set(session.key.toString, updated)
+    //Add Record to DB
+    if ( updated.saveStat ) {
+      interviewHistories.addRecord(
+        InterviewHistoryRecord(session.key, new Timestamp(System.currentTimeMillis()), "start interview"))
+      interviewHistories.addRecord(
+        InterviewHistoryRecord(session.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + rte.getCurrentNode.getId))
+    }
+
+    val availableLocs:Seq[String] = session.kit.policyModel.get.getLocalizations.asScala.toSeq
+    Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None, availableLocs)(req, messagesApi.preferred(req), pcd))
+  }
+
+
+
+
+  //helper functions
   def cors( res:Result ) = res.withHeaders("Access-Control-Allow-Origin"->"*")
 
   private def uiLangFor( loc:Localization ): Lang = {
     loc.getLocalizedModelData.getUiLanguage.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
   }
   private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
+
+  private def canView(r:Request[_], ver:VersionMD ):Boolean = {
+    if ( ver.publicationStatus == PublicationStatus.Published ) return true
+    if ( LoggedInAction.userPresent(r) ) return true
+
+    if ( ver.publicationStatus == PublicationStatus.LinkOnly ) {
+      return r.session.get(InterviewCtrl.INVITED_INTERVIEW_KEY) match {
+        case None => false
+        case Some(lineSessionStr) => {
+          val allowedKitKey = KitKey.parse(lineSessionStr)
+          allowedKitKey == ver.id
+        }
+      }
+    }
+
+    false
+  }
   def currentAskNode(kit:PolicyModel, engineState: RuntimeEngineState ):AskNode = {
     kit.getDecisionGraph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
   }
