@@ -7,6 +7,7 @@ import edu.harvard.iq.policymodels.runtime._
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 import models._
 import _root_.util.{Jsonizer, VisiBuilder}
+
 import javax.inject.Inject
 import com.ibm.icu.text.SimpleDateFormat
 import edu.harvard.iq.policymodels.externaltexts.{Localization, MarkupString}
@@ -16,8 +17,7 @@ import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager, Note
 import play.api.Logger
 import views.Helpers
 import play.api.data.{Form, _}
-import play.api.data.Forms._
-import play.api.i18n._
+import play.api.data.Forms.{uuid, _}
 
 import scala.jdk.CollectionConverters._
 import util.JavaOptionals.toRichOptional
@@ -36,14 +36,15 @@ import play.api.{Configuration, Logger}
 import play.api.cache.SyncCacheApi
 import play.api.data.Form
 import play.api.data.Forms._
-import play.api.i18n.{I18nSupport, Langs}
+import play.api.i18n.{I18nSupport, Lang, Langs}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
 import play.api.libs.json.{JsString, Json}
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
 
-class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager,
-                                   langs:Langs, comments:CommentsDAO, custCtrl:CustomizationCtrl,config:Configuration , interviewHistories: InterviewHistoryDAO) extends InjectedController with I18nSupport {
+class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager, notes:NotesDAO,
+                                   langs:Langs, comments:CommentsDAO, custCtrl:CustomizationCtrl,config:Configuration , interviewHistories: InterviewHistoryDAO)
+                                    extends InjectedController with I18nSupport {
 
   implicit private val ec = cc.executionContext
   private val logger = Logger(classOf[ModelCtrl])
@@ -146,6 +147,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
       allowed = canView(req, pmKitOpt.get.md)
       allVersions <- if (allowed) models.listVersionsFor(modelId) else models.listPubliclyRunnableVersionsFor(kitId.modelId)
       sessionDataOpt = sid.flatMap(cache.get[InterviewSession])
+      shady = ""
     } yield {
       logger.info("sessionDataOpt:" + sessionDataOpt)
       (modelOpt, pmKitOpt) match {
@@ -201,27 +203,93 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   }
 
   //todo fix the issue
-  def doStartInterview(modelId:String, versionNum:Int) = InterviewSessionAction( cache, cc ) { implicit req =>
-    val session = req.userSession
-    val rte = new RuntimeEngine
-    rte.setModel(session.kit.policyModel.get)
-    val l = rte.setListener(new TaggingEngineListener)
-    rte.start()
-    val updated = session.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
-    cache.set(session.key.toString, updated)
-    //Add Record to DB
-    if ( updated.saveStat ) {
-      interviewHistories.addRecord(
-        InterviewHistoryRecord(session.key, new Timestamp(System.currentTimeMillis()), "start interview"))
-      interviewHistories.addRecord(
-        InterviewHistoryRecord(session.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + rte.getCurrentNode.getId))
+  def doStartInterview(modelId:String, versionNum:Int,loc:String,reqNodeId:String ,uuid:String) = Action { implicit req =>
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
+        val kitId = KitKey(modelId, versionNum)
+        models.getPolicyModel(kitId) match {
+          case None => Future(NotFound(views.html.errorPages.NotFound("Model not found.")))
+          case Some(pm) => {
+            // TODO validate questionnaireId fits the one in the engine state
+            val stateNodeId = userSession.engineState.getCurrentNodeId
+            val l10n = locs.localization(kitId, loc)
+            val lang = uiLangFor(l10n)
+            val session = if ( stateNodeId != reqNodeId ) {
+              // re-run to reqNodeId
+              val answers = userSession.answerHistory.slice(0, userSession.answerHistory.indexWhere( _.question.getId == reqNodeId) )
+              val rerunResult = runUpToNode( pm, reqNodeId, answers )
+              userSession.setHistory(rerunResult.traversed, answers).copy(engineState=rerunResult.state, localization = l10n)
+            } else {
+              userSession.copy(localization = l10n)
+            }
+
+            cache.set(userSession.key.toString, session)
+            val askNode = pm.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
+            if ( session.saveStat ) {
+              interviewHistories.addRecord(
+                InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
+            }
+            val availableLocs = pm.getLocalizations.asScala.toSeq
+
+            for {
+              note <- if(session.allowNotes && session.notes.contains(reqNodeId)) notes.getNoteText(session.key, reqNodeId) else Future(None)
+            } yield {
+              val toreturn = Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang)), pcd)).withLang(lang)
+              Ok( Json.toJson(askNode.getId))
+            }
+          }
+        }
+      }
+      case None => {
+        val shady = "weAreFucked"
+      }
     }
 
-    val availableLocs:Seq[String] = session.kit.policyModel.get.getLocalizations.asScala.toSeq
-    Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None, availableLocs)(req, messagesApi.preferred(req), pcd))
+    Ok( Json.toJson(modelId))
   }
 
+ /* def askNode( modelId:String, versionNum:Int, reqNodeId:String, loc:String,uuid:String) = Action { implicit req =>
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
+        val Session = userSession
+      }
+      case None => {
+        val shady = "weAreFucked"
+      }
+    }
+    val kitId = KitKey(modelId, versionNum)
+    models.getPolicyModel(kitId) match {
+      case None => Future(NotFound(views.html.errorPages.NotFound("Model not found.")))
+      case Some(pm) => {
+        // TODO validate questionnaireId fits the one in the engine state
+        val stateNodeId = req.userSession.engineState.getCurrentNodeId
+        val l10n = locs.localization(kitId, loc)
+        val lang = uiLangFor(l10n)
+        val session = if ( stateNodeId != reqNodeId ) {
+          // re-run to reqNodeId
+          val answers = req.userSession.answerHistory.slice(0, req.userSession.answerHistory.indexWhere( _.question.getId == reqNodeId) )
+          val rerunResult = runUpToNode( pm, reqNodeId, answers )
+          req.userSession.setHistory(rerunResult.traversed, answers).copy(engineState=rerunResult.state, localization = l10n)
+        } else {
+          req.userSession.copy(localization = l10n)
+        }
 
+        cache.set(req.userSession.key.toString, session)
+        val askNode = pm.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
+        if ( session.saveStat ) {
+          interviewHistories.addRecord(
+            InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
+        }
+        val availableLocs = pm.getLocalizations.asScala.toSeq
+
+        for {
+          note <- if(session.allowNotes && session.notes.contains(reqNodeId)) notes.getNoteText(session.key, reqNodeId) else Future(None)
+        } yield {
+          Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang)), pcd)).withLang(lang)
+        }
+      }
+    }
+  }*/
 
 
   //helper functions
@@ -250,5 +318,21 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   }
   def currentAskNode(kit:PolicyModel, engineState: RuntimeEngineState ):AskNode = {
     kit.getDecisionGraph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
+  }
+  def runUpToNode(model:PolicyModel, nodeId: String, answers:Seq[AnswerRecord] ) : EngineRunResult = {
+    val rte = new RuntimeEngine
+    rte.setModel( model )
+    val l = rte.setListener( new TaggingEngineListener )
+    val ansItr = answers.iterator
+
+    rte.start
+
+    while ( (rte.getCurrentNode.getId!=nodeId) && ansItr.hasNext ) {
+      val answer = ansItr.next.answer
+      rte.consume( answer )
+    }
+
+    EngineRunResult( rte.createSnapshot, l.traversedNodes, l.exception )
+
   }
 }
