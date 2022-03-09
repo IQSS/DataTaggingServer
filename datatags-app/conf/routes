@@ -127,11 +127,25 @@ GET  /apiInterviewCtrl/:modelId/start       controllers.APIInterviewCtrl.initiat
 GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start   controllers.APIInterviewCtrl.startInterview(modelId, versionNum:Int,localizationName,sid:Option[String]?=None)
 #returns the first question and starts the interview serrtion
 GET  /apiInterviewCtrl/:modelId/:versionNum/:loc/:nodeId/:uuid/startInterview       controllers.APIInterviewCtrl.doStartInterview(modelId, versionNum:Int,loc,nodeId,uuid)
-#todo
+#save usersession in the cache
 #askNode
+GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/:loc/q/:nodeId   controllers.APIInterviewCtrl.askNode(uuid,modelId, versionNum:Int, nodeId, loc:String)
 #answer
 
+#use explination:
+#1) curl http://localhost:9000/apiInterviewCtrl/models/
+#       returns-->modelId,Version
+#2) curl http://localhost:9000/apiInterviewCtrl/1/start
+#       returns-->nodeId + listOf<languageId>
+#3) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start
+#      where 1/1/English-Raw/ is  modelid/versionId/languageID,          returns --> Sid
+#not needed for now 4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/stam/:uuid/startInterview
+#5) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/English-Raw/q/-1
+#5) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/he-IL/q/-1
+#6)answer
 
+
+#false required??? 4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start?sid= Sid
 
 
 
@@ -156,16 +170,8 @@ GET  /apiInterviewCtrl/:modelId/:versionNum/:loc/:nodeId/:uuid/startInterview   
 #loop till finish (the last ques) when finish return result:
 #   4)answer!
 
-#use explination:
-#1) curl http://localhost:9000/apiInterviewCtrl/models/
-#       returns-->modelId,Version
-#2) curl http://localhost:9000/apiInterviewCtrl/1/start
-#       returns-->nodeId + listOf<languageId>
-#3) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start
-#      where 1/1/English-Raw/ is  modelid/versionId/languageID,          returns --> Sid
-#4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start?sid= Sid
-#???
-#5)
+
+
 # to check nodes : [decision-graph.dg]sInitialFiltering , [decision-graph.dg][#1], [decision-graph.dg], DecisionGraph-1
 #1)http://localhost:9000/models/1/start
 #2) do start http://localhost:9000/models/1/1/?localizationName=English-Raw

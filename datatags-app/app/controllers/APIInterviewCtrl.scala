@@ -40,6 +40,7 @@ import play.api.i18n.{I18nSupport, Lang, Langs}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
 import play.api.libs.json.{JsString, Json}
+import play.api.mvc.Results.Redirect
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
 
 class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager, notes:NotesDAO,
@@ -147,7 +148,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
       allowed = canView(req, pmKitOpt.get.md)
       allVersions <- if (allowed) models.listVersionsFor(modelId) else models.listPubliclyRunnableVersionsFor(kitId.modelId)
       sessionDataOpt = sid.flatMap(cache.get[InterviewSession])
-      shady = ""
     } yield {
       logger.info("sessionDataOpt:" + sessionDataOpt)
       (modelOpt, pmKitOpt) match {
@@ -181,15 +181,31 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 }
 
                 val readmeOpt: Option[MarkupString] = l10n.getLocalizedModelData.getBestReadmeFormat.toOption.map(b => l10n.getLocalizedModelData.getReadme(b))
+                val rte = new RuntimeEngine
+                rte.setModel(userSession.kit.policyModel.get)
+                val l = rte.setListener(new TaggingEngineListener)
+                rte.start()
+                val updated = userSession.copy(engineState = rte.createSnapshot).setHistory(l.traversedNodes, Seq[AnswerRecord]())
+                cache.set(userSession.key.toString, updated)
+
                 if (allVersions.isEmpty) {
                   Ok(views.html.interview.noRunnableVersions(pmKit))
                 } else {
-                  cors(Ok( Json.toJson(userSession.key)))
+                  userSession.kit.policyModel match {
+                    case Some(policyModel) =>{
+                      val startQuestionId = policyModel.getDecisionGraph.getStart.getId
+                      cors(Ok( Json.toJson(userSession.key,Json.toJson(startQuestionId))))
+                    }
+                    case _ => {
+                      cors(Ok(Json.toJson(userSession.key)))
+                    }
+                  }
+/*                  //description of the model: readmeOpt.toList.toString()
                   //cors(Ok( Json.toJson(userSession.key,readmeOpt.toList.toString())))
 //                  Ok(views.html.interview.interviewStart(pmKit, readmeOpt, l10n, availableLocs,
 //                    userSession.requestedInterview.flatMap(_.data.message), allVersions
 //                  )(req, messagesApi.preferred(Seq(lang)), pcd)
-//                  ).withLang(lang).addingToSession(InterviewSessionAction.KEY -> userSession.key.toString)
+//                  ).withLang(lang).addingToSession(InterviewSessionAction.KEY -> userSession.key.toString)*/
                 }
               }
             }
@@ -230,22 +246,60 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
             }
             val availableLocs = pm.getLocalizations.asScala.toSeq
-
             for {
               note <- if(session.allowNotes && session.notes.contains(reqNodeId)) notes.getNoteText(session.key, reqNodeId) else Future(None)
             } yield {
+              val s = askNode.getAnswers
               val toreturn = Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang)), pcd)).withLang(lang)
               Ok( Json.toJson(askNode.getId))
             }
           }
         }
       }
+//      todo delete
       case None => {
-        val shady = "weAreFucked"
+        Future(NotFound("user id not found in the cache."))
       }
     }
 
-    Ok( Json.toJson(modelId))
+//      todo delete
+  Ok( Json.toJson(modelId))
+  }
+  def askNode(uuid: String, modelId: String, versionNum: Int, reqNodeId: String, loc: String) = Action { implicit req =>
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
+        val kitId = KitKey(modelId, versionNum)
+        models.getPolicyModel(kitId) match {
+          case None => NotFound("Model not found.")
+          case Some(pm) => {
+            val stateNodeId = userSession.engineState.getCurrentNodeId
+            val l10n = locs.localization(kitId, loc)
+            val lang = uiLangFor(l10n)
+//            if not the requested node is not the current question
+            /*var session = if (stateNodeId != reqNodeId) {
+              // re-run to reqNodeId
+              val answers = userSession.answerHistory.slice(0, userSession.answerHistory.indexWhere(_.question.getId == reqNodeId))
+              val rerunResult = runUpToNode(pm, reqNodeId, answers)
+              userSession.setHistory(rerunResult.traversed, answers).copy(engineState = rerunResult.state, localization = l10n)
+            } else {
+              userSession.copy(localization = l10n)
+            }
+            session = userSession.copy(localization = l10n)
+            cache.set(userSession.key.toString, session)*/
+            var session = userSession.copy(localization = l10n)
+            cache.set(userSession.key.toString, session)
+            val askNode = pm.getDecisionGraph.getNode(stateNodeId).asInstanceOf[AskNode]
+            if (session.saveStat) {
+              interviewHistories.addRecord(InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
+            }
+            Ok(Json.toJson(askNode.getId, Json.toJson(askNode.getText, Json.toJson(askNode.getAnswers.toString))))
+          }
+        }
+      }
+      case None => {
+        NotFound("user id not found in the cache.")
+      }
+    }
   }
 
  /* def askNode( modelId:String, versionNum:Int, reqNodeId:String, loc:String,uuid:String) = Action { implicit req =>
@@ -335,4 +389,5 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     EngineRunResult( rte.createSnapshot, l.traversedNodes, l.exception )
 
   }
+
 }
