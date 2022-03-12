@@ -130,6 +130,7 @@ GET  /apiInterviewCtrl/:modelId/:versionNum/:loc/:nodeId/:uuid/startInterview   
 #save usersession in the cache
 #askNode
 GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/:loc/q/:nodeId   controllers.APIInterviewCtrl.askNode(uuid,modelId, versionNum:Int, nodeId, loc:String)
+GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/q/:nodeId/answer/:ans   controllers.APIInterviewCtrl.answer(uuid,modelId, versionNum:Int, nodeId, ans:String)
 #answer
 
 #use explination:
@@ -140,8 +141,8 @@ GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/:loc/q/:nodeId   controllers.A
 #3) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start
 #      where 1/1/English-Raw/ is  modelid/versionId/languageID,          returns --> Sid
 #not needed for now 4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/stam/:uuid/startInterview
-#5) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/English-Raw/q/-1
-#5) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/he-IL/q/-1
+#4) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/English-Raw/q/-1
+#5) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/q/-1/answer/yes
 #6)answer
 
 
