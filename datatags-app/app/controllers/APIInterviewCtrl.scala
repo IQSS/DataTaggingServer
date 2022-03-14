@@ -40,7 +40,7 @@ import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, Lang, Langs}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
-import play.api.libs.json.{JsString, Json}
+import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
 
@@ -312,11 +312,18 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     "note" -> optional(text)
   )(AnswerRequest.apply)(AnswerRequest.unapply) )
 
-  def answer(uuid: String, modelId: String, versionNum: Int, reqNodeId: String,ans:String) = Action { implicit request =>
+  def answer() = Action(parse.tolerantJson) { request =>
+    //todo check params
+    val params = request.body.asInstanceOf[JsObject]
+    val uuid = params("uuid").as[JsString].value
+    val modelId = params("modelId").as[JsString].value
+    val versionNum = params("versionNum").as[JsString].value.toInt
+    val reqNodeId = params("reqNodeId").as[JsString].value
+    val ans = params("ans").as[JsString].value
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
         val kitKey = KitKey(modelId, versionNum)
-        //todo check if really have the answer
+        //todo check if really have the answer and check params
         // now, submit the new answer and feed it to the engine.
         val answer = Answer.withName(ans)
         val ansRec = AnswerRecord( currentAskNode(userSession.kit.policyModel.get, userSession.engineState), answer )
@@ -334,10 +341,10 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           {
             //Redirect( routes.APIInterviewCtrl.askNode(uuid,kitKey.modelId, kitKey.version, runRes.state.getCurrentNodeId, userSession.localization.getLanguage))
             val nextQues = askNode( uuid,kitKey.modelId, kitKey.version, runRes.state.getCurrentNodeId, userSession.localization.getLanguage )(request)
-            Ok("try next ask")
+            Ok("reply next ask")
           }
           case RuntimeEngineStatus.Reject  => {
-            NotFound("we can't give you recommendation from the current data")
+            NotFound("we can't give you recommendation from the current information.")
           }
           case RuntimeEngineStatus.Accept  => {
             // interview is over, need to display or affirm.
@@ -396,10 +403,11 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           interviewHistories.addRecord(
             InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "accept"))
         }
-        val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
+/*        val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
         val topVisibility = session.tags.accept(new VisiBuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
-          session.kit.md.topValues, ""))
-        Ok("answer accepted")
+          session.kit.md.topValues, ""))*/
+        //todo get the value from tags
+        Ok(tags.toString)
       }
       case None=>{
         NotFound("accept Error")

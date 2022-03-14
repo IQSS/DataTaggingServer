@@ -130,24 +130,25 @@ GET  /apiInterviewCtrl/:modelId/:versionNum/:loc/:nodeId/:uuid/startInterview   
 #save usersession in the cache
 #askNode
 GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/:loc/q/:nodeId   controllers.APIInterviewCtrl.askNode(uuid,modelId, versionNum:Int, nodeId, loc:String)
-GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/q/:nodeId/answer/:ans   controllers.APIInterviewCtrl.answer(uuid,modelId, versionNum:Int, nodeId, ans:String)
+POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
 #answer
 
 #use explination:
+#todo return version with the id
 #1) curl http://localhost:9000/apiInterviewCtrl/models/
-#       returns-->modelId,Version
+#       returns-->listOf<modelId,title,Version>
 #2) curl http://localhost:9000/apiInterviewCtrl/1/start
 #       returns-->nodeId + listOf<languageId>
 #3) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start
-#      where 1/1/English-Raw/ is  modelid/versionId/languageID,          returns --> Sid
-#not needed for now 4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/stam/:uuid/startInterview
+#      where 1/1/English-Raw/ is  modelid/versionId/languageID,          returns --> uuid,questionId
 #4) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/English-Raw/q/-1
-#5) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/q/-1/answer/yes
+#       where /:uuid/1/1/English-Raw/q/-1 is :uuid/:modelId/:versionNum/:languageId/q/:questionId
+#5) curl -X POST http://localhost:9000/apiInterviewCtrl/answer/ -H 'Content-Type: application/json' -d '{"modelId":"1","versionNum":"1","reqNodeId":"-1","ans":"yes","uuid":""}'
 #6)answer
 
 
 #false required??? 4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start?sid= Sid
-
+#not needed for now 4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/stam/:uuid/startInterview
 
 
 
