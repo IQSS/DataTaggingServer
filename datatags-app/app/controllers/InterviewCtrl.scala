@@ -378,6 +378,18 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
     val topVisibility = session.tags.accept(new VisiBuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
       session.kit.md.topValues, ""))
+    var output = ""
+    val iter = tags.getNonEmptySubSlots.iterator()
+    while(iter.hasNext){
+      var next = iter.next()
+      val slotVal = tags.getSlot.getSubSlot(next.getName).toString
+      output += slotVal
+    }
+/*    val strResult = tags.getSlot.getSubSlot("Duties")
+    val strResult2 = tags.getSlot.getSubSlot("EmployerObligations")
+    val strResult3 = Option(tags.getSlot.getSubSlot("Duties")).map(tags.get)
+    val strResult4 = tags.getSlot.getSubSlot("EmployerObligations")*/
+
     Ok( views.html.interview.accepted(session, codeOpt, topVisibility.topValues, topVisibility.topSlots, availableLocs
                                      )(request, messagesApi.preferred(Seq(lang)), pcd) ).withLang(lang)(messagesApi)
   }

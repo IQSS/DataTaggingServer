@@ -141,10 +141,17 @@ POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
 #       returns-->nodeId + listOf<languageId>
 #3) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start
 #      where 1/1/English-Raw/ is  modelid/versionId/languageID,          returns --> uuid,questionId
-#4) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/English-Raw/q/-1
-#       where /:uuid/1/1/English-Raw/q/-1 is :uuid/:modelId/:versionNum/:languageId/q/:questionId
-#5) curl -X POST http://localhost:9000/apiInterviewCtrl/answer/ -H 'Content-Type: application/json' -d '{"modelId":"1","versionNum":"1","reqNodeId":"-1","ans":"yes","uuid":""}'
-#6)answer
+#while not done do:
+    #4) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/English-Raw/q/-1
+    #       where /:uuid/1/1/English-Raw/q/-1 is :uuid/:modelId/:versionNum/:languageId/q/:questionId
+    #5) curl -X POST http://localhost:9000/apiInterviewCtrl/answer/ -H 'Content-Type: application/json' -d '{"modelId":"1","versionNum":"1","reqNodeId":"-1","ans":"yes","uuid":""}'
+#        return the next question and it's ID
+
+#todo priority:
+#3)ask question with qeustion id
+#2)change language
+#1)return the next question directly after the answer.
+#4) return the tagging after every answer
 
 
 #false required??? 4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start?sid= Sid

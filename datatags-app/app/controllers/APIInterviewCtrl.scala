@@ -80,11 +80,10 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
   def apiListModels = Action.async{ req =>
     for {
-      models <- models.listAllPubliclyRunnableModels()
+      allModels <- models.listAllPubliclyRunnableModels()
     } yield {
-      val jsons = models.map( mdl => (Json.obj("id"->mdl.id, "title"->mdl.title),
-        Option(if (mdl.note.trim.nonEmpty) mdl.note.trim else null)) )
-        .map( pair => pair._2.map( note => pair._1 ++ Json.obj("note"->note)).getOrElse(pair._1) )
+      val jsons = allModels.map(mdl =>{(Json.obj("id"->mdl.id, "title"->mdl.title),
+        Option(if (mdl.note.trim.nonEmpty) mdl.note.trim else null))}).map( pair => pair._2.map( note => pair._1 ++ Json.obj("note"->note)).getOrElse(pair._1))
       cors(Ok( Json.toJson(jsons) ))
     }
   }
@@ -122,7 +121,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                   //todo check if needed pmKit to return as json
                   //val pmKitJsom =  Json.toJson(pmKit.md.)
                   val NodeId = Json.toJson(md.getDecisionGraph.getStart.getId)
-                  //val Node = Json.toJson(md.getDecisionGraph.getNode(md.getDecisionGraph.getId).toString)
+                  //val Node = Json.toJson(md.getDecisionGraph.getNode(md.getDecisionGraph.getId).toString)Json.toJson
                   cors(Ok(Json.toJson(NodeId,localizationJson))  )
                 }
               }
@@ -194,7 +193,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 } else {
                   userSession.kit.policyModel match {
                     case Some(policyModel) =>{
-                      val startQuestionId = policyModel.getDecisionGraph.getStart.getId
+                      //val startQuestionId = policyModel.getDecisionGraph.getStart.getId
+                      val startQuestionId= getrStartNodeID(userSession.key.toString)
                       cors(Ok( Json.toJson(userSession.key,Json.toJson(startQuestionId))))
                     }
                     case _ => {
@@ -215,6 +215,15 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           }
         }
         case _ => NotFound(views.html.errorPages.NotFound("Model not found."))
+      }
+    }
+  }
+
+  private def getrStartNodeID(uuid:String) = {
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
+        val startNodeId = userSession.engineState.getCurrentNodeId
+        startNodeId
       }
     }
   }
@@ -278,7 +287,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
             val l10n = locs.localization(kitId, loc)
             val lang = uiLangFor(l10n)
 //            if not the requested node is not the current question
-            /*var session = if (stateNodeId != reqNodeId) {
+            var session = if (reqNodeId != "-1" && stateNodeId != reqNodeId) {
               // re-run to reqNodeId
               val answers = userSession.answerHistory.slice(0, userSession.answerHistory.indexWhere(_.question.getId == reqNodeId))
               val rerunResult = runUpToNode(pm, reqNodeId, answers)
@@ -286,9 +295,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
             } else {
               userSession.copy(localization = l10n)
             }
-            session = userSession.copy(localization = l10n)
-            cache.set(userSession.key.toString, session)*/
-            var session = userSession.copy(localization = l10n)
             cache.set(userSession.key.toString, session)
             val askNode = pm.getDecisionGraph.getNode(stateNodeId).asInstanceOf[AskNode]
             if (session.saveStat) {
@@ -440,6 +446,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     loc.getLocalizedModelData.getUiLanguage.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
   }
   private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
+
 
   private def canView(r:Request[_], ver:VersionMD ):Boolean = {
     if ( ver.publicationStatus == PublicationStatus.Published ) return true
