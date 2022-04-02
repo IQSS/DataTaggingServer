@@ -105,7 +105,7 @@
     }
   }
 }
-
+@*todo shady use *@
 @compoundValue( value:CompoundValue, path:String ) = {
 @defining((if(path != "") {path + "-" } else {""}) + value.getSlot.getName) { fullPath =>
         @defining(slotsVisibility.getOrElse(fullPath, "") == "collapseSlots") { collapse =>

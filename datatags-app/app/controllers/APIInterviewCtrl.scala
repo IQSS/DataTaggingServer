@@ -276,7 +276,14 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   Ok( Json.toJson(modelId))
   }
 
-  def askNode(uuid: String, modelId: String, versionNum: Int, reqNodeId: String, loc: String) = Action { implicit req =>
+  def askNode(/*uuid: String, modelId: String, versionNum: Int, reqNodeId: String, loc: String*/) = Action(parse.tolerantJson) { req =>
+    val params = req.body.asInstanceOf[JsObject]
+    val uuid = params("uuid").as[JsString].value
+    val modelId = params("modelId").as[JsString].value
+    val versionNum = params("versionNum").as[JsString].value.toInt
+    val reqNodeId = params("reqNodeId").as[JsString].value
+    val loc = params("languageId").as[JsString].value
+
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
         val kitId = KitKey(modelId, versionNum)
@@ -325,7 +332,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     val modelId = params("modelId").as[JsString].value
     val versionNum = params("versionNum").as[JsString].value.toInt
     val reqNodeId = params("reqNodeId").as[JsString].value
-    val ans = params("ans").as[JsString].value
+    val ans = params("answer").as[JsString].value
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
         val kitKey = KitKey(modelId, versionNum)
@@ -346,8 +353,9 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           case RuntimeEngineStatus.Running =>
           {
             //Redirect( routes.APIInterviewCtrl.askNode(uuid,kitKey.modelId, kitKey.version, runRes.state.getCurrentNodeId, userSession.localization.getLanguage))
-            val nextQues = askNode( uuid,kitKey.modelId, kitKey.version, runRes.state.getCurrentNodeId, userSession.localization.getLanguage )(request)
-            Ok("reply next ask")
+            //todo check if needed
+            //val nextQues = askNode()(request)
+            Ok(Json.toJson("reply next ask"))
           }
           case RuntimeEngineStatus.Reject  => {
             NotFound("we can't give you recommendation from the current information.")

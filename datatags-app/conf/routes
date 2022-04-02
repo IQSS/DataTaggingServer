@@ -129,7 +129,7 @@ GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start   controller
 GET  /apiInterviewCtrl/:modelId/:versionNum/:loc/:nodeId/:uuid/startInterview       controllers.APIInterviewCtrl.doStartInterview(modelId, versionNum:Int,loc,nodeId,uuid)
 #save usersession in the cache
 #askNode
-GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/:loc/q/:nodeId   controllers.APIInterviewCtrl.askNode(uuid,modelId, versionNum:Int, nodeId, loc:String)
+POST  /apiInterviewCtrl/ask/  controllers.APIInterviewCtrl.askNode()
 POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
 #answer
 
@@ -142,10 +142,10 @@ POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
 #3) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start
 #      where 1/1/English-Raw/ is  modelid/versionId/languageID,          returns --> uuid,questionId
 #while not done do:
-    #4) curl http://localhost:9000/apiInterviewCtrl/:uuid/1/1/English-Raw/q/-1
-    #       where /:uuid/1/1/English-Raw/q/-1 is :uuid/:modelId/:versionNum/:languageId/q/:questionId
-    #5) curl -X POST http://localhost:9000/apiInterviewCtrl/answer/ -H 'Content-Type: application/json' -d '{"modelId":"1","versionNum":"1","reqNodeId":"-1","ans":"yes","uuid":""}'
-#        return the next question and it's ID
+    #4) curl -X POST http://localhost:9000/apiInterviewCtrl/ask/ -H 'Content-Type: application/json' -d '{"modelId":"1","versionNum":"1","loc":"English-Raw","uuid":"","reqNodeId":"[decision-graph.dg]gender"}'
+    #       return the interview to questiion Id and return the question itself
+    #5) curl -X POST http://localhost:9000/apiInterviewCtrl/answer/ -H 'Content-Type: application/json' -d '{"modelId":"1","versionNum":"1","ans":"yes","uuid":"","reqNodeId":"[decision-graph.dg]gender"}'
+    #       return the next question and it's ID
 
 #todo priority:
 #3)ask question with qeustion id
