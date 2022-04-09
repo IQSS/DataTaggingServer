@@ -1,5 +1,5 @@
 package controllers
-
+import scala.concurrent.duration._
 import java.sql.Timestamp
 import play.api.mvc._
 import play.api.cache.{AsyncCacheApi, SyncCacheApi}
@@ -43,6 +43,9 @@ import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
 import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
+import play.mvc.Action
+
+import scala.util.{Failure, Success}
 
 class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager, notes:NotesDAO,
                                    langs:Langs, comments:CommentsDAO, custCtrl:CustomizationCtrl,config:Configuration , interviewHistories: InterviewHistoryDAO)
@@ -82,8 +85,17 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     for {
       allModels <- models.listAllPubliclyRunnableModels()
     } yield {
-      val jsons = allModels.map(mdl =>{(Json.obj("id"->mdl.id, "title"->mdl.title),
-        Option(if (mdl.note.trim.nonEmpty) mdl.note.trim else null))}).map( pair => pair._2.map( note => pair._1 ++ Json.obj("note"->note)).getOrElse(pair._1))
+      val jsons =
+        allModels.map(
+          mdl =>
+          {(Json.obj(
+            "id"->mdl.id,
+            "title"->mdl.title),
+            "versionId"-> {
+              val lastVersion = Await.result(getLastVersion(mdl.id),5.second).asInstanceOf[String]
+              lastVersion
+            })
+          })
       cors(Ok( Json.toJson(jsons) ))
     }
   }
@@ -118,11 +130,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 case _ => {
                   val localizations = locs.localizationsFor(pmKit.md.id)
                   val localizationJson = Json.toJson(localizations.toList.toString())
-                  //todo check if needed pmKit to return as json
-                  //val pmKitJsom =  Json.toJson(pmKit.md.)
-                  val NodeId = Json.toJson(md.getDecisionGraph.getStart.getId)
-                  //val Node = Json.toJson(md.getDecisionGraph.getNode(md.getDecisionGraph.getId).toString)Json.toJson
-                  cors(Ok(Json.toJson(NodeId,localizationJson))  )
+                  cors(Ok(Json.toJson(localizationJson))  )
                 }
               }
             }
@@ -193,9 +201,9 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 } else {
                   userSession.kit.policyModel match {
                     case Some(policyModel) =>{
-                      //val startQuestionId = policyModel.getDecisionGraph.getStart.getId
                       val startQuestionId= getrStartNodeID(userSession.key.toString)
-                      cors(Ok( Json.toJson(userSession.key,Json.toJson(startQuestionId))))
+                      val question = getQuestion(userSession.key.toString,modelId,versionNum,startQuestionId,localizationName)
+                      cors(Ok(question))
                     }
                     case _ => {
                       cors(Ok(Json.toJson(userSession.key)))
@@ -317,6 +325,43 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
+  def getQuestion(uuid: String, modelId: String, versionNum: Int, reqNodeId: String, loc: String) : String = {
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
+        val kitId = KitKey(modelId, versionNum)
+        models.getPolicyModel(kitId) match {
+          case None => "Model not found."
+          case Some(pm) => {
+            var stateNodeId = userSession.engineState.getCurrentNodeId
+            val l10n = locs.localization(kitId, loc)
+            val lang = uiLangFor(l10n)
+            //            if not the requested node is not the current question
+            var session = userSession.copy(localization = l10n)
+
+            userSession.copy(localization = l10n)
+            cache.set(userSession.key.toString, session)
+            val askNode = pm.getDecisionGraph.getNode(stateNodeId).asInstanceOf[AskNode]
+            if (session.saveStat) {
+              interviewHistories.addRecord(InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
+            }
+            val jsons = {(Json.obj(
+              "ssid"->uuid,
+              "questionId"->askNode.getId,
+              "questionText"->askNode.getText,
+              "Answers"->askNode.getAnswers.toString))
+            }
+            jsons.toString()
+
+            //Json.toJson(askNode.getId, Json.toJson(askNode.getText, Json.toJson(askNode.getAnswers.toString))).toString()
+          }
+        }
+      }
+      case None => {
+        "user id not found in the cache."
+      }
+    }
+  }
+
   case class AnswerRequest( text:String, history:String, note:Option[String] )
 
   val arForm = Form( mapping(
@@ -333,15 +378,22 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     val versionNum = params("versionNum").as[JsString].value.toInt
     val reqNodeId = params("reqNodeId").as[JsString].value
     val ans = params("answer").as[JsString].value
+    val languageId =  params("languageId").as[JsString].value
+
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
-        val kitKey = KitKey(modelId, versionNum)
-        //todo check if really have the answer and check params
+        //validate the question Id and return to previus question if needed
+        validateQuestionId(modelId, versionNum, reqNodeId, languageId, userSession)
+      }
+    }
+
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
         // now, submit the new answer and feed it to the engine.
         val answer = Answer.withName(ans)
         val ansRec = AnswerRecord( currentAskNode(userSession.kit.policyModel.get, userSession.engineState), answer )
         val runRes = advanceEngine( userSession.kit, userSession.engineState, answer )
-
+        val kitKey = KitKey(modelId, versionNum)
         //Add Record to DB
         if ( userSession.saveStat ) {
           interviewHistories.addRecord(
@@ -352,10 +404,19 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         runRes.state.getStatus match {
           case RuntimeEngineStatus.Running =>
           {
-            //Redirect( routes.APIInterviewCtrl.askNode(uuid,kitKey.modelId, kitKey.version, runRes.state.getCurrentNodeId, userSession.localization.getLanguage))
-            //todo check if needed
-            //val nextQues = askNode()(request)
-            Ok(Json.toJson("reply next ask"))
+            cache.get[InterviewSession](uuid) match {
+              case Some(userSession) => {
+                val nextQuestionId = userSession.engineState.getCurrentNodeId
+                val question = getQuestion(userSession.key.toString, modelId, versionNum, nextQuestionId, languageId)
+                cors(Ok(question))
+              }
+              //todo remove none
+              case None=>{
+                val nextQuestionId = userSession.engineState.getCurrentNodeId
+                val question = getQuestion(userSession.key.toString, modelId, versionNum, nextQuestionId, languageId)
+                cors(Ok(question))
+              }
+            }
           }
           case RuntimeEngineStatus.Reject  => {
             NotFound("we can't give you recommendation from the current information.")
@@ -382,6 +443,30 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
       }
     }
   }
+
+  private def validateQuestionId(modelId: String, versionNum: Int, reqNodeId: String, languageId: String, userSession: InterviewSession) : Unit = {
+    val kitKey = KitKey(modelId, versionNum)
+    //todo check if really have the answer and check params
+    //if not the requested node is not the current question
+    val currentAskNode = userSession.engineState.getCurrentNodeId
+    val l10n = locs.localization(KitKey(modelId, versionNum), languageId)
+    val kitId = KitKey(modelId, versionNum)
+    models.getPolicyModel(kitId) match {
+      case None => "Model not found."
+      case Some(pm) => {
+        var session = if (currentAskNode != reqNodeId) {
+          // re-run to reqNodeId
+          val answers = userSession.answerHistory.slice(0, userSession.answerHistory.indexWhere(_.question.getId == reqNodeId))
+          val rerunResult = runUpToNode(pm, reqNodeId, answers)
+          userSession.setHistory(rerunResult.traversed, answers).copy(engineState = rerunResult.state, localization = l10n)
+        } else {
+          userSession.copy(localization = l10n)
+        }
+        cache.set(userSession.key.toString, session)
+      }
+    }
+  }
+
   //todo fix
   def showAffirm( modelId:String, versionNum:Int, locName:Option[String]) = InterviewSessionAction(cache, cc).async { implicit request =>
     var session = request.userSession
@@ -499,5 +584,18 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
     EngineRunResult( rte.createSnapshot, l.traversedNodes, l.exception )
 
+  }
+
+  private def getLastVersion(modelId:String): Future[String] ={
+    for {
+      latestPublicOpt <- models.getLatestPublishedVersion(modelId)
+    } yield {
+      (latestPublicOpt) match {
+        case (None) => s"Model $modelId not found."
+        case (Some(versionMD)) => {
+          versionMD.id.version.toString
+        }
+      }
+    }
   }
 }
