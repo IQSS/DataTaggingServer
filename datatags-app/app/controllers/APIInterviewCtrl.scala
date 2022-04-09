@@ -506,7 +506,12 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         val topVisibility = session.tags.accept(new VisiBuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
           session.kit.md.topValues, ""))*/
         //todo get the value from tags
-        Ok(tags.toString)
+        val jsons = {(Json.obj(
+          "finished"->"true",
+          "tags"->tags.toString)
+          )}
+
+        Ok(Json.toJson(jsons).toString())
       }
       case None=>{
         NotFound("accept Error")
