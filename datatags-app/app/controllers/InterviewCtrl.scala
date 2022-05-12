@@ -39,19 +39,19 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   private implicit val ec:ExecutionContext = cc.executionContext
   private implicit def pcd:PageCustomizationData = custCtrl.pageCustomizations()
   private val logger = Logger( classOf[InterviewCtrl] )
-  
+
   def initiateInterviewRedirect(modelId:String) = Action { req =>
     TemporaryRedirect( routes.InterviewCtrl.initiateInterview(modelId).url )
   }
 
-  
+
   /**
-    * The default public entry point for interviews. Parametrized by the model, we need to
-    * get the latest public version, and then either start, or let the user choose
-    * a localization.
-    * @param modelId
-    * @return interview start or localization selection.
-    */
+   * The default public entry point for interviews. Parametrized by the model, we need to
+   * get the latest public version, and then either start, or let the user choose
+   * a localization.
+   * @param modelId
+   * @return interview start or localization selection.
+   */
   def initiateInterview(modelId:String) = Action.async{ implicit req =>
     for {
       latestPublicOpt <- models.getLatestPublishedVersion(modelId)
@@ -84,15 +84,15 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       }
     }
   }
-  //todo shady
+
   /**
-    * Shows the interview intro: title page, readme, and metadata.
-    * @param modelId
-    * @param versionNum
-    * @param localizationName
-    * @param sid Session ID. used if the session was prepared by some other action, e.g. in requested interview scenario.
-    * @return
-    */
+   * Shows the interview intro: title page, readme, and metadata.
+   * @param modelId
+   * @param versionNum
+   * @param localizationName
+   * @param sid Session ID. used if the session was prepared by some other action, e.g. in requested interview scenario.
+   * @return
+   */
   def showStartInterview(modelId:String, versionNum:Int, localizationName:Option[String]=None, sid:Option[String]=None ) = Action.async{ implicit req =>
     val kitId = KitKey(modelId, versionNum)
     for {
@@ -127,8 +127,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                 // add to DB InterviewHistory
                 if ( userSession.saveStat ) {
                   val actionName = if (userSession.requestedInterview.isDefined ) "requested"
-                                   else if ( req.headers.get("Referer").exists(_.endsWith("/accept")) ) "restart"
-                                   else "website"
+                  else if ( req.headers.get("Referer").exists(_.endsWith("/accept")) ) "restart"
+                  else "website"
                   interviewHistories.addInterviewHistory(
                     InterviewHistory(userSession.key, pmKit.md.id.modelId, pmKit.md.id.version, localizationName.getOrElse(""), actionName, req.headers.get("User-Agent").get))
                 }
@@ -139,8 +139,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                 } else {
                   Ok(views.html.interview.interviewStart(pmKit, readmeOpt, l10n, availableLocs,
                     userSession.requestedInterview.flatMap(_.data.message), allVersions
-                    )(req, messagesApi.preferred(Seq(lang)), pcd)
-                    ).withLang(lang).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
+                  )(req, messagesApi.preferred(Seq(lang)), pcd)
+                  ).withLang(lang).addingToSession( InterviewSessionAction.KEY -> userSession.key.toString )
                 }
               }
             }
@@ -152,14 +152,14 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       }
     }
   }
-  
+
   /**
-    * Start the interview in its latest version. Backward compatibility for supporting KLO cards.
-    * @param modelId
-    * @return
-    */
+   * Start the interview in its latest version. Backward compatibility for supporting KLO cards.
+   * @param modelId
+   * @return
+   */
   def doStartInterviewLatest(modelId:String) = initiateInterview(modelId)
-  //todo know how to call???
+
   def doStartInterview(modelId:String, versionNum:Int) = InterviewSessionAction( cache, cc ) { implicit req =>
     val session = req.userSession
     val rte = new RuntimeEngine
@@ -179,7 +179,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     val availableLocs:Seq[String] = session.kit.policyModel.get.getLocalizations.asScala.toSeq
     Ok(views.html.interview.question( updated, rte.getCurrentNode.asInstanceOf[AskNode], None, availableLocs)(req, messagesApi.preferred(req), pcd))
   }
-  
+
   def askNode( modelId:String, versionNum:Int, reqNodeId:String, loc:String) = InterviewSessionAction(cache, cc).async { implicit req =>
     val kitId = KitKey(modelId, versionNum)
     models.getPolicyModel(kitId) match {
@@ -197,7 +197,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         } else {
           req.userSession.copy(localization = l10n)
         }
-        
+
         cache.set(req.userSession.key.toString, session)
         val askNode = pm.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
         if ( session.saveStat ) {
@@ -205,7 +205,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
             InterviewHistoryRecord(req.userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
         }
         val availableLocs = pm.getLocalizations.asScala.toSeq
-        
+
         for {
           note <- if(session.allowNotes && session.notes.contains(reqNodeId)) notes.getNoteText(session.key, reqNodeId) else Future(None)
         } yield {
@@ -218,9 +218,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   case class AnswerRequest( text:String, history:String, note:Option[String] )
 
   val arForm = Form( mapping(
-      "answerText" -> text,
-      "serializedHistory"->text,
-      "note" -> optional(text)
+    "answerText" -> text,
+    "serializedHistory"->text,
+    "note" -> optional(text)
   )(AnswerRequest.apply)(AnswerRequest.unapply) )
 
   def answer(modelId:String, versionNum:Int, reqNodeId:String) = InterviewSessionAction(cache, cc) { implicit request =>
@@ -229,16 +229,13 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       { answerReq =>
         val kitKey = KitKey(modelId, versionNum)
         // See if we can re-use the session data we have.
-        //check already opened session
         // TODO - test index rather than node id, to allow loops.
         var session = if ( request.userSession != null &&
-                           request.userSession.engineState != null &&
-                           request.userSession.engineState.getCurrentNodeId == reqNodeId ) {
+          request.userSession.engineState != null &&
+          request.userSession.engineState.getCurrentNodeId == reqNodeId ) {
           // yes
           request.userSession
-        }
-        //open new session
-        else {
+        } else {
           // no, rebuild from serialized history
           request.userSession.kit.serializer.decode(answerReq.history, request.userSession)
         }
@@ -295,28 +292,28 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   def revisit( modelId: String, versionNum:Int) = InterviewSessionAction(cache, cc){ implicit request =>
 
     val revReqForm = Form( mapping(
-                              "serializedHistory"->text, 
-                              "revisitIdx"->number
-                            )(RevisitRequest.apply)(RevisitRequest.unapply)
-                          )
+      "serializedHistory"->text,
+      "revisitIdx"->number
+    )(RevisitRequest.apply)(RevisitRequest.unapply)
+    )
     revReqForm.bindFromRequest.fold(
       failure => BadRequest("Form submission error: %s\n data:%s".format(failure.errors, failure.data)),
       revisitRequest => {
         val updatedSession = request.userSession.kit
-                                .serializer.decode(revisitRequest.history.take(revisitRequest.idx), request.userSession)
+          .serializer.decode(revisitRequest.history.take(revisitRequest.idx), request.userSession)
 
         //Add Record to DB
         if ( updatedSession.saveStat ) {
           interviewHistories.addRecord(
             InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "revisit to " + updatedSession.engineState.getCurrentNodeId))
         }
-        
+
         cache.set( updatedSession.key.toString, updatedSession )
         Redirect( routes.InterviewCtrl.askNode( modelId, versionNum, updatedSession.engineState.getCurrentNodeId, updatedSession.localization.getLanguage ) )
       }
     )
   }
-  
+
   def showAffirm( modelId:String, versionNum:Int, locName:Option[String]) = InterviewSessionAction(cache, cc).async { implicit request =>
     var session = request.userSession
     if ( session.saveStat ) {
@@ -330,16 +327,16 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         cache.set(request.userSession.key.toString, session)
       }
     }
-    
+
     notes.getNotesForInterview(session.key).map( noteMap =>
       Ok(views.html.interview.affirmation(session, noteMap, session.kit.policyModel.get.getLocalizations.asScala.toSeq)) )
   }
-  
+
   def doAffirm(modelId:String, versionNum:Int) = InterviewSessionAction(cache, cc) { implicit request =>
     val sessionOpt = if ( request.userSession.engineState.getStatus == RuntimeEngineStatus.Accept ) {
       // yes
       Some(request.userSession)
-      
+
     } else {
       // no, rebuild from serialized history
       val answerHistoryOpt = request.body.asFormUrlEncoded.flatMap( form => form.get("serializedHistory").flatMap(_.headOption) )
@@ -348,7 +345,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         case Some(history) => Some(request.userSession.kit.serializer.decode(history, request.userSession))
       }
     }
-    
+
     sessionOpt match {
       case None => BadRequest("?")
       case Some(session) => {
@@ -361,8 +358,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
       }
     }
   }
-  
-  
+
+
   def accept(modelId:String, versionNum:Int, loc:String) = InterviewSessionAction(cache, cc) { implicit request =>
     val l10n = locs.localization(KitKey(modelId, versionNum), loc)
     val lang = uiLangFor(l10n)
@@ -378,20 +375,8 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
     val topVisibility = session.tags.accept(new VisiBuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
       session.kit.md.topValues, ""))
-    var output = ""
-    val iter = tags.getNonEmptySubSlots.iterator()
-    while(iter.hasNext){
-      var next = iter.next()
-      val slotVal = tags.getSlot.getSubSlot(next.getName)
-      output += slotVal
-    }
-/*    val strResult = tags.getSlot.getSubSlot("Duties")
-    val strResult2 = tags.getSlot.getSubSlot("EmployerObligations")
-    val strResult3 = Option(tags.getSlot.getSubSlot("Duties")).map(tags.get)
-    val strResult4 = tags.getSlot.getSubSlot("EmployerObligations")*/
-
     Ok( views.html.interview.accepted(session, codeOpt, topVisibility.topValues, topVisibility.topSlots, availableLocs
-                                     )(request, messagesApi.preferred(Seq(lang)), pcd) ).withLang(lang)(messagesApi)
+    )(request, messagesApi.preferred(Seq(lang)), pcd) ).withLang(lang)(messagesApi)
   }
 
   def reject( modelId:String, versionNum:Int, loc:String ) = InterviewSessionAction(cache, cc) { implicit request =>
@@ -411,7 +396,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
     Ok( views.html.interview.rejected(session, node.asInstanceOf[RejectNode], availableLocs)(request, messagesApi.preferred(Seq(lang)), pcd) ).withLang(lang)
   }
-  
+
   def transcript( modelId:String, versionNum:Int, format:Option[String], localizationName:Option[String] ) = InterviewSessionAction(cache, cc).async { implicit request =>
     var session = request.userSession
     val availableLanguages = session.kit.policyModel.get.getLocalizations.asScala.toSeq
@@ -420,19 +405,19 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     }
     val optLang = session.localization.getLocalizedModelData.getUiLanguage.toOption
     val lang = optLang.map(l => langs.preferred(Seq(Lang(l), langs.availables.head))).getOrElse(langs.availables.head)
-    
+
     notes.getNotesForInterview(session.key).map( noteMap => {
       format.map( _.trim.toLowerCase ) match {
         case None         => Ok( views.html.interview.transcript(session, noteMap, availableLanguages) ).withLang(lang)
         case Some("html") => Ok( views.html.interview.transcript(session, noteMap, availableLanguages) ).withLang(lang)
         case Some("xml")  => Ok( views.XmlFormats.interview(session, noteMap) ).
-                                    withHeaders( s"Content-disposition"->s"attachment; filename=${session.kit.md.pmTitle.replaceAll(" ", "_")}-Transcript.xml")
+          withHeaders( s"Content-disposition"->s"attachment; filename=${session.kit.md.pmTitle.replaceAll(" ", "_")}-Transcript.xml")
         case _ => BadRequest("Unknown format")
       }
     })
   }
-  
-  
+
+
   def viewQuestionCodebook(modelId:String, versionNum:Int, localizationName:Option[String]) = Action.async { implicit req =>
     for {
       verOpt <- models.getVersionKit(KitKey(modelId, versionNum))
@@ -447,9 +432,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         case None => NotFound("Model not found")
       }
     }
-    
+
   }
-  
+
   def viewAllQuestions(modelId:String, versionNum:Int, localizationName:Option[String]) = Action.async { implicit req =>
     val kitId = KitKey(modelId, versionNum)
     for{
@@ -461,28 +446,28 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
           val optLang = loc.getLocalizedModelData.getUiLanguage.toOption
           val lang = optLang.map(l => langs.preferred(Seq(Lang(l), langs.availables.head))).getOrElse(langs.availables.head)
           Ok(views.html.interview.allQuestions(versionKit, versionKit.policyModel.get.getLocalizations.asScala.toSeq, loc
-                                              )(req, messagesApi.preferred(Seq(lang)), pcd)).withLang(lang)
+          )(req, messagesApi.preferred(Seq(lang)), pcd)).withLang(lang)
         }
         case None => NotFound("Model not found")
       }
     }
   }
-  
+
   def downloadTags = InterviewSessionAction(cache, cc) { implicit request =>
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd")
     val filename =  request.userSession.kit.policyModel.get.getMetadata.getTitle + "-" + dateFormat.format(request.userSession.sessionStart)
     Ok(request.userSession.tags.accept(Jsonizer))
       .withHeaders( "Content-disposition" -> "attachment; filename=\"%s\"".format(filename) )
   }
-  
+
   def accessByLink(accessLink:String) = Action.async{ implicit req =>
     models.getModelVersionByAccessLink(accessLink).map({
       case None => NotFound(views.html.errorPages.NotFound("Link no longer active"))
       case Some(version) => Redirect(routes.InterviewCtrl.showStartInterview(version.id.modelId, version.id.version, None))
-                            .addingToSession( InterviewCtrl.INVITED_INTERVIEW_KEY->KitKey(version.id.modelId, version.id.version).encode)
+        .addingToSession( InterviewCtrl.INVITED_INTERVIEW_KEY->KitKey(version.id.modelId, version.id.version).encode)
     })
   }
-  
+
   def advanceEngine(kit:VersionKit, state: RuntimeEngineState, ans: Answer ) : EngineRunResult = {
     val rte = new RuntimeEngine
     rte.setModel( kit.policyModel.get )
@@ -490,7 +475,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
 
     rte.applySnapshot( state )
     rte.consume( ans )
-	  
+
     EngineRunResult( rte.createSnapshot, l.traversedNodes, l.exception )
 
   }
@@ -500,9 +485,9 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     rte.setModel( model )
     val l = rte.setListener( new TaggingEngineListener )
     val ansItr = answers.iterator
-    
+
     rte.start
-    
+
     while ( (rte.getCurrentNode.getId!=nodeId) && ansItr.hasNext ) {
       val answer = ansItr.next.answer
       rte.consume( answer )
@@ -519,10 +504,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     val rte = new RuntimeEngine
     val l = rte.setListener( new TaggingEngineListener )
     rte.setModel( kit.policyModel.get )
-    
+
     rte.start()
     answers.map( _.answer )
-           .foreach( rte.consume )
+      .foreach( rte.consume )
 
     EngineRunResult( rte.createSnapshot, l.traversedNodes, l.exception )
 
@@ -531,15 +516,15 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   def currentAskNode(kit:PolicyModel, engineState: RuntimeEngineState ):AskNode = {
     kit.getDecisionGraph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
   }
-  
-  
+
+
   /**
-    * Logged in users can view any model. Anyone can view a published model. People with the correct link
-    * can view only what their link allows.
-    * @param r request asking for the model version
-    * @param ver model version to be views
-    * @return can the request view the model
-    */
+   * Logged in users can view any model. Anyone can view a published model. People with the correct link
+   * can view only what their link allows.
+   * @param r request asking for the model version
+   * @param ver model version to be views
+   * @return can the request view the model
+   */
   private def canView(r:Request[_], ver:VersionMD ):Boolean = {
     if ( ver.publicationStatus == PublicationStatus.Published ) return true
     if ( LoggedInAction.userPresent(r) ) return true
@@ -553,10 +538,10 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
         }
       }
     }
-    
+
     false
   }
-  
+
   private def uiLangFor( loc:Localization ): Lang = {
     loc.getLocalizedModelData.getUiLanguage.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
   }
