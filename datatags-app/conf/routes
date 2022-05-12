@@ -126,8 +126,6 @@ GET  /apiInterviewCtrl/:modelId/start       controllers.APIInterviewCtrl.initiat
 #returns sid of the user
 GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start   controllers.APIInterviewCtrl.startInterview(modelId, versionNum:Int,localizationName,sid:Option[String]?=None)
 #returns the first question and starts the interview serrtion
-GET  /apiInterviewCtrl/:modelId/:versionNum/:loc/:nodeId/:uuid/startInterview       controllers.APIInterviewCtrl.doStartInterview(modelId, versionNum:Int,loc,nodeId,uuid)
-#save usersession in the cache
 #askNode
 #GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/:loc/q/:nodeId   controllers.APIInterviewCtrl.getQuestion(uuid,modelId, versionNum:Int, nodeId, loc:String)
 POST  /apiInterviewCtrl/ask/  controllers.APIInterviewCtrl.askNode()
@@ -140,6 +138,7 @@ POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
 #       returns-->listOf<modelId,title,Version>
 #2) curl http://localhost:9000/apiInterviewCtrl/1/start
 #       returns-->listOf<languageId>
+
 #3) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start
 #      where 1/1/English-Raw/ is  modelid/versionId/languageID,          returns --> uuid,questionId
 #while not done do:
@@ -149,9 +148,7 @@ POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
     #       return the next question and it's ID
 
 #todo priority:
-#3)ask question with qeustion id
 #2)change language
-#1)return the next question directly after the answer.
 #4) return the tagging after every answer
 
 

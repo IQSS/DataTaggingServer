@@ -382,7 +382,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     val iter = tags.getNonEmptySubSlots.iterator()
     while(iter.hasNext){
       var next = iter.next()
-      val slotVal = tags.getSlot.getSubSlot(next.getName).toString
+      val slotVal = tags.getSlot.getSubSlot(next.getName)
       output += slotVal
     }
 /*    val strResult = tags.getSlot.getSubSlot("Duties")

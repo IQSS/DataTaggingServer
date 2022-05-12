@@ -44,6 +44,7 @@ import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
 import play.mvc.Action
+import play.twirl.api.TwirlHelperImports.twirlJavaCollectionToScala
 
 import scala.util.{Failure, Success}
 
@@ -209,12 +210,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                       cors(Ok(Json.toJson(userSession.key)))
                     }
                   }
-/*                  //description of the model: readmeOpt.toList.toString()
-                  //cors(Ok( Json.toJson(userSession.key,readmeOpt.toList.toString())))
-//                  Ok(views.html.interview.interviewStart(pmKit, readmeOpt, l10n, availableLocs,
-//                    userSession.requestedInterview.flatMap(_.data.message), allVersions
-//                  )(req, messagesApi.preferred(Seq(lang)), pcd)
-//                  ).withLang(lang).addingToSession(InterviewSessionAction.KEY -> userSession.key.toString)*/
                 }
               }
             }
@@ -234,54 +229,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         startNodeId
       }
     }
-  }
-
-  //todo fix the issue
-  def doStartInterview(modelId:String, versionNum:Int,loc:String,reqNodeId:String ,uuid:String) = Action { implicit req =>
-    cache.get[InterviewSession](uuid) match {
-      case Some(userSession) => {
-        val kitId = KitKey(modelId, versionNum)
-        models.getPolicyModel(kitId) match {
-          case None => Future(NotFound(views.html.errorPages.NotFound("Model not found.")))
-          case Some(pm) => {
-            // TODO validate questionnaireId fits the one in the engine state
-            val stateNodeId = userSession.engineState.getCurrentNodeId
-            val l10n = locs.localization(kitId, loc)
-            val lang = uiLangFor(l10n)
-            val session = if ( stateNodeId != reqNodeId ) {
-              // re-run to reqNodeId
-              val answers = userSession.answerHistory.slice(0, userSession.answerHistory.indexWhere( _.question.getId == reqNodeId) )
-              val rerunResult = runUpToNode( pm, reqNodeId, answers )
-              userSession.setHistory(rerunResult.traversed, answers).copy(engineState=rerunResult.state, localization = l10n)
-            } else {
-              userSession.copy(localization = l10n)
-            }
-
-            cache.set(userSession.key.toString, session)
-            val askNode = pm.getDecisionGraph.getNode(reqNodeId).asInstanceOf[AskNode]
-            if ( session.saveStat ) {
-              interviewHistories.addRecord(
-                InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
-            }
-            val availableLocs = pm.getLocalizations.asScala.toSeq
-            for {
-              note <- if(session.allowNotes && session.notes.contains(reqNodeId)) notes.getNoteText(session.key, reqNodeId) else Future(None)
-            } yield {
-              val s = askNode.getAnswers
-              val toreturn = Ok( views.html.interview.question( session, askNode, note, availableLocs)(req, messagesApi.preferred(Seq(lang)), pcd)).withLang(lang)
-              Ok( Json.toJson(askNode.getId))
-            }
-          }
-        }
-      }
-//      todo delete
-      case None => {
-        Future(NotFound("user id not found in the cache."))
-      }
-    }
-
-//      todo delete
-  Ok( Json.toJson(modelId))
   }
 
   def askNode(/*uuid: String, modelId: String, versionNum: Int, reqNodeId: String, loc: String*/) = Action(parse.tolerantJson) { req =>
@@ -335,24 +282,15 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
             var stateNodeId = userSession.engineState.getCurrentNodeId
             val l10n = locs.localization(kitId, loc)
             val lang = uiLangFor(l10n)
-            //            if not the requested node is not the current question
             var session = userSession.copy(localization = l10n)
-
             userSession.copy(localization = l10n)
             cache.set(userSession.key.toString, session)
             val askNode = pm.getDecisionGraph.getNode(stateNodeId).asInstanceOf[AskNode]
             if (session.saveStat) {
               interviewHistories.addRecord(InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
             }
-            val jsons = {(Json.obj(
-              "ssid"->uuid,
-              "questionId"->askNode.getId,
-              "questionText"->askNode.getText,
-              "Answers"->askNode.getAnswers.toString))
-            }
-            jsons.toString()
-
-            //Json.toJson(askNode.getId, Json.toJson(askNode.getText, Json.toJson(askNode.getAnswers.toString))).toString()
+            val question = GetQuestionData(uuid, userSession, askNode)
+            question
           }
         }
       }
@@ -362,7 +300,22 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
-  case class AnswerRequest( text:String, history:String, note:Option[String] )
+  private def GetQuestionData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
+    val text = userSession.localization.getNodeText(askNode.getId).orElse("")
+    val answers = askNode.getAnswers().map(o => userSession.localization.localizeAnswer(o.getAnswerText)).toList.toString()
+    val jsons = {
+      (Json.obj(
+        "ssid" -> uuid,
+        "questionId" -> askNode.getId,
+        "questionText" -> text,
+        "Answers" -> askNode.getAnswers().toString,
+        "AnswersInYourLanguage" -> answers,
+        "finished" -> "false"))
+    }
+    jsons.toString()
+  }
+
+  case class AnswerRequest(text:String, history:String, note:Option[String] )
 
   val arForm = Form( mapping(
     "answerText" -> text,
@@ -394,6 +347,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         val ansRec = AnswerRecord( currentAskNode(userSession.kit.policyModel.get, userSession.engineState), answer )
         val runRes = advanceEngine( userSession.kit, userSession.engineState, answer )
         val kitKey = KitKey(modelId, versionNum)
+        //Add Record to DB
         //Add Record to DB
         if ( userSession.saveStat ) {
           interviewHistories.addRecord(
