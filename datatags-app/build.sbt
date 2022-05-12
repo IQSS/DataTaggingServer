@@ -20,25 +20,25 @@ resolvers += "Typesafe repository releases" at "https://repo.typesafe.com/typesa
 resolvers += Resolver.sonatypeRepo("releases")
 
 libraryDependencies ++= Seq(
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4",
   caffeine,
   ws,
   guice,
   openId,
-  "org.webjars" % "jquery" % "3.5.1",
-  "org.webjars" % "bootstrap" % "4.5.0",
-  "org.webjars" % "popper.js" % "1.16.0",
+  "org.webjars" % "jquery" % "3.6.0",
+  "org.webjars" % "bootstrap" % "5.1.3",
+  "org.webjars" % "popper.js" % "2.9.3",
   "org.webjars" % "sweetalert" % "2.1.0" ,
   "org.webjars.npm" % "quill" % "1.3.7",
 //  "com.typesafe.play" %% "play-json" % "2.6.10",
-  "com.vladsch.flexmark" % "flexmark-all" % "0.60.2",
-  "org.postgresql" % "postgresql" % "42.2.15",
+  "com.vladsch.flexmark" % "flexmark-all" % "0.64.0",
+  "org.postgresql" % "postgresql" % "42.3.4",
   "com.typesafe.play" %% "play-slick" % "5.0.0",
   "com.typesafe.play" %% "play-slick-evolutions" % "5.0.0",
   "org.mindrot" % "jbcrypt" % "0.4",
-  "com.typesafe.play" %% "play-mailer" % "8.0.0",
-  "com.typesafe.play" %% "play-mailer-guice" % "8.0.0",
-  "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+  "com.typesafe.play" %% "play-mailer" % "8.0.1",
+  "com.typesafe.play" %% "play-mailer-guice" % "8.0.1",
+  "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
 )
 
 TwirlKeys.templateImports ++= Seq("views.Helpers", "views.Helpers._",

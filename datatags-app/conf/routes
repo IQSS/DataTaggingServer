@@ -150,39 +150,3 @@ POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
 #todo priority:
 #2)change language
 #4) return the tagging after every answer
-
-
-#false required??? 4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/start?sid= Sid
-#not needed for now 4) curl http://localhost:9000/apiInterviewCtrl/1/1/English-Raw/stam/:uuid/startInterview
-
-
-
-
-
-
-
-##todo
-##1)start return uuid/interview id
-#POST  /api/:modelId/:versionNum/startinterview   controllers.InterviewCtrl.startinterviewAPI(modelId, versionNum)
-##2) modelid ,ver, localization , => uuid, and first question
-# POST /api/1/interview/:interviewID controllers.InterviewCtrl.startinterviewAPI(interviewID)
-##3) answer question
-# POST /api/1/interview/:interviewID/:answerBthF67Dm9
-
-
-##todo
-#1)initiateInterview
-#2)showStartInterview showed the first question!
-#3)do start
-#loop till finish (the last ques) when finish return result:
-#   4)answer!
-
-
-
-# to check nodes : [decision-graph.dg]sInitialFiltering , [decision-graph.dg][#1], [decision-graph.dg], DecisionGraph-1
-#1)http://localhost:9000/models/1/start
-#2) do start http://localhost:9000/models/1/1/?localizationName=English-Raw
-#3)dostart interview --> node
-#3) ask node 4)answer
-# requested interviews
-#start interview

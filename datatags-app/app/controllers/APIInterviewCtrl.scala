@@ -1,52 +1,30 @@
 package controllers
 import scala.concurrent.duration._
 import java.sql.Timestamp
-import play.api.mvc._
 import play.api.cache.{AsyncCacheApi, SyncCacheApi}
 import edu.harvard.iq.policymodels.runtime._
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 import models._
-import _root_.util.{Jsonizer, VisiBuilder}
-import akka.util.Helpers.Requiring
-
 import javax.inject.Inject
-import com.ibm.icu.text.SimpleDateFormat
 import edu.harvard.iq.policymodels.externaltexts.{Localization, MarkupString}
 import edu.harvard.iq.policymodels.model.PolicyModel
 import edu.harvard.iq.policymodels.model.decisiongraph.Answer
 import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager, NotesDAO}
-import play.api.Logger
-import views.Helpers
 import play.api.data.{Form, _}
 import play.api.data.Forms.{uuid, _}
-
 import scala.jdk.CollectionConverters._
 import util.JavaOptionals.toRichOptional
-
 import scala.concurrent.{Await, ExecutionContext, Future}
 import java.nio.file.{Files, Paths}
-import edu.harvard.iq.policymodels.externaltexts.{Localization, MarkupString, TrivialLocalization}
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
-import edu.harvard.iq.policymodels.model.policyspace.slots.AbstractSlot
 import edu.harvard.iq.policymodels.runtime.RuntimeEngine
-
-import javax.inject.Inject
-import models._
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
 import play.api.{Configuration, Logger}
-import play.api.cache.SyncCacheApi
-import play.api.data.Form
-import play.api.data.Forms._
 import play.api.i18n.{I18nSupport, Lang, Langs}
 import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
 import play.api.libs.json.{JsObject, JsString, Json}
-import play.api.mvc.Results.Redirect
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
-import play.mvc.Action
 import play.twirl.api.TwirlHelperImports.twirlJavaCollectionToScala
-
-import scala.util.{Failure, Success}
 
 class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager, notes:NotesDAO,
                                    langs:Langs, comments:CommentsDAO, custCtrl:CustomizationCtrl,config:Configuration , interviewHistories: InterviewHistoryDAO)
@@ -54,33 +32,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
   implicit private val ec = cc.executionContext
   private val logger = Logger(classOf[ModelCtrl])
-  private val uploadPath = Paths.get(config.get[String]("taggingServer.model-uploads.folder"))
-  private val modelFolderPath = Paths.get(config.get[String]("taggingServer.models.folder"))
-  private val MIME_TYPES = Map("svg"->"image/svg+xml", "pdf"->"application/pdf", "png"->"image/png")
   private val validModelId = "^[-._a-zA-Z0-9]+$".r
-  val modelForm = Form(
-    mapping(
-      "id" -> text(minLength = 1, maxLength = 64)
-        .verifying( "Illegal characters found. Use letters, numbers, and -_. only.",
-          s=>s.isEmpty || validModelId.findFirstIn(s).isDefined),
-      "title" -> nonEmptyText,
-      "note" -> text,
-      "saveStat" -> boolean,
-      "allowNotes" -> boolean,
-      "requireAffirmation" -> boolean,
-      "displayTrivialLocalization" -> boolean
-    )(ModelFormData.apply)(ModelFormData.unapply)
-  )
-
-  val versionForm = Form(
-    mapping(
-      "publicationStatus" -> text,
-      "commentingStatus"  -> text,
-      "note" -> text,
-      "topValues" -> seq(text),
-      "listDisplay" -> default(number, 6)
-    )(VersionFormData.apply)(VersionFormData.unapply)
-  )
 
   def apiListModels = Action.async{ req =>
     for {
@@ -104,7 +56,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   /**
    * Logged in users can view any model. Anyone can view a published model. People with the correct link
    * can view only what their link allows.
-   * @param r request asking for the model version
+   * @param modelId request asking for the model version
    * @param ver model version to be views
    * @return can the request view the model
    */
@@ -123,11 +75,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
             case Some(md) => {
               // We have a models AND a pmKit, check for localizations
               md.getLocalizations.size() match {
-//                case 0 => TemporaryRedirect(routes.InterviewCtrl.showStartInterview(modelId,versionMD.id.version,None).url)
-//                case 1 => {
-//                  val locName = Some(md.getLocalizations.iterator().next())
-//                  TemporaryRedirect(routes.InterviewCtrl.showStartInterview(modelId,versionMD.id.version,locName).url)
-//                }
+                case 0 => cors(Ok(Json.toJson("there are no models found."))  )
                 case _ => {
                   val localizations = locs.localizationsFor(pmKit.md.id)
                   val localizationJson = Json.toJson(localizations.toList.toString())
@@ -318,16 +266,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     jsons.toString()
   }
 
-  case class AnswerRequest(text:String, history:String, note:Option[String] )
-
-  val arForm = Form( mapping(
-    "answerText" -> text,
-    "serializedHistory"->text,
-    "note" -> optional(text)
-  )(AnswerRequest.apply)(AnswerRequest.unapply) )
-
   def answer() = Action(parse.tolerantJson) { request =>
-    //todo check params
     val params = request.body.asInstanceOf[JsObject]
     val uuid = params("uuid").as[JsString].value
     val modelId = params("modelId").as[JsString].value
@@ -349,8 +288,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         val answer = Answer.withName(ans)
         val ansRec = AnswerRecord( currentAskNode(userSession.kit.policyModel.get, userSession.engineState), answer )
         val runRes = advanceEngine( userSession.kit, userSession.engineState, answer )
-        val kitKey = KitKey(modelId, versionNum)
-        //Add Record to DB
         //Add Record to DB
         if ( userSession.saveStat ) {
           interviewHistories.addRecord(
@@ -424,7 +361,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
-  //todo fix
+  //todo update
   def showAffirm( modelId:String, versionNum:Int, locName:Option[String]) = InterviewSessionAction(cache, cc).async { implicit request =>
     var session = request.userSession
     if ( session.saveStat ) {
@@ -438,7 +375,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         cache.set(request.userSession.key.toString, session)
       }
     }
-
     notes.getNotesForInterview(session.key).map( noteMap =>
       Ok(views.html.interview.affirmation(session, noteMap, session.kit.policyModel.get.getLocalizations.asScala.toSeq)) )
   }
@@ -459,9 +395,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           interviewHistories.addRecord(
             InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "accept"))
         }
-/*        val availableLocs = session.kit.policyModel.get.getLocalizations.asScala.toSeq
-        val topVisibility = session.tags.accept(new VisiBuilder(session.kit.md.slotsVisibility.filter(_._2 == "topSlots").keySet.toSeq,
-          session.kit.md.topValues, ""))*/
+
         //todo get the value from tags
         val jsons = {(Json.obj(
           "finished"->"true",
@@ -560,4 +494,35 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
       }
     }
   }
+  case class AnswerRequest(text:String, history:String, note:Option[String] )
+
+  val arForm = Form( mapping(
+    "answerText" -> text,
+    "serializedHistory"->text,
+    "note" -> optional(text)
+  )(AnswerRequest.apply)(AnswerRequest.unapply) )
+
+  val modelForm = Form(
+    mapping("id" -> text(minLength = 1, maxLength = 64)
+      .verifying( "Illegal characters found. Use letters, numbers, and -_. only.",
+        s=>s.isEmpty || validModelId.findFirstIn(s).isDefined),
+      "title" -> nonEmptyText,
+      "note" -> text,
+      "saveStat" -> boolean,
+      "allowNotes" -> boolean,
+      "requireAffirmation" -> boolean,
+      "displayTrivialLocalization" -> boolean
+    )(ModelFormData.apply)(ModelFormData.unapply)
+  )
+
+  val versionForm = Form(
+    mapping(
+      "publicationStatus" -> text,
+      "commentingStatus"  -> text,
+      "note" -> text,
+      "topValues" -> seq(text),
+      "listDisplay" -> default(number, 6)
+    )(VersionFormData.apply)(VersionFormData.unapply)
+  )
+
 }
