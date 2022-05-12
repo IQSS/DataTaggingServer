@@ -302,14 +302,17 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
   private def GetQuestionData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
     val text = userSession.localization.getNodeText(askNode.getId).orElse("")
-    val answers = askNode.getAnswers().map(o => userSession.localization.localizeAnswer(o.getAnswerText)).toList.toString()
+    val answers = askNode.getAnswers().toString
+    val answersInLanguage = askNode.getAnswers().map(o => {
+      Answer.withName(userSession.localization.localizeAnswer(o.getAnswerText))
+    }).toList.toString()
     val jsons = {
       (Json.obj(
         "ssid" -> uuid,
         "questionId" -> askNode.getId,
         "questionText" -> text,
-        "Answers" -> askNode.getAnswers().toString,
-        "AnswersInYourLanguage" -> answers,
+        "Answers" -> answers,
+        "AnswersInYourLanguage" -> answersInLanguage,
         "finished" -> "false"))
     }
     jsons.toString()
