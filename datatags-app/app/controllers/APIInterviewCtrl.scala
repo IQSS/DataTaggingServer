@@ -15,8 +15,10 @@ import edu.harvard.iq.policymodels.model.decisiongraph.Answer
 import persistence.{InterviewHistoryDAO, LocalizationManager, ModelManager, NotesDAO}
 import play.api.data.{Form, _}
 import play.api.data.Forms.{uuid, _}
+
 import scala.jdk.CollectionConverters._
 import util.JavaOptionals.toRichOptional
+
 import scala.concurrent.{Await, ExecutionContext, Future}
 import java.nio.file.{Files, Paths}
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
@@ -25,6 +27,7 @@ import persistence.{CommentsDAO, LocalizationManager, ModelManager}
 import play.api.{Configuration, Logger}
 import play.api.i18n.{I18nSupport, Lang, Langs}
 import play.api.libs.json.Format.GenericFormat
+import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
 import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
 import play.twirl.api.TwirlHelperImports.twirlJavaCollectionToScala
@@ -259,6 +262,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     val answersInLanguage = askNode.getAnswers().map(o => {
       Answer.withName(userSession.localization.localizeAnswer(o.getAnswerText))
     }).toList.toString()
+    val ansHistory = GetAnswerHistory(userSession)
     val tags = Jsonizer.visitCompoundValue(userSession.tags)
 
     val jsons = {
@@ -268,6 +272,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         "questionText" -> text,
         "Answers" -> answers,
         "AnswersInYourLanguage" -> answersInLanguage,
+        "answerHistory" -> ansHistory,
         "finished" -> "false",
         "tags" -> tags.toString))
     }
@@ -397,7 +402,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         val session = userSession.copy(localization = l10n)
         cache.set(userSession.key.toString, session)
         val tags = Jsonizer.visitCompoundValue(userSession.tags)
-
+        val ansHistory = GetAnswerHistory(userSession)
         //Add Record to DB
         if (session.saveStat) {
           interviewHistories.addRecord(
@@ -407,7 +412,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         //todo get the value from tags
         val jsons = {(Json.obj(
           "finished"->"true",
-          "tags"->tags.toString)
+            "tags"-> tags.toString,
+            "answerHistory"-> ansHistory)
           )}
 
         Ok(Json.toJson(jsons).toString())
@@ -418,7 +424,20 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
-  def reject( modelId:String, versionNum:Int, loc:String ) = InterviewSessionAction(cache, cc) { implicit request =>
+  private def GetAnswerHistory(userSession: InterviewSession) = {
+    val ansHistory =
+      userSession.answerHistory.map(
+        answer => {
+          Json.obj(
+            "id" -> answer.question.getId,
+            "questionText" -> answer.question.getText,
+            "answer" -> answer.answer.getAnswerText
+          )
+        })
+    Json.toJson(ansHistory)
+  }
+
+  def reject(modelId:String, versionNum:Int, loc:String ) = InterviewSessionAction(cache, cc) { implicit request =>
     val l10n = locs.localization(KitKey(modelId, versionNum), loc)
     val lang = uiLangFor(l10n)
     val session = request.userSession.copy(localization = l10n)
