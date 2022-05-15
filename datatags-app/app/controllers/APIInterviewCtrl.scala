@@ -244,8 +244,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
             if (session.saveStat) {
               interviewHistories.addRecord(InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
             }
-            val question = GetQuestionData(uuid, userSession, askNode)
-            question
+            val result = GetResultData(uuid, userSession, askNode)
+            result
           }
         }
       }
@@ -255,7 +255,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
-  private def GetQuestionData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
+  private def GetResultData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
 //    var text = userSession.localization.getNodeText(askNode.getId).orElse("")
     val text = askNode.getText
     val answers = askNode.getAnswers().toString
@@ -274,7 +274,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         "AnswersInYourLanguage" -> answersInLanguage,
         "answerHistory" -> ansHistory,
         "finished" -> "false",
-        "tags" -> tags.toString))
+        "tags" -> tags))
     }
     jsons.toString()
   }
@@ -412,7 +412,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         //todo get the value from tags
         val jsons = {(Json.obj(
           "finished"->"true",
-            "tags"-> tags.toString,
+            "tags"-> tags,
             "answerHistory"-> ansHistory)
           )}
 
