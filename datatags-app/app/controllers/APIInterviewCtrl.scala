@@ -1,10 +1,13 @@
 package controllers
+import controllers.JSONFormats.{commentDTOFmt, commentFmt}
+
 import scala.concurrent.duration._
 import java.sql.Timestamp
 import play.api.cache.{AsyncCacheApi, SyncCacheApi}
 import edu.harvard.iq.policymodels.runtime._
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes._
 import models._
+
 import javax.inject.Inject
 import edu.harvard.iq.policymodels.externaltexts.{Localization, MarkupString}
 import edu.harvard.iq.policymodels.model.PolicyModel
@@ -25,6 +28,7 @@ import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.{JsObject, JsString, Json}
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
 import play.twirl.api.TwirlHelperImports.twirlJavaCollectionToScala
+import util.{Jsonizer, VisiBuilder}
 
 class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager, notes:NotesDAO,
                                    langs:Langs, comments:CommentsDAO, custCtrl:CustomizationCtrl,config:Configuration , interviewHistories: InterviewHistoryDAO)
@@ -249,11 +253,14 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   }
 
   private def GetQuestionData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
-    val text = userSession.localization.getNodeText(askNode.getId).orElse("")
+//    var text = userSession.localization.getNodeText(askNode.getId).orElse("")
+    val text = askNode.getText
     val answers = askNode.getAnswers().toString
     val answersInLanguage = askNode.getAnswers().map(o => {
       Answer.withName(userSession.localization.localizeAnswer(o.getAnswerText))
     }).toList.toString()
+    val tags = Jsonizer.visitCompoundValue(userSession.tags)
+
     val jsons = {
       (Json.obj(
         "ssid" -> uuid,
@@ -261,7 +268,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         "questionText" -> text,
         "Answers" -> answers,
         "AnswersInYourLanguage" -> answersInLanguage,
-        "finished" -> "false"))
+        "finished" -> "false",
+        "tags" -> tags.toString))
     }
     jsons.toString()
   }
@@ -388,8 +396,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         val lang = uiLangFor(l10n)
         val session = userSession.copy(localization = l10n)
         cache.set(userSession.key.toString, session)
-        val tags = session.tags
-        val codeOpt = Option(tags.getSlot.getSubSlot("Code")).map(tags.get)
+        val tags = Jsonizer.visitCompoundValue(userSession.tags)
+
         //Add Record to DB
         if (session.saveStat) {
           interviewHistories.addRecord(
