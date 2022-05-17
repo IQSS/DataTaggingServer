@@ -117,3 +117,14 @@ GET     /test/models/:name  controllers.TestCtrl.showModel(name)
 POST    /test/postBack      controllers.TestCtrl.testPostBack
 GET     /test/xml/:count    controllers.TestCtrl.getXmlText(count:Int)
 
+#returns modelsid and versions
+GET  /apiInterviewCtrl/models/    controllers.APIInterviewCtrl.apiListModels
+#returns nodeId + localizations(languages)
+GET  /apiInterviewCtrl/:modelId/start       controllers.APIInterviewCtrl.initiateInterview(modelId)
+#returns sid of the user
+GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start   controllers.APIInterviewCtrl.startInterview(modelId, versionNum:Int,localizationName,sid:Option[String]?=None)
+#returns the first question and starts the interview serrtion
+#askNode
+#GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/:loc/q/:nodeId   controllers.APIInterviewCtrl.getQuestion(uuid,modelId, versionNum:Int, nodeId, loc:String)
+POST  /apiInterviewCtrl/ask/  controllers.APIInterviewCtrl.askNode()
+POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
