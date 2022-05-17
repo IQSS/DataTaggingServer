@@ -35,7 +35,7 @@ import util.{Jsonizer, VisiBuilder}
 
 class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager, notes:NotesDAO,
                                    langs:Langs, comments:CommentsDAO, custCtrl:CustomizationCtrl,config:Configuration , interviewHistories: InterviewHistoryDAO)
-                                    extends InjectedController with I18nSupport {
+  extends InjectedController with I18nSupport {
 
   implicit private val ec = cc.executionContext
   private val logger = Logger(classOf[ModelCtrl])
@@ -157,9 +157,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 } else {
                   userSession.kit.policyModel match {
                     case Some(policyModel) =>{
-                      val startQuestionId= getrStartNodeID(userSession.key.toString)
-                      val question = getQuestion(userSession.key.toString,modelId,versionNum,startQuestionId,localizationName)
-                      cors(Ok(question))
+                      getQuestion(userSession.key.toString,modelId,versionNum,localizationName)
                     }
                     case _ => {
                       cors(Ok(Json.toJson(userSession.key)))
@@ -169,7 +167,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
               }
             }
           } else {
-            NotFound(views.html.errorPages.NotFound(s"Model $kitId not found.")) // really that's a NotAuthorized, but that would give away the fact that the version exists.
+            NotFound(views.html.errorPages.NotFound("not authorized")) // really that's a NotAuthorized, but that would give away the fact that the version exists.
           }
         }
         case _ => NotFound(views.html.errorPages.NotFound("Model not found."))
@@ -177,16 +175,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
-  private def getrStartNodeID(uuid:String) = {
-    cache.get[InterviewSession](uuid) match {
-      case Some(userSession) => {
-        val startNodeId = userSession.engineState.getCurrentNodeId
-        startNodeId
-      }
-    }
-  }
-
-  def askNode(/*uuid: String, modelId: String, versionNum: Int, reqNodeId: String, loc: String*/) = Action(parse.tolerantJson) { req =>
+  def askNode() = Action(parse.tolerantJson) { req =>
     val params = req.body.asInstanceOf[JsObject]
     val uuid = params("uuid").as[JsString].value
     val modelId = params("modelId").as[JsString].value
@@ -203,8 +192,9 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
             val stateNodeId = userSession.engineState.getCurrentNodeId
             val l10n = locs.localization(kitId, loc)
             val lang = uiLangFor(l10n)
-//            if not the requested node is not the current question
-            var session = if (reqNodeId != "-1" && stateNodeId != reqNodeId) {
+
+            //if not the requested node is not the current question
+            var session = if (stateNodeId != reqNodeId) {
               // re-run to reqNodeId
               val answers = userSession.answerHistory.slice(0, userSession.answerHistory.indexWhere(_.question.getId == reqNodeId))
               val rerunResult = runUpToNode(pm, reqNodeId, answers)
@@ -227,12 +217,13 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
-  def getQuestion(uuid: String, modelId: String, versionNum: Int, reqNodeId: String, loc: String) : String = {
+  def getQuestion(uuid: String, modelId: String, versionNum: Int,loc: String) = {
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
+        val reqNodeId = userSession.engineState.getCurrentNodeId
         val kitId = KitKey(modelId, versionNum)
         models.getPolicyModel(kitId) match {
-          case None => "Model not found."
+          case None => cors(NotFound("Model not found."))
           case Some(pm) => {
             var stateNodeId = userSession.engineState.getCurrentNodeId
             val l10n = locs.localization(kitId, loc)
@@ -245,18 +236,17 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
               interviewHistories.addRecord(InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
             }
             val result = GetResultData(uuid, userSession, askNode)
-            result
+            cors(Ok(result))
           }
         }
       }
       case None => {
-        "user id not found in the cache."
+        cors(NotFound("user id is not found reset the interview"))
       }
     }
   }
 
   private def GetResultData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
-//    var text = userSession.localization.getNodeText(askNode.getId).orElse("")
     val text = askNode.getText
     val answers = askNode.getAnswers().toString
     val answersInLanguage = askNode.getAnswers().map(o => {
@@ -309,24 +299,14 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         // save state and decide where to go from here
         cache.set( userSession.key.toString, userSession.updatedWith( ansRec, runRes.traversed, runRes.state))
         runRes.state.getStatus match {
-          case RuntimeEngineStatus.Running =>
-          {
-            cache.get[InterviewSession](uuid) match {
-              case Some(userSession) => {
-                val nextQuestionId = userSession.engineState.getCurrentNodeId
-                val question = getQuestion(userSession.key.toString, modelId, versionNum, nextQuestionId, languageId)
-                cors(Ok(question))
-              }
-              case None=>{
-                cors(NotFound("user id is not found reset the interview"))
-              }
-            }
+          case RuntimeEngineStatus.Running => {
+            getQuestion(uuid, modelId, versionNum, languageId)
           }
           case RuntimeEngineStatus.Reject  => {
-            NotFound("we can't give you recommendation from the current information. try again with different answers")
+            NotFound("we can't give you recommendation from the current information.")
           }
           case RuntimeEngineStatus.Accept  => {
-              accept(uuid,modelId, versionNum, userSession.localization.getLanguage)
+            accept(uuid,modelId, versionNum, userSession.localization.getLanguage)
           }
           case s:RuntimeEngineStatus => {
             logger.warn("Interview entered a bad state: " + s.name() +". Interview data: " + userSession.kit.md.id + " nodeId: " + userSession.engineState.getCurrentNodeId )
@@ -334,6 +314,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           }
         }
       }
+
       case None => {
         NotFound("user id not found in the cache.")
       }
@@ -379,8 +360,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
         val jsons = {(Json.obj(
           "finished"->"true",
-            "tags"-> tags,
-            "answerHistory"-> ansHistory)
+          "tags"-> tags,
+          "answerHistory"-> ansHistory)
           )}
 
         Ok(Json.toJson(jsons).toString())
