@@ -317,26 +317,16 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 val question = getQuestion(userSession.key.toString, modelId, versionNum, nextQuestionId, languageId)
                 cors(Ok(question))
               }
-              //todo remove none
               case None=>{
-                val nextQuestionId = userSession.engineState.getCurrentNodeId
-                val question = getQuestion(userSession.key.toString, modelId, versionNum, nextQuestionId, languageId)
-                cors(Ok(question))
+                cors(NotFound("user id is not found reset the interview"))
               }
             }
           }
           case RuntimeEngineStatus.Reject  => {
-            NotFound("we can't give you recommendation from the current information.")
+            NotFound("we can't give you recommendation from the current information. try again with different answers")
           }
           case RuntimeEngineStatus.Accept  => {
-            // interview is over, need to display or affirm.
-            if ( userSession.requireAffirmation ) {
-              //todo in the end
-              //showAffirm(kitKey.modelId, kitKey.version, Some(userSession.localization.getLanguage))
-              Ok("to implement show affirm")
-            } else {
               accept(uuid,modelId, versionNum, userSession.localization.getLanguage)
-            }
           }
           case s:RuntimeEngineStatus => {
             logger.warn("Interview entered a bad state: " + s.name() +". Interview data: " + userSession.kit.md.id + " nodeId: " + userSession.engineState.getCurrentNodeId )
@@ -344,7 +334,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           }
         }
       }
-
       case None => {
         NotFound("user id not found in the cache.")
       }
@@ -353,7 +342,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
   private def validateQuestionId(modelId: String, versionNum: Int, reqNodeId: String, languageId: String, userSession: InterviewSession) : Unit = {
     val kitKey = KitKey(modelId, versionNum)
-    //todo check if really have the answer and check params
     //if not the requested node is not the current question
     val currentAskNode = userSession.engineState.getCurrentNodeId
     val l10n = locs.localization(KitKey(modelId, versionNum), languageId)
@@ -374,26 +362,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
-  //todo update
-  def showAffirm( modelId:String, versionNum:Int, locName:Option[String]) = InterviewSessionAction(cache, cc).async { implicit request =>
-    var session = request.userSession
-    if ( session.saveStat ) {
-      interviewHistories.addRecord(
-        InterviewHistoryRecord(request.userSession.key, new Timestamp(System.currentTimeMillis()), "show affirmation"))
-    }
-    for ( newLocName <- locName ) {
-      if ( newLocName != session.localization.getLanguage ) {
-        val l10n = locs.localization(session.kit.md.id, newLocName)
-        session = session.copy(localization = l10n)
-        cache.set(request.userSession.key.toString, session)
-      }
-    }
-    notes.getNotesForInterview(session.key).map( noteMap =>
-      Ok(views.html.interview.affirmation(session, noteMap, session.kit.policyModel.get.getLocalizations.asScala.toSeq)) )
-  }
-
-
-
   def accept(uuid:String,modelId:String, versionNum:Int, loc:String) = {
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
@@ -409,7 +377,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
             InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "accept"))
         }
 
-        //todo get the value from tags
         val jsons = {(Json.obj(
           "finished"->"true",
             "tags"-> tags,
