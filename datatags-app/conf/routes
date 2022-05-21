@@ -119,18 +119,20 @@ POST    /test/postBack      controllers.TestCtrl.testPostBack
 GET     /test/xml/:count    controllers.TestCtrl.getXmlText(count:Int)
 
 
-#returns modelsid and versions
-GET  /apiInterviewCtrl/models/    controllers.APIInterviewCtrl.apiListModels
-#returns nodeId + localizations(languages)
-GET  /apiInterviewCtrl/:modelId/start       controllers.APIInterviewCtrl.initiateInterview(modelId)
-#returns sid of the user
-GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start   controllers.APIInterviewCtrl.startInterview(modelId, versionNum:Int,localizationName,sid:Option[String]?=None)
-#returns the first question and starts the interview serrtion
-#askNode
-#GET  /apiInterviewCtrl/:uuid/:modelId/:versionNum/:loc/q/:nodeId   controllers.APIInterviewCtrl.getQuestion(uuid,modelId, versionNum:Int, nodeId, loc:String)
-POST  /apiInterviewCtrl/ask/  controllers.APIInterviewCtrl.askNode()
-POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
-#answer
+
+GET  /apiInterviewCtrl/models/                                                              controllers.APIInterviewCtrl.apiListModels
+GET  /apiInterviewCtrl/:modelId/start                                                       controllers.APIInterviewCtrl.initiateInterview(modelId)
+GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start                         controllers.APIInterviewCtrl.startInterview(modelId, versionNum:Int,localizationName,sid:Option[String]?=None)
+GET  /apiInterviewCtrl/answer/:uuid/:modelId/:versionId/:languageId/:reqNodeId/:answer/     controllers.APIInterviewCtrl.answer(uuid,modelId,versionId,languageId,reqNodeId,answer)
+GET  /apiInterviewCtrl/askHistory/:uuid/:modelId/:versionId/:languageId/:nodeId/             controllers.APIInterviewCtrl.askHistory(uuid,modelId,versionId,languageId,nodeId)
+GET  /apiInterviewCtrl/getTags/:uuid                                                        controllers.APIInterviewCtrl.getTags(uuid)
+
+    # [ questionId : nodeId
+    # questionText: Are you women? ,
+    # answers: [A,B,C],
+    # answerHistory : [question ,ANswer] .....
+    #]
+
 
 #use explination:
 #todo return version with the id
@@ -148,5 +150,4 @@ POST  /apiInterviewCtrl/answer/   controllers.APIInterviewCtrl.answer()
     #       return the next question and it's ID
 
 #todo priority:
-#2)change language
 #4) return the tagging after every answer
