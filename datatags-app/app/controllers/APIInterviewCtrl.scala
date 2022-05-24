@@ -50,11 +50,11 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           mdl =>
           {(Json.obj(
             "id"->mdl.id,
-            "title"->mdl.title),
+            "title"->mdl.title,
             "versionId"-> {
               val lastVersion = Await.result(getLastVersion(mdl.id),5.second).asInstanceOf[String]
               lastVersion
-            })
+            }))
           })
       cors(Ok( Json.toJson(jsons) ))
     }
@@ -85,8 +85,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 case 0 => cors(Ok(Json.toJson("there are no models found."))  )
                 case _ => {
                   val localizations = locs.localizationsFor(pmKit.md.id)
-                  val localizationJson = Json.toJson(localizations.toList.toString())
-                  cors(Ok(Json.toJson(localizationJson))  )
+                  val localizationJson = localizations.toList.map(x=>x.getLanguage.toString)
+                  cors(Ok(Json.toJson(localizationJson)))
                 }
               }
             }
@@ -208,10 +208,10 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
             val stateNodeId = userSession.engineState.getCurrentNodeId
             val askNode = pm.getDecisionGraph.getNode(stateNodeId).asInstanceOf[AskNode]
             val text = askNode.getText
-            val answers = askNode.getAnswers().toString
-            val answersInLanguage = askNode.getAnswers().map(o => {
-              Answer.withName(userSession.localization.localizeAnswer(o.getAnswerText))
-            }).toList.toString()
+            val answers = askNode.getAnswers().toList.map(x=>x.getAnswerText)
+            val answersInLanguage = askNode.getAnswers().toList.map(o => {
+              userSession.localization.localizeAnswer(o.getAnswerText)
+            })
             val ansHistory = GetAnswerHistory(userSession)
             val tags = Jsonizer.visitCompoundValue(userSession.tags)
             //todo here give him the data
@@ -220,8 +220,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
               (Json.obj(
                 "questionId" -> userSession.answerHistory.size.toString,
                 "questionText" -> text,
-                "Answers" -> answers,
-                "AnswersInYourLanguage" -> answersInLanguage,
+                "Answers" -> Json.toJson(answers),
+                "AnswersInYourLanguage" -> Json.toJson(answersInLanguage),
                 "answerHistory" -> ansHistory,
                 "finished" -> "false",
                 "tags" -> tags))
@@ -267,10 +267,10 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
   private def GetResultData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
     val text = askNode.getText
-    val answers = askNode.getAnswers().toString
-    val answersInLanguage = askNode.getAnswers().map(o => {
-      Answer.withName(userSession.localization.localizeAnswer(o.getAnswerText))
-    }).toList.toString()
+    val answers = askNode.getAnswers().toList.map(x=>x.getAnswerText)
+    val answersInLanguage = askNode.getAnswers().toList.map(o => {
+      userSession.localization.localizeAnswer(o.getAnswerText)
+    })
     val ansHistory = GetAnswerHistory(userSession)
     val tags = Jsonizer.visitCompoundValue(userSession.tags)
 
@@ -279,8 +279,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         "ssid" -> uuid,
         "questionId" -> userSession.answerHistory.size.toString,
         "questionText" -> text,
-        "Answers" -> answers,
-        "AnswersInYourLanguage" -> answersInLanguage,
+        "Answers" -> Json.toJson(answers),
+        "AnswersInYourLanguage" -> Json.toJson(answersInLanguage),
 //        "answerHistory" -> ansHistory,
         "finished" -> "false",
         "tags" -> tags))
@@ -455,7 +455,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           "answerHistory"-> ansHistory)
           )}
 
-        cors(Ok(Json.toJson(jsons).toString()))
+        cors(Ok(Json.toJson(jsons)))
       }
       case None=>{
         cors(NotFound("accept Error"))
@@ -464,7 +464,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   }
 
   private def GetAnswerHistory(userSession: InterviewSession) = {
-    //todo localize history
+    //todo localize history with userSession.localization.localizeAnswer()
     val ansHistory =
       userSession.answerHistory.map(
         answer => {
