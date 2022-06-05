@@ -1,4 +1,7 @@
 @import views._
+@import views.html.templates.bsBase
+@import views.html.comps
+
 @(title:String, currentSection:BackOfficeSection.Value, scripts: Html=Html(""), extraHead: Html=Html(""))(content:Html)(implicit request: RequestHeader, msgs:MessagesProvider)
 
 @headPart = {
