@@ -505,8 +505,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         answer => {
           Json.obj(
             "id" -> userSession.answerHistory.indexWhere(x => x==answer).toString(),
-            "questionText" -> answer.question.getText,
-            "answer" -> answer.answer.getAnswerText
+            "questionText" -> userSession.localization.getNodeText(answer.question.getId).get(),
+            "answer" -> userSession.localization.localizeAnswer(answer.answer.getAnswerText)
           )
         })
     Json.toJson(ansHistory)
