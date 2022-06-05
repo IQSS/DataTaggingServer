@@ -233,7 +233,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           case Some(pm) => {
             val stateNodeId = userSession.engineState.getCurrentNodeId
             val askNode = pm.getDecisionGraph.getNode(stateNodeId).asInstanceOf[AskNode]
-            val text = askNode.getText
+            val text = userSession.localization.getNodeText(askNode.getId).get()
             val answers = askNode.getAnswers().toList.map(x=>x.getAnswerText)
             val answersInLanguage = askNode.getAnswers().toList.map(o => {
               userSession.localization.localizeAnswer(o.getAnswerText)
@@ -291,7 +291,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   }
 
   private def GetResultData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
-    val text = askNode.getText
+    val text = userSession.localization.getNodeText(askNode.getId).get()
     val answers = askNode.getAnswers().toList.map(x=>x.getAnswerText)
     val answersInLanguage = askNode.getAnswers().toList.map(o => {
       userSession.localization.localizeAnswer(o.getAnswerText)
