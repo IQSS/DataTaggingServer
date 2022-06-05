@@ -18,7 +18,7 @@ import util.FileUtils
 
 
 object VisualizationActor {
-  def props = Props[VisualizationActor]
+  def props = Props[VisualizationActor]()
   case class CreateVisualizationFiles(key:KitKey, model:PolicyModel)
   case class DeleteVisualizationFiles(key:KitKey)
   case class RecreateVisualizationFiles(key:KitKey, model:PolicyModel)

@@ -118,12 +118,12 @@ POST    /test/postBack      controllers.TestCtrl.testPostBack
 GET     /test/xml/:count    controllers.TestCtrl.getXmlText(count:Int)
 
 
-GET  /apiInterviewCtrl/models/                                                              controllers.APIInterviewCtrl.apiListModels
+GET  /apiInterviewCtrl/models/                                                               controllers.APIInterviewCtrl.apiListModels
 GET  /apiInterviewCtrl/getModelsNames/                                                       controllers.APIInterviewCtrl.apiListModelsNames()
 GET  /apiInterviewCtrl/:modelId/start/                                                       controllers.APIInterviewCtrl.initiateInterview(modelId)
 GET  /apiInterviewCtrl/:modelId/:versionNum/:localizationName/start/                         controllers.APIInterviewCtrl.startInterview(modelId, versionNum:Int,localizationName,sid:Option[String]?=None)
-GET  /apiInterviewCtrl/answer/:uuid/:modelId/:versionId/:languageId/:reqNodeId/:answer/     controllers.APIInterviewCtrl.answer(uuid,modelId,versionId,languageId,reqNodeId,answer)
-POST  /apiInterviewCtrl/answerPost/    controllers.APIInterviewCtrl.answerPost()
+GET  /apiInterviewCtrl/answer/:uuid/:modelId/:versionId/:languageId/:reqNodeId/:answer/      controllers.APIInterviewCtrl.answer(uuid,modelId,versionId,languageId,reqNodeId,answer)
+POST /apiInterviewCtrl/answerPost/                                                           controllers.APIInterviewCtrl.answerPost()
 GET  /apiInterviewCtrl/feedback/:uuid/:modelId/:versionId/:languageId/:reqNodeId/:writer/:comment/     controllers.APIInterviewCtrl.AddQuestionComment(uuid:String,modelId:String,versionId:String,languageId:String,reqNodeId:String,writer:String,comment:String)
 GET  /apiInterviewCtrl/askHistory/:uuid/:modelId/:versionId/:languageId/:nodeId/             controllers.APIInterviewCtrl.askHistory(uuid,modelId,versionId,languageId,nodeId)
 GET  /apiInterviewCtrl/getTags/:uuid/                                                        controllers.APIInterviewCtrl.getTags(uuid)

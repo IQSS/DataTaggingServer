@@ -224,7 +224,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
   )(AnswerRequest.apply)(AnswerRequest.unapply) )
 
   def answer(modelId:String, versionNum:Int, reqNodeId:String) = InterviewSessionAction(cache, cc) { implicit request =>
-    arForm.bindFromRequest.fold(
+    arForm.bindFromRequest().fold(
       { failed => BadRequest("Form submission error: %s\n data:%s".format(failed.errors, failed.data)) },
       { answerReq =>
         val kitKey = KitKey(modelId, versionNum)
@@ -296,7 +296,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
                               "revisitIdx"->number
                             )(RevisitRequest.apply)(RevisitRequest.unapply)
                           )
-    revReqForm.bindFromRequest.fold(
+    revReqForm.bindFromRequest().fold(
       failure => BadRequest("Form submission error: %s\n data:%s".format(failure.errors, failure.data)),
       revisitRequest => {
         val updatedSession = request.userSession.kit
@@ -489,7 +489,7 @@ class InterviewCtrl @Inject()(cache:SyncCacheApi, notes:NotesDAO, models:ModelMa
     rte.start
     
     while ( (rte.getCurrentNode.getId!=nodeId) && ansItr.hasNext ) {
-      val answer = ansItr.next.answer
+      val answer = ansItr.next().answer
       rte.consume( answer )
     }
 

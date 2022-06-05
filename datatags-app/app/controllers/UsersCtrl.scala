@@ -155,7 +155,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents, custCtrl:
             val user = User(fData.username, fData.name, fData.email.getOrElse(""),
               fData.orcid.getOrElse(""), fData.url.getOrElse(""),
               users.hashPassword(fData.pass1.get))
-              users.addUser(user).map( _ => Redirect(routes.UsersCtrl.showUserList()) )
+              users.addUser(user).map( _ => Redirect(routes.UsersCtrl.showUserList) )
             
           } else {
             var form = userForm.fill(fData)
@@ -196,7 +196,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents, custCtrl:
               fData.orcid.getOrElse(""), fData.url.getOrElse(""),
               users.hashPassword(fData.pass1.get))
             uuidForInvitation.deleteUuid(fData.uuid.get)
-            users.addUser(user).map(_ => Redirect(routes.UsersCtrl.showLogin()))
+            users.addUser(user).map(_ => Redirect(routes.UsersCtrl.showLogin))
           }
           else{
             var form = userForm.fill(fData)
@@ -236,7 +236,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents, custCtrl:
             val userSessionId = UUID.randomUUID.toString
             userOpt.map(u => {
               cache.set(userSessionId, u)
-              Redirect( routes.CustomizationCtrl.index() ).withSession( LoggedInAction.KEY -> userSessionId )
+              Redirect( routes.CustomizationCtrl.index ).withSession( LoggedInAction.KEY -> userSessionId )
             }).getOrElse(BadRequest(views.html.backoffice.users.login(Some(fd.username),
               Some("Username/Password does not match"))))
           } else {
@@ -274,7 +274,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents, custCtrl:
             val bodyText = "To reset your password, please click the link below: \n " + fd.protocol_and_host + "/admin/resetPassword/" + userSessionId
             val email = Email("Forgot my password", conf.get[String]("play.mailer.user"), Seq(fd.email), bodyText = Some(bodyText))
             mailerClient.send(email)
-            Redirect( routes.UsersCtrl.showLogin() )
+            Redirect( routes.UsersCtrl.showLogin )
           }
           else {
             BadRequest(views.html.backoffice.users.forgotPassword(Some(fd.email), Some("email does not exist")))
@@ -310,7 +310,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents, custCtrl:
             userOpt.map(u => {
               uuidForForgotPassword.deleteUuid(u.username)
               users.updatePassword(u, fd.password1)
-              Redirect(routes.UsersCtrl.showLogin())}
+              Redirect(routes.UsersCtrl.showLogin)}
             ).getOrElse(BadRequest(views.html.backoffice.users.reset(Some("uuid does not exist"))))
           } else {
             if ( !timeOK ){
@@ -354,7 +354,7 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents, custCtrl:
         if(users.verifyPassword(req.user, fd.previousPassword)){
           if (fd.password1.nonEmpty && fd.password1 == fd.password2) {
             val user = req.user
-            users.updatePassword(user, fd.password1).map(_ => Redirect(routes.Application.index()))
+            users.updatePassword(user, fd.password1).map(_ => Redirect(routes.Application.index))
           } else {
             val form = userForm.fill(UserFormData of req.user).withError("password1", "Passwords must match, and cannot be empty")
               .withError("password2", "Passwords must match, and cannot be empty")

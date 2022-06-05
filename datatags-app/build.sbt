@@ -1,3 +1,4 @@
+
 name := """PolicyModelsWebApp"""
 
 version := "1.0-SNAPSHOT"
@@ -8,7 +9,7 @@ organization := "edu.harvard.iq"
 
 maintainer := "mbarsinai@iq.harvard.edu"
 
-scalaVersion := "2.13.1"
+scalaVersion := "2.13.7"
 
 // Targeting JDK11, which is the current LTS
 javacOptions ++= Seq("-source", "11", "-target", "11")
@@ -20,7 +21,7 @@ resolvers += "Typesafe repository releases" at "https://repo.typesafe.com/typesa
 resolvers += Resolver.sonatypeRepo("releases")
 
 libraryDependencies ++= Seq(
-  "org.scala-lang.modules" %% "scala-parallel-collections" % "0.2.0",
+  "org.scala-lang.modules" %% "scala-parallel-collections" % "1.0.4",
   caffeine,
   ws,
   guice,
@@ -32,26 +33,28 @@ libraryDependencies ++= Seq(
   "org.webjars.npm" % "quill" % "1.3.7",
 //  "com.typesafe.play" %% "play-json" % "2.6.10",
   "com.vladsch.flexmark" % "flexmark-all" % "0.60.2",
-  "org.postgresql" % "postgresql" % "42.2.15",
+  "org.postgresql" % "postgresql" % "42.3.4",
   "com.typesafe.play" %% "play-slick" % "5.0.0",
   "com.typesafe.play" %% "play-slick-evolutions" % "5.0.0",
   "org.mindrot" % "jbcrypt" % "0.4",
-  "com.typesafe.play" %% "play-mailer" % "8.0.0",
-  "com.typesafe.play" %% "play-mailer-guice" % "8.0.0",
-  "org.scalatestplus.play" %% "scalatestplus-play" % "5.0.0" % Test
+  "com.typesafe.play" %% "play-mailer" % "8.0.1",
+  "com.typesafe.play" %% "play-mailer-guice" % "8.0.1",
+  "org.scalatestplus.play" %% "scalatestplus-play" % "5.1.0" % Test
 )
 
 TwirlKeys.templateImports ++= Seq("views.Helpers", "views.Helpers._",
                                   "scala.jdk.CollectionConverters._")
 
-LessKeys.compress in Assets := true
-
-includeFilter in (Assets, LessKeys.less) := "*.less"
+//Assets / LessKeys.compress := true
+//
+//Assets / LessKeys.less / includeFilter := "*.less"
+//
+//Assets / LessKeys.less / sourceMap := true
 
 pipelineStages := Seq(digest, gzip)
 
 //javaOptions ++= Seq("--illegal-access=allow")
 
 // Disable documentation creation
-sources in (Compile, doc) := Seq.empty
-publishArtifact in (Compile, packageDoc) := false
+Compile / doc / sources := Seq.empty
+Compile / packageDoc / publishArtifact := false

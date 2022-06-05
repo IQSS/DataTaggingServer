@@ -17,7 +17,7 @@ import models._
 import util.FileUtils.delete
 
 object ModelUploadProcessingActor {
-  def props = Props[ModelUploadProcessingActor]
+  def props = Props[ModelUploadProcessingActor]()
   case class PrepareModel(filePath:Path, version:VersionMD )
   case class DeleteVersion(kitKey: KitKey)
 
