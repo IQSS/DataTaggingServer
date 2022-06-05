@@ -28,7 +28,7 @@ import play.api.{Configuration, Logger}
 import play.api.i18n.{I18nSupport, Lang, Langs}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
-import play.api.libs.json.{JsObject, JsString, Json}
+import play.api.libs.json.{JsError, JsObject, JsString, JsSuccess, Json}
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
 import play.twirl.api.TwirlHelperImports.twirlJavaCollectionToScala
 import util.{Jsonizer, VisiBuilder}
@@ -50,11 +50,23 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           mdl =>
           {(Json.obj(
             "id"->mdl.id,
-            "title"->mdl.title),
+            "title"->mdl.title,
             "versionId"-> {
               val lastVersion = Await.result(getLastVersion(mdl.id),5.second).asInstanceOf[String]
               lastVersion
-            })
+            }))
+          })
+      cors(Ok( Json.toJson(jsons) ))
+    }
+  }
+  def apiListModelsNames = Action.async{ req =>
+    for {
+      allModels <- models.listAllPubliclyRunnableModels()
+    } yield {
+      val jsons =
+        allModels.map(
+          mdl =>
+          {Json.obj("title"->mdl.title)
           })
       cors(Ok( Json.toJson(jsons) ))
     }
@@ -85,8 +97,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 case 0 => cors(Ok(Json.toJson("there are no models found."))  )
                 case _ => {
                   val localizations = locs.localizationsFor(pmKit.md.id)
-                  val localizationJson = Json.toJson(localizations.toList.toString())
-                  cors(Ok(Json.toJson(localizationJson))  )
+                  val localizationJson = localizations.toList.map(x=>x.getLanguage.toString)
+                  cors(Ok(Json.toJson(localizationJson)))
                 }
               }
             }
@@ -175,14 +187,44 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
-  def askNode() = Action(parse.tolerantJson) { req =>
-    val params = req.body.asInstanceOf[JsObject]
-    val uuid = params("uuid").as[JsString].value
-    val modelId = params("modelId").as[JsString].value
-    val versionNum = params("versionNum").as[JsString].value.toInt
-    val reqNodeId = params("reqNodeId").as[JsString].value
-    val loc = params("languageId").as[JsString].value
+  def AddQuestionComment(uuid:String,modelId:String,versionId:String,loc:String,nodeId:String,writer:String,comment:String) = Action{ req =>
+    cache.get[InterviewSession](uuid) match {
+      case None => cors(NotFound("something wrong."))
+      case Some(userSession) => {
+        val reqNodeId = userSession.answerHistory(nodeId.toInt).question.getId
+        var feedback = CommentDTO(id = null, writer = writer, comment = comment, modelID = modelId, version = versionId.toInt, localization = Some(loc), targetType = "node", targetContent = reqNodeId)
+        //todo fix
+        /*val feed = feedback.toComment()
+        comments.addComment(feed)*/
+        cors(Ok("feedback sent."))
+      }
+    }
+  }
 
+  def askHistory(uuid:String,modelId:String,versionId:String,loc:String,nodeId:String) = Action{ req =>
+    val versionNum = versionId.toInt
+    val nodeNumberFromHistory = nodeId.toInt
+    var reqNodeId = ""
+    //update the last question
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
+        if (nodeNumberFromHistory == userSession.answerHistory.size) {
+          val questionNode = currentAskNode(userSession.kit.policyModel.get, userSession.engineState)
+          reqNodeId = questionNode.getId
+        }
+        else if (nodeNumberFromHistory < userSession.answerHistory.size) {
+          val questionNode = userSession.answerHistory(nodeNumberFromHistory).question
+          reqNodeId = questionNode.getId
+        }
+        //validate the question Id and return to previus question if needed
+        validateQuestionId(modelId, versionNum, reqNodeId, loc, userSession)
+      }
+    }
+
+    cors(returnCurrentHistory(uuid, modelId, versionNum,loc))
+  }
+
+  private def returnCurrentHistory(uuid: String, modelId: String, versionNum: Int,languageId:String) = {
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
         val kitId = KitKey(modelId, versionNum)
@@ -190,24 +232,27 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           case None => NotFound("Model not found.")
           case Some(pm) => {
             val stateNodeId = userSession.engineState.getCurrentNodeId
-            val l10n = locs.localization(kitId, loc)
-            val lang = uiLangFor(l10n)
-
-            //if not the requested node is not the current question
-            var session = if (stateNodeId != reqNodeId) {
-              // re-run to reqNodeId
-              val answers = userSession.answerHistory.slice(0, userSession.answerHistory.indexWhere(_.question.getId == reqNodeId))
-              val rerunResult = runUpToNode(pm, reqNodeId, answers)
-              userSession.setHistory(rerunResult.traversed, answers).copy(engineState = rerunResult.state, localization = l10n)
-            } else {
-              userSession.copy(localization = l10n)
-            }
-            cache.set(userSession.key.toString, session)
             val askNode = pm.getDecisionGraph.getNode(stateNodeId).asInstanceOf[AskNode]
-            if (session.saveStat) {
-              interviewHistories.addRecord(InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "(" + session.localization.getLanguage + ") q: " + askNode.getId))
+            val text = askNode.getText
+            val answers = askNode.getAnswers().toList.map(x=>x.getAnswerText)
+            val answersInLanguage = askNode.getAnswers().toList.map(o => {
+              userSession.localization.localizeAnswer(o.getAnswerText)
+            })
+            val ansHistory = GetAnswerHistory(userSession)
+            val tags = Jsonizer.visitCompoundValue(userSession.tags)
+
+            val jsons = {
+              (Json.obj(
+                "questionId" -> userSession.answerHistory.size.toString,
+                "questionText" -> text,
+                "Answers" -> Json.toJson(answers),
+                "AnswersInYourLanguage" -> Json.toJson(answersInLanguage),
+                "answerHistory" -> ansHistory,
+                "finished" -> "false",
+                "tags" -> tags))
             }
-            Ok(Json.toJson(askNode.getId, Json.toJson(askNode.getText, Json.toJson(askNode.getAnswers.toString))))
+
+            Ok(jsons.toString())
           }
         }
       }
@@ -217,10 +262,9 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     }
   }
 
-  def getQuestion(uuid: String, modelId: String, versionNum: Int,loc: String) = {
+  def getQuestion(uuid: String, modelId: String, versionNum: Int, loc: String) = {
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
-        val reqNodeId = userSession.engineState.getCurrentNodeId
         val kitId = KitKey(modelId, versionNum)
         models.getPolicyModel(kitId) match {
           case None => cors(NotFound("Model not found."))
@@ -248,43 +292,61 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
   private def GetResultData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
     val text = askNode.getText
-    val answers = askNode.getAnswers().toString
-    val answersInLanguage = askNode.getAnswers().map(o => {
-      Answer.withName(userSession.localization.localizeAnswer(o.getAnswerText))
-    }).toList.toString()
+    val answers = askNode.getAnswers().toList.map(x=>x.getAnswerText)
+    val answersInLanguage = askNode.getAnswers().toList.map(o => {
+      userSession.localization.localizeAnswer(o.getAnswerText)
+    })
     val ansHistory = GetAnswerHistory(userSession)
     val tags = Jsonizer.visitCompoundValue(userSession.tags)
 
     val jsons = {
       (Json.obj(
         "ssid" -> uuid,
-        "questionId" -> askNode.getId,
+        "questionId" -> userSession.answerHistory.size.toString,
         "questionText" -> text,
-        "Answers" -> answers,
-        "AnswersInYourLanguage" -> answersInLanguage,
-        "answerHistory" -> ansHistory,
+        "Answers" -> Json.toJson(answers),
+        "AnswersInYourLanguage" -> Json.toJson(answersInLanguage),
+        //        "answerHistory" -> ansHistory,
         "finished" -> "false",
         "tags" -> tags))
     }
     jsons.toString()
   }
 
-  def answer() = Action(parse.tolerantJson) { request =>
-    val params = request.body.asInstanceOf[JsObject]
-    val uuid = params("uuid").as[JsString].value
-    val modelId = params("modelId").as[JsString].value
-    val versionNum = params("versionNum").as[JsString].value.toInt
-    val reqNodeId = params("reqNodeId").as[JsString].value
-    val ans = params("answer").as[JsString].value
-    val languageId =  params("languageId").as[JsString].value
-
+  def getTags(uuid:String) = Action { request =>
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
+        val tags = Jsonizer.visitCompoundValue(userSession.tags)
+        cors(Ok(tags.toString()))
+      }
+      case None=>{
+        cors(NotFound("userId is not found try again"))
+      }
+    }
+  }
+
+  def answer(uuid:String,modelId:String,version:String,languageId:String,NodeId:String,answer:String) = Action { request =>
+    val versionNum = version.toInt
+    var nodeNumberFromHistory = NodeId.toInt
+    var answerId = answer.toInt
+    var reqNodeId = ""
+    var ans = ""
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
+        if (nodeNumberFromHistory == userSession.answerHistory.size) {
+          val questionNode = currentAskNode(userSession.kit.policyModel.get, userSession.engineState)
+          reqNodeId = questionNode.getId
+          ans = questionNode.getAnswers().get(answerId).getAnswerText
+        }
+        else if (nodeNumberFromHistory < userSession.answerHistory.size) {
+          val questionNode = userSession.answerHistory(nodeNumberFromHistory).question
+          reqNodeId = questionNode.getId
+          ans = questionNode.getAnswers().get(answerId).getAnswerText
+        }
         //validate the question Id and return to previus question if needed
         validateQuestionId(modelId, versionNum, reqNodeId, languageId, userSession)
       }
     }
-
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
         // now, submit the new answer and feed it to the engine.
@@ -300,23 +362,87 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         cache.set( userSession.key.toString, userSession.updatedWith( ansRec, runRes.traversed, runRes.state))
         runRes.state.getStatus match {
           case RuntimeEngineStatus.Running => {
-            getQuestion(uuid, modelId, versionNum, languageId)
+            cors(getQuestion(uuid, modelId, versionNum, languageId))
           }
           case RuntimeEngineStatus.Reject  => {
-            NotFound("we can't give you recommendation from the current information.")
+            cors(NotFound("we can't give you recommendation from the current information."))
           }
           case RuntimeEngineStatus.Accept  => {
-            accept(uuid,modelId, versionNum, userSession.localization.getLanguage)
+            cors(accept(uuid,modelId, versionNum, userSession.localization.getLanguage))
           }
           case s:RuntimeEngineStatus => {
-            logger.warn("Interview entered a bad state: " + s.name() +". Interview data: " + userSession.kit.md.id + " nodeId: " + userSession.engineState.getCurrentNodeId )
-            NotFound("Bad interview state")
+            //              logger.warn("Interview entered a bad state: " + s.name() +". Interview data: " + userSession.kit.md.id + " nodeId: " + userSession.engineState.getCurrentNodeId )
+            cors(NotFound("Bad interview state"))
           }
         }
       }
 
       case None => {
-        NotFound("user id not found in the cache.")
+        cors(NotFound("user id not found in the cache."))
+      }
+    }
+  }
+
+
+  def answerPost() = Action(parse.tolerantJson) { request =>
+    val params = request.body.asInstanceOf[JsObject]
+    val uuid = params("uuid").as[JsString].value
+    val modelId = params("modelId").as[JsString].value
+    val versionNum = params("versionNum").as[JsString].value.toInt
+    val nodeNumberFromHistory = params("reqNodeId").as[JsString].value.toInt
+    val answerId = params("answer").as[JsString].value.toInt
+    val languageId =  params("languageId").as[JsString].value
+
+    var reqNodeId = ""
+    var ans = ""
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
+        if (nodeNumberFromHistory == userSession.answerHistory.size) {
+          val questionNode = currentAskNode(userSession.kit.policyModel.get, userSession.engineState)
+          reqNodeId = questionNode.getId
+          ans = questionNode.getAnswers().get(answerId).getAnswerText
+        }
+        else if (nodeNumberFromHistory < userSession.answerHistory.size) {
+          val questionNode = userSession.answerHistory(nodeNumberFromHistory).question
+          reqNodeId = questionNode.getId
+          ans = questionNode.getAnswers().get(answerId).getAnswerText
+        }
+        //validate the question Id and return to previus question if needed
+        validateQuestionId(modelId, versionNum, reqNodeId, languageId, userSession)
+      }
+    }
+    cache.get[InterviewSession](uuid) match {
+      case Some(userSession) => {
+        // now, submit the new answer and feed it to the engine.
+        val answer = Answer.withName(ans)
+        val ansRec = AnswerRecord( currentAskNode(userSession.kit.policyModel.get, userSession.engineState), answer )
+        val runRes = advanceEngine( userSession.kit, userSession.engineState, answer )
+        //Add Record to DB
+        if ( userSession.saveStat ) {
+          interviewHistories.addRecord(
+            InterviewHistoryRecord(userSession.key, new Timestamp(System.currentTimeMillis()), "a: " + ansRec.answer.getAnswerText))
+        }
+        // save state and decide where to go from here
+        cache.set( userSession.key.toString, userSession.updatedWith( ansRec, runRes.traversed, runRes.state))
+        runRes.state.getStatus match {
+          case RuntimeEngineStatus.Running => {
+            cors(getQuestion(uuid, modelId, versionNum, languageId))
+          }
+          case RuntimeEngineStatus.Reject  => {
+            cors(NotFound("we can't give you recommendation from the current information."))
+          }
+          case RuntimeEngineStatus.Accept  => {
+            cors(accept(uuid,modelId, versionNum, userSession.localization.getLanguage))
+          }
+          case s:RuntimeEngineStatus => {
+            //              logger.warn("Interview entered a bad state: " + s.name() +". Interview data: " + userSession.kit.md.id + " nodeId: " + userSession.engineState.getCurrentNodeId )
+            cors(NotFound("Bad interview state"))
+          }
+        }
+      }
+
+      case None => {
+        cors(NotFound("user id not found in the cache."))
       }
     }
   }
@@ -328,7 +454,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     val l10n = locs.localization(KitKey(modelId, versionNum), languageId)
     val kitId = KitKey(modelId, versionNum)
     models.getPolicyModel(kitId) match {
-      case None => "Model not found."
+      case None => cors(NotFound("Model not found."))
       case Some(pm) => {
         var session = if (currentAskNode != reqNodeId) {
           // re-run to reqNodeId
@@ -364,20 +490,21 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           "answerHistory"-> ansHistory)
           )}
 
-        Ok(Json.toJson(jsons).toString())
+        cors(Ok(Json.toJson(jsons)))
       }
       case None=>{
-        NotFound("accept Error")
+        cors(NotFound("accept Error"))
       }
     }
   }
 
   private def GetAnswerHistory(userSession: InterviewSession) = {
+    //todo localize history with userSession.localization.localizeAnswer()
     val ansHistory =
       userSession.answerHistory.map(
         answer => {
           Json.obj(
-            "id" -> answer.question.getId,
+            "id" -> userSession.answerHistory.indexWhere(x => x==answer).toString(),
             "questionText" -> answer.question.getText,
             "answer" -> answer.answer.getAnswerText
           )
@@ -404,7 +531,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   }
 
   //helper functions
-  def cors( res:Result ) = res.withHeaders("Access-Control-Allow-Origin"->"*")
+  def cors( res:Result ) = res.withHeaders(ACCESS_CONTROL_ALLOW_ORIGIN->"*",ACCESS_CONTROL_ALLOW_CREDENTIALS->"true",ACCESS_CONTROL_ALLOW_METHODS->"OPTIONS, GET, POST")
+
 
   private def uiLangFor( loc:Localization ): Lang = {
     loc.getLocalizedModelData.getUiLanguage.toOption.map(uiLang => langs.preferred(Seq(Lang(uiLang), langs.availables.head))).getOrElse(langs.availables.head)
@@ -431,6 +559,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   def currentAskNode(kit:PolicyModel, engineState: RuntimeEngineState ):AskNode = {
     kit.getDecisionGraph.getNode(engineState.getCurrentNodeId).asInstanceOf[AskNode]
   }
+
   def runUpToNode(model:PolicyModel, nodeId: String, answers:Seq[AnswerRecord] ) : EngineRunResult = {
     val rte = new RuntimeEngine
     rte.setModel( model )
