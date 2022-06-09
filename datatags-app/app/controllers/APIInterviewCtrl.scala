@@ -1,5 +1,7 @@
 package controllers
 import controllers.JSONFormats.{commentDTOFmt, commentFmt}
+import edu.harvard.iq.policymodels.externaltexts.Localization
+import edu.harvard.iq.policymodels.model.policyspace.slots.{AbstractSlot, AtomicSlot}
 
 import scala.concurrent.duration._
 import java.sql.Timestamp
@@ -22,16 +24,20 @@ import util.JavaOptionals.toRichOptional
 import scala.concurrent.{Await, ExecutionContext, Future}
 import java.nio.file.{Files, Paths}
 import edu.harvard.iq.policymodels.model.decisiongraph.nodes.AskNode
+import edu.harvard.iq.policymodels.model.policyspace.slots.AbstractSlot
+import edu.harvard.iq.policymodels.model.policyspace.values.{AbstractValue, AggregateValue, AtomicValue, CompoundValue, ToDoValue}
 import edu.harvard.iq.policymodels.runtime.RuntimeEngine
 import persistence.{CommentsDAO, LocalizationManager, ModelManager}
 import play.api.{Configuration, Logger}
 import play.api.i18n.{I18nSupport, Lang, Langs}
 import play.api.libs.json.Format.GenericFormat
 import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
-import play.api.libs.json.{JsError, JsObject, JsString, JsSuccess, Json}
+import play.api.libs.json.{JsError, JsObject, JsString, JsSuccess, JsValue, Json}
 import play.api.mvc.{ControllerComponents, InjectedController, Request, Result}
 import play.twirl.api.TwirlHelperImports.twirlJavaCollectionToScala
+import util.Jsonizer.visitAtomicValue
 import util.{Jsonizer, VisiBuilder}
+import views.Helpers
 
 class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, models:ModelManager, locs:LocalizationManager, notes:NotesDAO,
                                    langs:Langs, comments:CommentsDAO, custCtrl:CustomizationCtrl,config:Configuration , interviewHistories: InterviewHistoryDAO)
@@ -233,13 +239,17 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           case Some(pm) => {
             val stateNodeId = userSession.engineState.getCurrentNodeId
             val askNode = pm.getDecisionGraph.getNode(stateNodeId).asInstanceOf[AskNode]
+
             val text = userSession.localization.getNodeText(askNode.getId).get()
             val answers = askNode.getAnswers.toList.map(x=>x.getAnswerText)
             val answersInLanguage = askNode.getAnswers.toList.map(o => {
               userSession.localization.localizeAnswer(o.getAnswerText)
             })
             val ansHistory = GetAnswerHistory(userSession)
-            val tags = Jsonizer.visitCompoundValue(userSession.tags)
+            val l10n = locs.localization(kitId, languageId)
+            Localize.setlocalization(userSession.localization)
+            val tagsInYourLanguage = userSession.tags.accept(Localize)
+            val tags =  userSession.tags.accept(Jsonizer)
 
             val jsons = {
               (Json.obj(
@@ -249,6 +259,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 "AnswersInYourLanguage" -> Json.toJson(answersInLanguage),
                 "answerHistory" -> ansHistory,
                 "finished" -> "false",
+                "tagsInYourLanguage" -> tagsInYourLanguage,
                 "tags" -> tags))
             }
 
@@ -297,7 +308,9 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
       userSession.localization.localizeAnswer(o.getAnswerText)
     })
     val ansHistory = GetAnswerHistory(userSession)
-    val tags = Jsonizer.visitCompoundValue(userSession.tags)
+    Localize.setlocalization(userSession.localization)
+    val tagsInYourLanguage = userSession.tags.accept(Localize)
+    val tags =  userSession.tags.accept(Jsonizer)
 
     val jsons = {
       (Json.obj(
@@ -306,8 +319,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         "questionText" -> text,
         "Answers" -> Json.toJson(answers),
         "AnswersInYourLanguage" -> Json.toJson(answersInLanguage),
-        //        "answerHistory" -> ansHistory,
         "finished" -> "false",
+        "tagsInYourLanguage" -> tagsInYourLanguage,
         "tags" -> tags))
     }
     jsons.toString()
@@ -316,7 +329,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   def getTags(uuid:String) = Action { request =>
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
-        val tags = Jsonizer.visitCompoundValue(userSession.tags)
+        val tags = userSession.tags.accept(Localize)
         cors(Ok(tags.toString()))
       }
       case None=>{
@@ -476,7 +489,9 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         val lang = uiLangFor(l10n)
         val session = userSession.copy(localization = l10n)
         cache.set(userSession.key.toString, session)
-        val tags = Jsonizer.visitCompoundValue(userSession.tags)
+        Localize.setlocalization(userSession.localization)
+        val tagsInYourLanguage = userSession.tags.accept(Localize)
+        val tags =  userSession.tags.accept(Jsonizer)
         val ansHistory = GetAnswerHistory(userSession)
         //Add Record to DB
         if (session.saveStat) {
@@ -486,6 +501,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
         val jsons = {(Json.obj(
           "finished"->"true",
+          "tagsInYourLanguage" -> tagsInYourLanguage,
           "tags"-> tags,
           "answerHistory"-> ansHistory)
           )}
@@ -499,7 +515,6 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
   }
 
   private def GetAnswerHistory(userSession: InterviewSession) = {
-    //todo localize history with userSession.localization.localizeAnswer()
     val ansHistory =
       userSession.answerHistory.map(
         answer => {
@@ -629,4 +644,55 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     )(VersionFormData.apply)(VersionFormData.unapply)
   )
 
+}
+
+object Localize extends AbstractValue.Visitor[JsValue]{
+
+  var localization:Localization = null
+
+  def visitToDoValue (todo: ToDoValue) = Json.toJson(todo.getSlot.getName)
+
+  def visitAtomicValue (simple: AtomicValue) =  Json.toJson(getLocalizeValue(simple))
+
+  def visitAggregateValue (aggregate: AggregateValue) = Json.toJson(aggregate.getValues.asScala.map(visitAtomicValue))
+
+  def visitCompoundValue (compound: CompoundValue) = {
+    var compoundMap = collection.mutable.Map[String, JsValue]()
+    for (fieldType <- compound.getNonEmptySubSlots.asScala) {
+      compoundMap += (getLocalizeText(fieldType) -> compound.get(fieldType).accept(this))
+    }
+    val compoundSeq = compoundMap.toSeq
+    JsObject(compoundSeq)
+  }
+
+  def getLocalizeText(solt : AbstractSlot):String = {
+    if (localization != null) {
+      try {
+        val localizationTexts = localization.getSlotTexts(solt).get()
+        localizationTexts.name.toString
+      } catch {
+          case _ => solt.getName.toString
+      }
+    }else{
+      solt.getName.toString
+    }
+  }
+
+  def getLocalizeValue(solt : AtomicValue):String = {
+    val str = solt.getName
+    if (localization != null) {
+      try {
+        val localizationTexts = localization.getSlotValueTexts(solt).get().name
+        localizationTexts
+      } catch {
+        case _ => str
+      }
+    }else{
+      str
+    }
+  }
+
+  def setlocalization (localization: Localization) = {
+    this.localization = localization;
+  }
 }
