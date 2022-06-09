@@ -198,10 +198,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
       case None => cors(NotFound("something wrong."))
       case Some(userSession) => {
         val reqNodeId = userSession.answerHistory(nodeId.toInt).question.getId
-        var feedback = CommentDTO(id = null, writer = writer, comment = comment, modelID = modelId, version = versionId.toInt, localization = Some(loc), targetType = "node", targetContent = reqNodeId)
-        //todo fix
-        /*val feed = feedback.toComment()
-        comments.addComment(feed)*/
+        var feedback = Comment(writer = writer, resolved = false, comment = comment, modelID = modelId, version = versionId.toInt, localization = Some(loc), targetType = "node", targetContent = reqNodeId,time = new Timestamp(System.currentTimeMillis))
+        comments.addComment(feedback)
         cors(Ok("feedback sent."))
       }
     }

@@ -13,3 +13,16 @@ dist
 /RUNNING_PID
 /.settings
 /bin
+/ansHistory,
+/boolean
+/boolean,
+/false,
+/mdl.id,
+/mdl.title,
+/nonEmptyText,
+/tags,
+/text,
+/true,
+/userSession.answerHistory.size.toString,
+/uuid,
+/{
