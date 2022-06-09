@@ -51,21 +51,21 @@ object Structure {
   )
   
   val backOfficeSections:Seq[TopSiteSection[BackOfficeSection.Value]] = Seq(
-    PageSection("navbar.dashboard", BackOfficeSection.Dashboard, routes.CustomizationCtrl.index() ),
-    PageSection("navbar.models", BackOfficeSection.Models, routes.ModelCtrl.showModelsList() ),
-    PageSection("navbar.users", BackOfficeSection.Users, routes.UsersCtrl.showUserList() ),
+    PageSection("navbar.dashboard", BackOfficeSection.Dashboard, routes.CustomizationCtrl.index ),
+    PageSection("navbar.models", BackOfficeSection.Models, routes.ModelCtrl.showModelsList ),
+    PageSection("navbar.users", BackOfficeSection.Users, routes.UsersCtrl.showUserList ),
     MultiPageSection("navbar.customize", BackOfficeSection.Customize, Seq(
-      PageSectionItem("navbar.customize.pages",     routes.CustomizationCtrl.showPagesCustomization()),
-      PageSectionItem("navbar.customize.texts",     routes.CustomizationCtrl.showTextsCustomization()),
-      PageSectionItem("navbar.customize.styling",   routes.CustomizationCtrl.showStylingCustomization()),
-      PageSectionItem("navbar.customize.analytics", routes.CustomizationCtrl.showAnalyticsCustomization())
+      PageSectionItem("navbar.customize.pages",     routes.CustomizationCtrl.showPagesCustomization),
+      PageSectionItem("navbar.customize.texts",     routes.CustomizationCtrl.showTextsCustomization),
+      PageSectionItem("navbar.customize.styling",   routes.CustomizationCtrl.showStylingCustomization),
+      PageSectionItem("navbar.customize.analytics", routes.CustomizationCtrl.showAnalyticsCustomization)
     ))
   )
   
   val customizationSections:Seq[PageSection[Customization.Value]] = Seq(
-    PageSection("customization.pages",     Customization.Page,      routes.CustomizationCtrl.showPagesCustomization()),
-    PageSection("customization.texts",     Customization.Texts,     routes.CustomizationCtrl.showTextsCustomization()),
-    PageSection("customization.styling",   Customization.Styling,   routes.CustomizationCtrl.showStylingCustomization()),
-    PageSection("customization.analytics", Customization.Analytics, routes.CustomizationCtrl.showAnalyticsCustomization())
+    PageSection("customization.pages",     Customization.Page,      routes.CustomizationCtrl.showPagesCustomization),
+    PageSection("customization.texts",     Customization.Texts,     routes.CustomizationCtrl.showTextsCustomization),
+    PageSection("customization.styling",   Customization.Styling,   routes.CustomizationCtrl.showStylingCustomization),
+    PageSection("customization.analytics", Customization.Analytics, routes.CustomizationCtrl.showAnalyticsCustomization)
   )
 }

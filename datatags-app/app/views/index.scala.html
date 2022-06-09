@@ -11,7 +11,7 @@
 
 @templates.publicPages("PolicyModel Server", views.PublicSection.Index) {
   @comps.pageTitleRow(pcd.serverName.getOrElse("PolicyModels Server")){
-    <a href="@routes.Application.publicModelCatalog()" class="btn btn-primary btn-lg">@Messages("index.modelCatalogButton")</a>
+    <a href="@routes.Application.publicModelCatalog" class="btn btn-primary btn-lg">@Messages("index.modelCatalogButton")</a>
   }
 
   <div class="row my-5">

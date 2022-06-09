@@ -43,7 +43,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                                    langs:Langs, comments:CommentsDAO, custCtrl:CustomizationCtrl,config:Configuration , interviewHistories: InterviewHistoryDAO)
   extends InjectedController with I18nSupport {
 
-  implicit private val ec = cc.executionContext
+  implicit private val ec: ExecutionContext = cc.executionContext
   private val logger = Logger(classOf[ModelCtrl])
   private val validModelId = "^[-._a-zA-Z0-9]+$".r
 
@@ -58,7 +58,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
             "id"->mdl.id,
             "title"->mdl.title,
             "versionId"-> {
-              val lastVersion = Await.result(getLastVersion(mdl.id),5.second).asInstanceOf[String]
+              val lastVersion = Await.result(getLastVersion(mdl.id),5.second)
               lastVersion
             }))
           })
@@ -103,7 +103,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
                 case 0 => cors(Ok(Json.toJson("there are no models found."))  )
                 case _ => {
                   val localizations = locs.localizationsFor(pmKit.md.id)
-                  val localizationJson = localizations.toList.map(x=>x.getLanguage.toString)
+                  val localizationJson = localizations.toList.map(x=>x.getLanguage)
                   cors(Ok(Json.toJson(localizationJson)))
                 }
               }
@@ -222,7 +222,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           val questionNode = userSession.answerHistory(nodeNumberFromHistory).question
           reqNodeId = questionNode.getId
         }
-        //validate the question Id and return to previus question if needed
+        //validate the question Id and return to previous question if needed
         validateQuestionId(modelId, versionNum, reqNodeId, loc, userSession)
       }
     }
@@ -239,9 +239,10 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
           case Some(pm) => {
             val stateNodeId = userSession.engineState.getCurrentNodeId
             val askNode = pm.getDecisionGraph.getNode(stateNodeId).asInstanceOf[AskNode]
-            val text = askNode.getText
-            val answers = askNode.getAnswers().toList.map(x=>x.getAnswerText)
-            val answersInLanguage = askNode.getAnswers().toList.map(o => {
+
+            val text = userSession.localization.getNodeText(askNode.getId).get()
+            val answers = askNode.getAnswers.toList.map(x=>x.getAnswerText)
+            val answersInLanguage = askNode.getAnswers.toList.map(o => {
               userSession.localization.localizeAnswer(o.getAnswerText)
             })
             val ansHistory = GetAnswerHistory(userSession)
@@ -302,8 +303,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
   private def GetResultData(uuid: String, userSession: InterviewSession, askNode: AskNode) = {
     val text = userSession.localization.getNodeText(askNode.getId).get()
-    val answers = askNode.getAnswers().toList.map(x=>x.getAnswerText)
-    val answersInLanguage = askNode.getAnswers().toList.map(o => {
+    val answers = askNode.getAnswers.toList.map(x=>x.getAnswerText)
+    val answersInLanguage = askNode.getAnswers.toList.map(o => {
       userSession.localization.localizeAnswer(o.getAnswerText)
     })
     val ansHistory = GetAnswerHistory(userSession)
@@ -339,8 +340,8 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
   def answer(uuid:String,modelId:String,version:String,languageId:String,NodeId:String,answer:String) = Action { request =>
     val versionNum = version.toInt
-    var nodeNumberFromHistory = NodeId.toInt
-    var answerId = answer.toInt
+    val nodeNumberFromHistory = NodeId.toInt
+    val answerId = answer.toInt
     var reqNodeId = ""
     var ans = ""
     cache.get[InterviewSession](uuid) match {
@@ -348,14 +349,14 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         if (nodeNumberFromHistory == userSession.answerHistory.size) {
           val questionNode = currentAskNode(userSession.kit.policyModel.get, userSession.engineState)
           reqNodeId = questionNode.getId
-          ans = questionNode.getAnswers().get(answerId).getAnswerText
+          ans = questionNode.getAnswers.get(answerId).getAnswerText
         }
         else if (nodeNumberFromHistory < userSession.answerHistory.size) {
           val questionNode = userSession.answerHistory(nodeNumberFromHistory).question
           reqNodeId = questionNode.getId
-          ans = questionNode.getAnswers().get(answerId).getAnswerText
+          ans = questionNode.getAnswers.get(answerId).getAnswerText
         }
-        //validate the question Id and return to previus question if needed
+        //validate the question Id and return to previous question if needed
         validateQuestionId(modelId, versionNum, reqNodeId, languageId, userSession)
       }
     }
@@ -412,14 +413,14 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
         if (nodeNumberFromHistory == userSession.answerHistory.size) {
           val questionNode = currentAskNode(userSession.kit.policyModel.get, userSession.engineState)
           reqNodeId = questionNode.getId
-          ans = questionNode.getAnswers().get(answerId).getAnswerText
+          ans = questionNode.getAnswers.get(answerId).getAnswerText
         }
         else if (nodeNumberFromHistory < userSession.answerHistory.size) {
           val questionNode = userSession.answerHistory(nodeNumberFromHistory).question
           reqNodeId = questionNode.getId
-          ans = questionNode.getAnswers().get(answerId).getAnswerText
+          ans = questionNode.getAnswers.get(answerId).getAnswerText
         }
-        //validate the question Id and return to previus question if needed
+        //validate the question Id and return to previous question if needed
         validateQuestionId(modelId, versionNum, reqNodeId, languageId, userSession)
       }
     }
@@ -468,7 +469,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     models.getPolicyModel(kitId) match {
       case None => cors(NotFound("Model not found."))
       case Some(pm) => {
-        var session = if (currentAskNode != reqNodeId) {
+        val session = if (currentAskNode != reqNodeId) {
           // re-run to reqNodeId
           val answers = userSession.answerHistory.slice(0, userSession.answerHistory.indexWhere(_.question.getId == reqNodeId))
           val rerunResult = runUpToNode(pm, reqNodeId, answers)
@@ -583,7 +584,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     rte.start
 
     while ( (rte.getCurrentNode.getId!=nodeId) && ansItr.hasNext ) {
-      val answer = ansItr.next.answer
+      val answer = ansItr.next().answer
       rte.consume( answer )
     }
     EngineRunResult( rte.createSnapshot, l.traversedNodes, l.exception )

@@ -29,12 +29,12 @@ case class LoggedInAction(cache:SyncCacheApi, cc:ControllerComponents) extends A
         case Some(userSession) => requestHandler(new LoggedInRequest(userSession, request))
         case None => {
           LoggedInAction.logger.warn("Request has a uuid (%s) but no logged in user".format(uuid) )
-          Future.successful( Redirect(routes.UsersCtrl.showLogin()).withNewSession )
+          Future.successful( Redirect(routes.UsersCtrl.showLogin).withNewSession )
         }
       }
     }.getOrElse{
       LoggedInAction.logger.warn("Blocked attempt to access a LoggedInAction with no user involved." )
-      Future.successful( Redirect(routes.UsersCtrl.showLogin()) )
+      Future.successful( Redirect(routes.UsersCtrl.showLogin) )
     }
   }
   

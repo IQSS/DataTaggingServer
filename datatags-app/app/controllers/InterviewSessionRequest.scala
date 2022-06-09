@@ -34,11 +34,11 @@ case class InterviewSessionAction(cache:SyncCacheApi, cc:ControllerComponents) e
       cache.get[InterviewSession](uuid) match {
         case Some(userSession) => requestHandler(new InterviewSessionRequest(userSession, request))
         case None => {
-          Future.successful( Redirect(routes.Application.index()) )
+          Future.successful( Redirect(routes.Application.index) )
         }
       }
     }.getOrElse{
-      Future.successful( Redirect(routes.Application.index()) )
+      Future.successful( Redirect(routes.Application.index) )
     }
   }
   

@@ -16,7 +16,7 @@
     </div>
     <div class="row my-2">
         <div class="col">
-            <form action="@routes.UsersCtrl.doResetPassword()" method="POST">
+            <form action="@routes.UsersCtrl.doResetPassword" method="POST">
                 @for( m <- message ){
                     <div class="form-group has-danger">
                         <div class="alert alert-danger">@m</div>
