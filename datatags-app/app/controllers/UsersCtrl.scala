@@ -89,17 +89,12 @@ class UsersCtrl @Inject()(conf:Configuration, cc:ControllerComponents, custCtrl:
 
   
   def apiAddUser = Action(parse.tolerantJson).async { req =>
-    if ( req.connection.remoteAddress.isLoopbackAddress ) {
       val payload = req.body.asInstanceOf[JsObject]
       val username = payload("username").as[JsString].value
       val password = payload("password").as[JsString].value
       val user = User(username, username, "", "", "", users.hashPassword(password))
 
       users.addUser(user).map(u => Ok("Added user " + u.username))
-    
-    } else {
-      Future( Forbidden("Adding users via API is only available from localhost") )
-    }
   }
   
   
