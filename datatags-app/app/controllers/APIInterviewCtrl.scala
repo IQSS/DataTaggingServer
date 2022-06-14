@@ -324,9 +324,13 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
     jsons.toString()
   }
 
-  def getTags(uuid:String) = Action { request =>
+  def getTags(uuid:String,modelId:String,versionId:String,languageId:String) = Action { request =>
     cache.get[InterviewSession](uuid) match {
       case Some(userSession) => {
+        val kitId = KitKey(modelId, versionId.toInt)
+        val l10n = locs.localization(kitId, languageId)
+        userSession.copy(localization = l10n)
+        Localize.setlocalization(userSession.localization)
         val tags = userSession.tags.accept(Localize)
         cors(Ok(tags.toString()))
       }
