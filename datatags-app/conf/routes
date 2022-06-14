@@ -126,4 +126,4 @@ GET  /apiInterviewCtrl/answer/:uuid/:modelId/:versionId/:languageId/:reqNodeId/:
 POST /apiInterviewCtrl/answerPost/                                                           controllers.APIInterviewCtrl.answerPost()
 GET  /apiInterviewCtrl/feedback/:uuid/:modelId/:versionId/:languageId/:reqNodeId/:writer/:comment/     controllers.APIInterviewCtrl.AddQuestionComment(uuid:String,modelId:String,versionId:String,languageId:String,reqNodeId:String,writer:String,comment:String)
 GET  /apiInterviewCtrl/askHistory/:uuid/:modelId/:versionId/:languageId/:nodeId/             controllers.APIInterviewCtrl.askHistory(uuid,modelId,versionId,languageId,nodeId)
-GET  /apiInterviewCtrl/getTags/:uuid/                                                        controllers.APIInterviewCtrl.getTags(uuid)
+GET  /apiInterviewCtrl/getTags/:uuid/:modelId/:versionId/:languageId/                        controllers.APIInterviewCtrl.getTags(uuid,modelId,versionId,languageId)
