@@ -195,12 +195,20 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
 
   def AddQuestionComment(uuid:String,modelId:String,versionId:String,loc:String,nodeId:String,writer:String,comment:String) = Action{ req =>
     cache.get[InterviewSession](uuid) match {
-      case None => cors(NotFound("something wrong."))
+      case None => cors(NotFound(Json.toJson("something wrong.").toString()))
       case Some(userSession) => {
-        val reqNodeId = userSession.answerHistory(nodeId.toInt).question.getId
+        val nodeNumberFromHistory = nodeId.toInt
+        val reqNodeId = if (nodeNumberFromHistory == userSession.answerHistory.size) {
+          val questionNode = currentAskNode(userSession.kit.policyModel.get, userSession.engineState)
+          questionNode.getId
+        }
+        else{
+          val questionNode = userSession.answerHistory(nodeNumberFromHistory).question
+          questionNode.getId
+        }
         var feedback = Comment(writer = writer, resolved = false, comment = comment, modelID = modelId, version = versionId.toInt, localization = Some(loc), targetType = "node", targetContent = reqNodeId,time = new Timestamp(System.currentTimeMillis))
         comments.addComment(feedback)
-        cors(Ok("feedback sent."))
+        cors(Ok(Json.toJson("feedback sent.").toString()))
       }
     }
   }
@@ -329,8 +337,7 @@ class APIInterviewCtrl  @Inject() (cache:SyncCacheApi, cc:ControllerComponents, 
       case Some(userSession) => {
         val kitId = KitKey(modelId, versionId.toInt)
         val l10n = locs.localization(kitId, languageId)
-        userSession.copy(localization = l10n)
-        Localize.setlocalization(userSession.localization)
+        Localize.setlocalization(l10n)
         val tags = userSession.tags.accept(Localize)
         cors(Ok(tags.toString()))
       }
