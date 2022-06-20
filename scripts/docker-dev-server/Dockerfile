@@ -9,7 +9,7 @@ RUN apt update
 ## play
 EXPOSE 9000/tcp
 ## PostgreSQL
-EXPOSE 5432/tcp
+#EXPOSE 5432/tcp
 RUN mkdir -p /etc/setup
 #----------
 
@@ -59,6 +59,7 @@ ENV COURSIER_CACHE=/var/coursier
 RUN mkdir -p /usr/local/bin/
 RUN chmod 777 /usr/local/bin/
 RUN ln -s /usr/bin/dot /usr/local/bin/dot
+
 
 # OK, run the play in dev mode
 CMD /etc/setup/server-start.sh
