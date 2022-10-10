@@ -31,7 +31,9 @@ Server admins can:
 
 ## Integration with Other Systems
 
-This server can conduct interviews on behalf of other systems, via a REST API. When using this feature, the client system receives the interview results, and can specify where to send the user to after the interview is done. From a user's point of view, the process is seamless, as the transition between systems can be done without requiring user any action.
+This server can conduct interviews on behalf of other systems, via a REST API, or though an embeddable web component. The embeddable web component project is available [here](https://github.com/EilonBenIshay/PolicyModelsProjectFrontend2022).
+
+When using the API integration feature, the client system receives the interview results, and can specify where to send the user to after the interview is done. From a user's point of view, the process is seamless, as the transition between systems can be done without requiring user any action.
 
 System interaction is as follows:
 1. Client system requests an interview from PoMo Server (this app). This request includes a URL to `POST` the results back to, when the interview is done.
